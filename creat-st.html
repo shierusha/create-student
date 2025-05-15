@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>謝爾夏｜創角系統</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-blue: #143158;
+      --soft-blue: #1d4076;
+      --white: #fff;
+      --light: #f4f7fa;
+      --radius: 1.5rem;
+      --warn: #ff6464;
+    }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--light);
+      min-height: 100vh;
+      color: var(--main-blue);
+      margin: 0;
+    }
+    .center {
+      max-width: 440px;
+      margin: 40px auto 0 auto;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 24px 0 #1d40761a;
+      padding: 2.5rem 2rem 2rem 2rem;
+    }
+    h2 {
+      color: var(--main-blue);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .step {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: var(--soft-blue);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      opacity: 0.3;
+      transition: background 0.2s, opacity 0.2s;
+      border: 2px solid var(--main-blue);
+    }
+    .step.active {
+      background: var(--main-blue);
+      opacity: 1;
+      border: 2px solid #36b6ff;
+    }
+    .form-page { display: none; }
+    .form-page.active { display: block; }
+    label {
+      margin-top: 1rem;
+      margin-bottom: 0.2rem;
+      display: block;
+      font-weight: 500;
+      color: var(--soft-blue);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.2px solid #a6b3c8;
+      border-radius: 0.7rem;
+      margin-bottom: 0.7rem;
+      font-size: 1rem;
+      background: #f4f7fa;
+      transition: border 0.2s;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    input:focus, select:focus, textarea:focus {
+      border: 1.2px solid #36b6ff;
+      outline: none;
+    }
+    .nav-btns {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+    button {
+      background: var(--main-blue);
+      color: var(--white);
+      border: none;
+      border-radius: 0.7rem;
+      padding: 0.9rem 1.4rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 1.1rem;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px #1d407615;
+    }
+    button:hover {
+      background: #36b6ff;
+    }
+    .warn { color: var(--warn); font-size: 0.97em; margin-bottom: 8px; font-weight: 700; }
+    /* 職業美化 */
+    .job-grid { display: flex; flex-wrap: wrap; gap: 0.7rem; margin: 1rem 0 1.2rem 0; }
+    .job-btn {
+      min-width: 108px;
+      flex: 1 1 44%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7rem 0.7rem;
+      border-radius: 1.2rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--main-blue);
+      background: #f0f6fc;
+      border: 2.5px solid #a6b3c888;
+      cursor: pointer;
+      transition: all 0.17s;
+      position: relative;
+      margin-bottom: 2px;
+    }
+    .job-btn.selected {
+      background: #36b6ff;
+      color: #fff;
+      border: 2.5px solid #143158;
+      box-shadow: 0 2px 8px #1d407634;
+    }
+    .job-btn.disabled {
+      background: #d3dbe4;
+      color: #9eaac4;
+      border: 2.5px dashed #adb8c888;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    @media (max-width: 600px) {
+      .center { max-width: 100vw; border-radius: 0; padding: 1.5rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <h2>謝爾夏 創角系統</h2>
+    <div class="steps">
+      <div class="step" id="step-1">1</div>
+      <div class="step" id="step-2">2</div>
+      <div class="step" id="step-3">3</div>
+      <div class="step" id="step-4">4</div>
+      <div class="step" id="step-5">5</div>
+    </div>
+
+    <!-- 第1頁 角色名稱 -->
+    <form id="form-step-1" class="form-page active">
+      <label for="name">角色名稱</label>
+      <input type="text" id="name" required placeholder="請輸入角色名稱">
+      <div class="nav-btns"><div></div><button type="button" id="btn-step-1">下一步</button></div>
+    </form>
+
+    <!-- 第2頁 白單基本資料 -->
+    <form id="form-step-2" class="form-page">
+      <div id="warn-2" class="warn" style="display:none;"></div>
+      <label for="alignment">陣營</label>
+      <select id="alignment">
+        <option value="白">白</option>
+        <option value="黑">黑</option>
+      </select>
+      <label for="gender">性別</label>
+      <select id="gender">
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
+      <label for="age">年齡</label>
+      <input type="number" id="age" min="5" max="30" required>
+      <label for="height">身高 (cm)</label>
+      <input type="number" id="height" min="100" max="210" required>
+      <label for="weight">體重 (kg)</label>
+      <input type="number" id="weight" min="30" max="150" step="0.1" required>
+      <label for="race">種族</label>
+      <input type="text" id="race" required>
+      <label for="personality">個性</label>
+      <textarea id="personality" rows="2" required></textarea>
+      <label for="background">背景故事</label>
+      <textarea id="background" rows="2" required></textarea>
+      <label for="internal_notes">創作補充設定</label>
+      <textarea id="internal_notes" placeholder="此為裏設定 如果沒寫 對戲不可擅自增加設定"></textarea>
+      <div class="nav-btns"><button type="button" id="back-2">上一步</button><button type="button" id="btn-step-2">下一步</button></div>
+    </form>
+
+    <!-- 第3頁 定位&戰鬥起始站位 -->
+    <form id="form-step-3" class="form-page">
+      <div id="warn-3" class="warn" style="display:none;"></div>
+      <label for="preferred_role">定位</label>
+      <select id="preferred_role">
+        <option value="近攻">近攻手</option>
+        <option value="遠攻">遠攻手</option>
+        <option value="普通攻擊手">普通攻擊手</option>
+      </select>
+      <label for="starting_position">戰鬥起始站位</label>
+      <select id="starting_position">
+        <option value="近戰區">近戰區</option>
+        <option value="遠攻區">遠攻區</option>
+      </select>
+      <div class="nav-btns"><button type="button" id="back-3">上一步</button><button type="button" id="btn-step-3">下一步</button></div>
+    </form>
+
+    <!-- 第4頁 選擇職業 -->
+    <form id="form-step-4" class="form-page">
+      <div id="warn-4" class="warn" style="display:none;"></div>
+      <label>請選擇職業（最多 2 個）</label>
+      <div class="job-grid" id="job-grid">
+        <div class="job-btn" data-job="攻擊手">攻擊手</div>
+        <div class="job-btn" data-job="坦">坦</div>
+        <div class="job-btn" data-job="補師">補師</div>
+        <div class="job-btn" data-job="增益手">增益手</div>
+        <div class="job-btn" data-job="妨礙手">妨礙手</div>
+      </div>
+      <div class="nav-btns"><button type="button" id="back-4">上一步</button><button type="button" id="btn-step-4">下一步</button></div>
+    </form>
+
+    <!-- 第5頁 技能選擇&送出 -->
+    <form id="form-step-5" class="form-page">
+      <label>技能1（請勾選技能效果）</label>
+      <div id="skills-1">
+        /ᐠ｡ꞈ｡ᐟ\
+      </div>
+      <label>技能2（請勾選技能效果）</label>
+      <div id="skills-2">
+      /ᐠ｡ꞈ｡ᐟ\
+      </div>
+      <div class="nav-btns"><button type="button" id="back-5">上一步</button><button type="submit">送出角色</button></div>
+    </form>
+  </div>
+  <script>
+    let formData = {
+      name: '', alignment: '', gender: '', age: '', height: '', weight: '', race: '', personality: '', background: '', internal_notes: '',
+      preferred_role: '', starting_position: '', jobs: []
+    };
+    let currentStep = 1;
+    function showStep(step) {
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById('form-step-' + i).classList.remove('active');
+        document.getElementById('step-' + i).classList.remove('active');
+      }
+      document.getElementById('form-step-' + step).classList.add('active');
+      document.getElementById('step-' + step).classList.add('active');
+      currentStep = step;
+      // 每次切頁時，資料自動回填
+      if (step == 1) document.getElementById('name').value = formData.name || '';
+      if (step == 2) {
+        document.getElementById('alignment').value = formData.alignment || '白';
+        document.getElementById('gender').value = formData.gender || '男';
+        document.getElementById('age').value = formData.age || '';
+        document.getElementById('height').value = formData.height || '';
+        document.getElementById('weight').value = formData.weight || '';
+        document.getElementById('race').value = formData.race || '';
+        document.getElementById('personality').value = formData.personality || '';
+        document.getElementById('background').value = formData.background || '';
+        document.getElementById('internal_notes').value = formData.internal_notes || '';
+      }
+      if (step == 3) {
+        document.getElementById('preferred_role').value = formData.preferred_role || '近攻';
+        document.getElementById('starting_position').value = formData.starting_position || '近戰區';
+      }
+      if (step == 4) {
+        updateJobButtons();
+      }
+    }
+    function validateStep2() {
+      // 除了裏設定, 其他必填
+      let warn = '';
+      if (!document.getElementById('alignment').value) warn = '請選擇陣營';
+      else if (!document.getElementById('gender').value) warn = '請選擇性別';
+      else if (!document.getElementById('age').value) warn = '請填寫年齡';
+      else if (!document.getElementById('height').value) warn = '請填寫身高';
+      else if (!document.getElementById('weight').value) warn = '請填寫體重';
+      else if (!document.getElementById('race').value) warn = '請填寫種族';
+      else if (!document.getElementById('personality').value) warn = '請填寫個性';
+      else if (!document.getElementById('background').value) warn = '請填寫背景故事';
+      document.getElementById('warn-2').innerText = warn;
+      document.getElementById('warn-2').style.display = warn ? '' : 'none';
+      return !warn;
+    }
+    function validateStep3() {
+      let warn = '';
+      if (!document.getElementById('preferred_role').value) warn = '請選擇定位';
+      else if (!document.getElementById('starting_position').value) warn = '請選擇站位';
+      document.getElementById('warn-3').innerText = warn;
+      document.getElementById('warn-3').style.display = warn ? '' : 'none';
+      return !warn;
+    }
+    function validateStep4() {
+      let warn = '';
+      const jobs = formData.jobs || [];
+      if (jobs.length == 0) warn = '請至少選擇一個職業';
+      else if (jobs.length > 2) warn = '最多只能選兩個職業';
+      document.getElementById('warn-4').innerText = warn;
+      document.getElementById('warn-4').style.display = warn ? '' : 'none';
+      return !warn;
+    }
+    function updateJobButtons() {
+      // 根據定位規則，控制可選職業
+      const preferred = document.getElementById('preferred_role').value;
+      const jobBtns = document.querySelectorAll('.job-btn');
+      jobBtns.forEach(btn => {
+        const job = btn.dataset.job
+  btn.classList.remove('disabled');
+        btn.classList.remove('selected');
+        btn.onclick = null; // 重置
+        // 禁用條件
+        if (preferred === '近攻') {
+          if (job === '補師') {
+            btn.classList.add('disabled');
+            btn.onclick = null;
+          } else {
+            btn.onclick = handleJobSelect;
+          }
+        } else if (preferred === '遠攻') {
+          if (job === '坦') {
+            btn.classList.add('disabled');
+            btn.onclick = null;
+          } else {
+            btn.onclick = handleJobSelect;
+          }
+        } else { // 普通攻擊手
+          if (job === '補師') {
+            btn.classList.add('disabled');
+            btn.onclick = null;
+          } else {
+            btn.onclick = handleJobSelect;
+          }
+        }
+        // 已選標記
+        if ((formData.jobs || []).includes(job)) btn.classList.add('selected');
+      });
+    }
+    function handleJobSelect(e) {
+      const job = e.currentTarget.dataset.job;
+      let jobs = formData.jobs || [];
+      if (jobs.includes(job)) {
+        jobs = jobs.filter(j => j !== job);
+      } else {
+        if (jobs.length < 2) jobs.push(job);
+      }
+      formData.jobs = jobs;
+      updateJobButtons();
+    }
+
+    // ===== 步驟按鈕初始化 & 控制 =====
+    document.addEventListener('DOMContentLoaded', function () {
+      showStep(1);
+      document.getElementById('btn-step-1').onclick = function () {
+        const val = document.getElementById('name').value.trim();
+        if (!val) { alert('請輸入角色名稱'); return; }
+        formData.name = val;
+        showStep(2);
+      };
+      document.getElementById('back-2').onclick = function () { showStep(1); };
+      document.getElementById('btn-step-2').onclick = function () {
+        if (!validateStep2()) return;
+        formData.alignment = document.getElementById('alignment').value;
+        formData.gender = document.getElementById('gender').value;
+        formData.age = document.getElementById('age').value;
+        formData.height = document.getElementById('height').value;
+        formData.weight = document.getElementById('weight').value;
+        formData.race = document.getElementById('race').value;
+        formData.personality = document.getElementById('personality').value;
+        formData.background = document.getElementById('background').value;
+        formData.internal_notes = document.getElementById('internal_notes').value;
+        showStep(3);
+      };
+      document.getElementById('back-3').onclick = function () { showStep(2); };
+      document.getElementById('btn-step-3').onclick = function () {
+        if (!validateStep3()) return;
+        formData.preferred_role = document.getElementById('preferred_role').value;
+        formData.starting_position = document.getElementById('starting_position').value;
+        showStep(4);
+      };
+      document.getElementById('back-4').onclick = function () { showStep(3); };
+      document.getElementById('btn-step-4').onclick = function () {
+        if (!validateStep4()) return;
+        showStep(5);
+      };
+      document.getElementById('back-5').onclick = function () { showStep(4); };
+      // 初始職業顯示
+      updateJobButtons();
+    });
+
+    // ===== 送出角色資料（最終步驟） =====
+    document.getElementById('form-step-5').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // 技能效果收集（後續可動態處理）
+      const skill1 = Array.from(document.querySelectorAll('#skills-1 input:checked')).map(x => x.value);
+      const skill2 = Array.from(document.querySelectorAll('#skills-2 input:checked')).map(x => x.value);
+      // 組合最終資料
+      const submitData = { ...formData, skill1, skill2 };
+      alert(
+        `角色名稱: ${submitData.name}\n定位: ${submitData.preferred_role}\n職業: ${submitData.jobs.join(', ')}\n` +
+        `技能1: ${submitData.skill1.join(', ')}\n技能2: ${submitData.skill2.join(', ')}\n` +
+        `（未來這裡會寫入資料庫）`
+      );
+      // TODO: 串接 Supabase/後端
+    });
+  </script>
+</body>
+</html>
+
+
