@@ -240,172 +240,183 @@
     </form>
   </div>
   <script>
- let formData = {
+let formData = {
   name: '', nickname: '', alignment: '', gender: '', age: '', height: '', weight: '', race: '', personality: '', background: '', internal_notes: '',
   preferred_role: '', starting_position: '', jobs: []
 };
-    let currentStep = 1;
-    function showStep(step) {
-      for (let i = 1; i <= 5; i++) {
-        document.getElementById('form-step-' + i).classList.remove('active');
-        document.getElementById('step-' + i).classList.remove('active');
-      }
-      document.getElementById('form-step-' + step).classList.add('active');
-      document.getElementById('step-' + step).classList.add('active');
-      currentStep = step;
-      // 每次切頁時，資料自動回填
-    if (step == 1) {
+let currentStep = 1;
+
+function showStep(step) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('form-step-' + i).classList.remove('active');
+    document.getElementById('step-' + i).classList.remove('active');
+  }
+  document.getElementById('form-step-' + step).classList.add('active');
+  document.getElementById('step-' + step).classList.add('active');
+  currentStep = step;
+  // 自動回填
+  if (step == 1) {
     document.getElementById('name').value = formData.name || '';
     document.getElementById('nickname').value = formData.nickname || '';
   }
-      if (step == 2) {
-        document.getElementById('alignment').value = formData.alignment || '白';
-        document.getElementById('gender').value = formData.gender || '男';
-        document.getElementById('age').value = formData.age || '';
-        document.getElementById('height').value = formData.height || '';
-        document.getElementById('weight').value = formData.weight || '';
-        document.getElementById('race').value = formData.race || '';
-        document.getElementById('personality').value = formData.personality || '';
-        document.getElementById('background').value = formData.background || '';
-        document.getElementById('internal_notes').value = formData.internal_notes || '';
-      }
-      if (step == 3) {
-        document.getElementById('preferred_role').value = formData.preferred_role || '近攻';
-        document.getElementById('starting_position').value = formData.starting_position || '近戰區';
-      }
-      if (step == 4) {
-        updateJobButtons();
-      }
-    }
-    function validateStep2() {
-      // 除了裏設定, 其他必填
-      let warn = '';
-      if (!document.getElementById('alignment').value) warn = '請選擇陣營';
-      else if (!document.getElementById('gender').value) warn = '請選擇性別';
-      else if (!document.getElementById('age').value) warn = '請填寫年齡';
-      else if (!document.getElementById('height').value) warn = '請填寫身高';
-      else if (!document.getElementById('weight').value) warn = '請填寫體重';
-      else if (!document.getElementById('race').value) warn = '請填寫種族';
-      else if (!document.getElementById('personality').value) warn = '請填寫個性';
-      else if (!document.getElementById('background').value) warn = '請填寫背景故事';
-      document.getElementById('warn-2').innerText = warn;
-      document.getElementById('warn-2').style.display = warn ? '' : 'none';
-      return !warn;
-    }
-    function validateStep3() {
-      let warn = '';
-      if (!document.getElementById('preferred_role').value) warn = '請選擇定位';
-      else if (!document.getElementById('starting_position').value) warn = '請選擇站位';
-      document.getElementById('warn-3').innerText = warn;
-      document.getElementById('warn-3').style.display = warn ? '' : 'none';
-      return !warn;
-    }
-    function validateStep4() {
-      let warn = '';
-      const jobs = formData.jobs || [];
-      if (jobs.length == 0) warn = '請至少選擇一個職業';
-      else if (jobs.length > 2) warn = '最多只能選兩個職業';
-      document.getElementById('warn-4').innerText = warn;
-      document.getElementById('warn-4').style.display = warn ? '' : 'none';
-      return !warn;
-    }
-    function updateJobButtons() {
-      // 根據定位規則，控制可選職業
-      const preferred = document.getElementById('preferred_role').value;
-      const jobBtns = document.querySelectorAll('.job-btn');
-      jobBtns.forEach(btn => {
-        const job = btn.dataset.job
-  btn.classList.remove('disabled');
-        btn.classList.remove('selected');
-        btn.onclick = null; // 重置
-        // 禁用條件
-        if (preferred === '近攻') {
-          if (job === '補師') {
-            btn.classList.add('disabled');
-            btn.onclick = null;
-          } else {
-            btn.onclick = handleJobSelect;
-          }
-        } else  {
-          if (job === '坦') {
-            btn.classList.add('disabled');
-            btn.onclick = null;
-          } else {
-            btn.onclick = handleJobSelect;
-          }
-        } 
-        // 已選標記
-        if ((formData.jobs || []).includes(job)) btn.classList.add('selected');
-      });
-    }
-    function handleJobSelect(e) {
-      const job = e.currentTarget.dataset.job;
-      let jobs = formData.jobs || [];
-      if (jobs.includes(job)) {
-        jobs = jobs.filter(j => j !== job);
+  if (step == 2) {
+    document.getElementById('alignment').value = formData.alignment || '白';
+    document.getElementById('gender').value = formData.gender || '男';
+    document.getElementById('age').value = formData.age || '';
+    document.getElementById('height').value = formData.height || '';
+    document.getElementById('weight').value = formData.weight || '';
+    document.getElementById('race').value = formData.race || '';
+    document.getElementById('personality').value = formData.personality || '';
+    document.getElementById('background').value = formData.background || '';
+    document.getElementById('internal_notes').value = formData.internal_notes || '';
+  }
+  if (step == 3) {
+    document.getElementById('preferred_role').value = formData.preferred_role || '近攻';
+    document.getElementById('starting_position').value = formData.starting_position || '近戰區';
+  }
+  if (step == 4) {
+    updateJobButtons();
+  }
+}
+
+function validateStep2() {
+  let warn = '';
+  if (!document.getElementById('alignment').value) warn = '請選擇陣營';
+  else if (!document.getElementById('gender').value) warn = '請選擇性別';
+  else if (!document.getElementById('age').value) warn = '請填寫年齡';
+  else if (!document.getElementById('height').value) warn = '請填寫身高';
+  else if (!document.getElementById('weight').value) warn = '請填寫體重';
+  else if (!document.getElementById('race').value) warn = '請填寫種族';
+  else if (!document.getElementById('personality').value) warn = '請填寫個性';
+  else if (!document.getElementById('background').value) warn = '請填寫背景故事';
+  document.getElementById('warn-2').innerText = warn;
+  document.getElementById('warn-2').style.display = warn ? '' : 'none';
+  return !warn;
+}
+function validateStep3() {
+  let warn = '';
+  if (!document.getElementById('preferred_role').value) warn = '請選擇定位';
+  else if (!document.getElementById('starting_position').value) warn = '請選擇站位';
+  document.getElementById('warn-3').innerText = warn;
+  document.getElementById('warn-3').style.display = warn ? '' : 'none';
+  return !warn;
+}
+function validateStep4() {
+  let warn = '';
+  const jobs = formData.jobs || [];
+  if (jobs.length == 0) warn = '請至少選擇一個職業';
+  else if (jobs.length > 2) warn = '最多只能選兩個職業';
+  document.getElementById('warn-4').innerText = warn;
+  document.getElementById('warn-4').style.display = warn ? '' : 'none';
+  return !warn;
+}
+
+function updateJobButtons() {
+  // 根據定位規則，控制可選職業
+  const preferred = document.getElementById('preferred_role').value;
+  const jobBtns = document.querySelectorAll('.job-btn');
+  jobBtns.forEach(btn => {
+    const job = btn.dataset.job;
+    btn.classList.remove('disabled');
+    btn.classList.remove('selected');
+    btn.onclick = null; // 重置
+    if (preferred === '近攻') {
+      // 近攻可選：攻擊手、坦、增益手、妨礙手
+      if (job === '補師') {
+        btn.classList.add('disabled');
+        btn.onclick = null;
       } else {
-        if (jobs.length < 2) jobs.push(job);
+        btn.onclick = handleJobSelect;
       }
-      formData.jobs = jobs;
-      updateJobButtons();
+    } else if (preferred === '普通攻擊手') {
+      // 普通攻擊手可選：攻擊手、增益手、妨礙手
+      if (job === '坦' || job === '補師') {
+        btn.classList.add('disabled');
+        btn.onclick = null;
+      } else {
+        btn.onclick = handleJobSelect;
+      }
+    } else { // 遠攻
+      // 遠攻可選：攻擊手、補師、增益手、妨礙手
+      if (job === '坦') {
+        btn.classList.add('disabled');
+        btn.onclick = null;
+      } else {
+        btn.onclick = handleJobSelect;
+      }
     }
+    if ((formData.jobs || []).includes(job)) btn.classList.add('selected');
+  });
+}
+function handleJobSelect(e) {
+  const job = e.currentTarget.dataset.job;
+  let jobs = formData.jobs || [];
+  if (jobs.includes(job)) {
+    jobs = jobs.filter(j => j !== job);
+  } else {
+    if (jobs.length < 2) jobs.push(job);
+  }
+  formData.jobs = jobs;
+  updateJobButtons();
+}
 
-    // ===== 步驟按鈕初始化 & 控制 =====
+document.addEventListener('DOMContentLoaded', function () {
+  showStep(1);
   document.getElementById('btn-step-1').onclick = function () {
-  const nameVal = document.getElementById('name').value.trim();
-  const nickVal = document.getElementById('nickname').value.trim();
-  if (!nameVal) { alert('請輸入角色名稱'); return; }
-  if (!nickVal) { alert('對戲中顯示的角色稱呼 如無填入則顯示名稱'); return; }
-  formData.name = nameVal;
-  formData.nickname = nickVal;
-  showStep(2);
-};
-      document.getElementById('back-2').onclick = function () { showStep(1); };
-      document.getElementById('btn-step-2').onclick = function () {
-        if (!validateStep2()) return;
-        formData.alignment = document.getElementById('alignment').value;
-        formData.gender = document.getElementById('gender').value;
-        formData.age = document.getElementById('age').value;
-        formData.height = document.getElementById('height').value;
-        formData.weight = document.getElementById('weight').value;
-        formData.race = document.getElementById('race').value;
-        formData.personality = document.getElementById('personality').value;
-        formData.background = document.getElementById('background').value;
-        formData.internal_notes = document.getElementById('internal_notes').value;
-        showStep(3);
-      };
-      document.getElementById('back-3').onclick = function () { showStep(2); };
-      document.getElementById('btn-step-3').onclick = function () {
-        if (!validateStep3()) return;
-        formData.preferred_role = document.getElementById('preferred_role').value;
-        formData.starting_position = document.getElementById('starting_position').value;
-        showStep(4);
-      };
-      document.getElementById('back-4').onclick = function () { showStep(3); };
-      document.getElementById('btn-step-4').onclick = function () {
-        if (!validateStep4()) return;
-        showStep(5);
-      };
-      document.getElementById('back-5').onclick = function () { showStep(4); };
-      // 初始職業顯示
-      updateJobButtons();
-    });
+    const nameVal = document.getElementById('name').value.trim();
+    const nickVal = document.getElementById('nickname').value.trim();
+    if (!nameVal) { alert('請輸入角色名稱'); return; }
+    if (!nickVal) { alert('請輸入角色稱呼'); return; }
+    formData.name = nameVal;
+    formData.nickname = nickVal;
+    showStep(2);
+  };
+  document.getElementById('back-2').onclick = function () { showStep(1); };
+  document.getElementById('btn-step-2').onclick = function () {
+    if (!validateStep2()) return;
+    formData.alignment = document.getElementById('alignment').value;
+    formData.gender = document.getElementById('gender').value;
+    formData.age = document.getElementById('age').value;
+    formData.height = document.getElementById('height').value;
+    formData.weight = document.getElementById('weight').value;
+    formData.race = document.getElementById('race').value;
+    formData.personality = document.getElementById('personality').value;
+    formData.background = document.getElementById('background').value;
+    formData.internal_notes = document.getElementById('internal_notes').value;
+    showStep(3);
+  };
+  document.getElementById('back-3').onclick = function () { showStep(2); };
+  document.getElementById('btn-step-3').onclick = function () {
+    if (!validateStep3()) return;
+    formData.preferred_role = document.getElementById('preferred_role').value;
+    formData.starting_position = document.getElementById('starting_position').value;
+    showStep(4);
+  };
+  document.getElementById('back-4').onclick = function () { showStep(3); };
+  document.getElementById('btn-step-4').onclick = function () {
+    if (!validateStep4()) return;
+    showStep(5);
+  };
+  document.getElementById('back-5').onclick = function () { showStep(4); };
+  updateJobButtons();
+});
 
-    // ===== 送出角色資料（最終步驟） =====
-    document.getElementById('form-step-5').addEventListener('submit', function(e) {
-      e.preventDefault();
-      // 技能效果收集（後續可動態處理）
-      const skill1 = Array.from(document.querySelectorAll('#skills-1 input:checked')).map(x => x.value);
-      const skill2 = Array.from(document.querySelectorAll('#skills-2 input:checked')).map(x => x.value);
-      // 組合最終資料
-      const submitData = { ...formData, skill1, skill2 };
-      alert(
-        `角色名稱: ${submitData.name}\n定位: ${submitData.preferred_role}\n職業: ${submitData.jobs.join(', ')}\n` +
-        `技能1: ${submitData.skill1.join(', ')}\n技能2: ${submitData.skill2.join(', ')}\n` +
-        `（未來這裡會寫入資料庫）`
-      );
-      // TODO: 串接 Supabase/後端
-    });
+// ===== 送出角色資料（最終步驟） =====
+document.getElementById('form-step-5').addEventListener('submit', function(e) {
+  e.preventDefault();
+  // 技能效果收集（後續可動態處理）
+  const skill1 = Array.from(document.querySelectorAll('#skills-1 input:checked')).map(x => x.value);
+  const skill2 = Array.from(document.querySelectorAll('#skills-2 input:checked')).map(x => x.value);
+  // 組合最終資料
+  const submitData = { ...formData, skill1, skill2 };
+  alert(
+    `角色名稱: ${submitData.name}\n定位: ${submitData.preferred_role}\n職業: ${submitData.jobs.join(', ')}\n` +
+    `技能1: ${submitData.skill1.join(', ')}\n技能2: ${submitData.skill2.join(', ')}\n` +
+    `（未來這裡會寫入資料庫）`
+  );
+  // TODO: 串接 Supabase/後端
+});
+
   </script>
 </body>
 </html>
