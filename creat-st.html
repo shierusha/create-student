@@ -68,17 +68,24 @@
       font-weight: 500;
       color: var(--soft-blue);
     }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.65rem 0.9rem;
-      border: 1.2px solid #a6b3c8;
-      border-radius: 0.7rem;
-      margin-bottom: 0.7rem;
-      font-size: 1rem;
-      background: #f4f7fa;
-      transition: border 0.2s;
-      font-family: 'Noto Sans TC', sans-serif;
-    }
+  input, select, textarea {
+  width: 90%;
+  padding: 0.65rem 0.9rem;
+  border: 1.2px solid #a6b3c8;
+  border-radius: 0.7rem;
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+  background: #f4f7fa;
+  transition: border 0.2s;
+  font-family: 'Noto Sans TC', sans-serif;
+  box-sizing: border-box;
+}
+
+  
+textarea {
+  min-height: 60px;
+  resize: vertical;   /* 可自行拉高，預設自動高度 */
+}
     input:focus, select:focus, textarea:focus {
       border: 1.2px solid #36b6ff;
       outline: none;
