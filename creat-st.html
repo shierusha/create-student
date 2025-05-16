@@ -156,11 +156,13 @@
     </div>
 
     <!-- 第1頁 角色名稱 -->
-    <form id="form-step-1" class="form-page active">
-      <label for="name">角色名稱</label>
-      <input type="text" id="name" required placeholder="請輸入角色名稱">
-      <div class="nav-btns"><div></div><button type="button" id="btn-step-1">下一步</button></div>
-    </form>
+<form id="form-step-1" class="form-page active">
+  <label for="name">角色名稱</label>
+  <input type="text" id="name" required placeholder="請輸入角色名稱">
+  <label for="nickname">角色稱呼</label>
+  <input type="text" id="nickname" required placeholder="對戲中顯示的角色稱呼 如無填入則顯示名稱">
+  <div class="nav-btns"><div></div><button type="button" id="btn-step-1">下一步</button></div>
+</form>
 
     <!-- 第2頁 白單基本資料 -->
     <form id="form-step-2" class="form-page">
@@ -238,10 +240,10 @@
     </form>
   </div>
   <script>
-    let formData = {
-      name: '', alignment: '', gender: '', age: '', height: '', weight: '', race: '', personality: '', background: '', internal_notes: '',
-      preferred_role: '', starting_position: '', jobs: []
-    };
+ let formData = {
+  name: '', nickname: '', alignment: '', gender: '', age: '', height: '', weight: '', race: '', personality: '', background: '', internal_notes: '',
+  preferred_role: '', starting_position: '', jobs: []
+};
     let currentStep = 1;
     function showStep(step) {
       for (let i = 1; i <= 5; i++) {
@@ -252,7 +254,10 @@
       document.getElementById('step-' + step).classList.add('active');
       currentStep = step;
       // 每次切頁時，資料自動回填
-      if (step == 1) document.getElementById('name').value = formData.name || '';
+    if (step == 1) {
+    document.getElementById('name').value = formData.name || '';
+    document.getElementById('nickname').value = formData.nickname || '';
+  }
       if (step == 2) {
         document.getElementById('alignment').value = formData.alignment || '白';
         document.getElementById('gender').value = formData.gender || '男';
@@ -346,14 +351,15 @@
     }
 
     // ===== 步驟按鈕初始化 & 控制 =====
-    document.addEventListener('DOMContentLoaded', function () {
-      showStep(1);
-      document.getElementById('btn-step-1').onclick = function () {
-        const val = document.getElementById('name').value.trim();
-        if (!val) { alert('請輸入角色名稱'); return; }
-        formData.name = val;
-        showStep(2);
-      };
+  document.getElementById('btn-step-1').onclick = function () {
+  const nameVal = document.getElementById('name').value.trim();
+  const nickVal = document.getElementById('nickname').value.trim();
+  if (!nameVal) { alert('請輸入角色名稱'); return; }
+  if (!nickVal) { alert('對戲中顯示的角色稱呼 如無填入則顯示名稱'); return; }
+  formData.name = nameVal;
+  formData.nickname = nickVal;
+  showStep(2);
+};
       document.getElementById('back-2').onclick = function () { showStep(1); };
       document.getElementById('btn-step-2').onclick = function () {
         if (!validateStep2()) return;
