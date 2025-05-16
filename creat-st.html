@@ -321,21 +321,14 @@
           } else {
             btn.onclick = handleJobSelect;
           }
-        } else if (preferred === '遠攻') {
+        } else  {
           if (job === '坦') {
             btn.classList.add('disabled');
             btn.onclick = null;
           } else {
             btn.onclick = handleJobSelect;
           }
-        } else { // 普通攻擊手
-          if (job === '坦') {
-            btn.classList.add('disabled');
-            btn.onclick = null;
-          } else {
-            btn.onclick = handleJobSelect;
-          }
-        }
+        } 
         // 已選標記
         if ((formData.jobs || []).includes(job)) btn.classList.add('selected');
       });
