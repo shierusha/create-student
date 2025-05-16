@@ -362,15 +362,15 @@ function handleJobSelect(e) {
 
 document.addEventListener('DOMContentLoaded', function () {
   showStep(1);
-  document.getElementById('btn-step-1').onclick = function () {
-    const nameVal = document.getElementById('name').value.trim();
-    const nickVal = document.getElementById('nickname').value.trim();
-    if (!nameVal) { alert('請輸入角色名稱'); return; }
-    if (!nickVal) { alert('請輸入角色稱呼'); return; }
-    formData.name = nameVal;
-    formData.nickname = nickVal;
-    showStep(2);
-  };
+ document.getElementById('btn-step-1').onclick = function () {
+  const nameVal = document.getElementById('name').value.trim();
+  const nickVal = document.getElementById('nickname').value.trim();
+  if (!nameVal) { alert('請輸入角色名稱'); return; }
+  // 暱稱不用檢查
+  formData.name = nameVal;
+  formData.nickname = nickVal; // 可能是空字串
+  showStep(2);
+};
   document.getElementById('back-2').onclick = function () { showStep(1); };
   document.getElementById('btn-step-2').onclick = function () {
     if (!validateStep2()) return;
