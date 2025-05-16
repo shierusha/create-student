@@ -319,42 +319,61 @@ function validateStep4() {
 }
 
 function updateJobButtons() {
-  // 根據定位規則，控制可選職業
   const preferred = document.getElementById('preferred_role').value;
   const jobBtns = document.querySelectorAll('.job-btn');
+  let jobs = formData.jobs || [];
+
   jobBtns.forEach(btn => {
     const job = btn.dataset.job;
     btn.classList.remove('disabled');
     btn.classList.remove('selected');
     btn.onclick = null; // 重置
+
+    // ---- 近攻 ----
     if (preferred === '近攻') {
-      // 近攻可選：攻擊手、坦、增益手、妨礙手
       if (job === '補師') {
         btn.classList.add('disabled');
-        btn.onclick = null;
-      } else {
-        btn.onclick = handleJobSelect;
-      }
-    } else if (preferred === '普通攻擊手') {
-      // 普通攻擊手可選：攻擊手、增益手、妨礙手
-      if (job === '坦' || job === '補師') {
-        btn.classList.add('disabled');
-        btn.onclick = null;
-      } else {
-        btn.onclick = handleJobSelect;
-      }
-    } else { // 遠攻
-      // 遠攻可選：攻擊手、補師、增益手、妨礙手
-      if (job === '坦') {
-        btn.classList.add('disabled');
-        btn.onclick = null;
       } else {
         btn.onclick = handleJobSelect;
       }
     }
-    if ((formData.jobs || []).includes(job)) btn.classList.add('selected');
+
+    // ---- 普通攻擊手 ----
+    else if (preferred === '普通攻擊手') {
+      if (jobs.length === 0) {
+        // 第一選只能選攻擊手/增益手/妨礙手，補師/坦不能點
+        if (job === '補師' || job === '坦') {
+          btn.classList.add('disabled');
+        } else {
+          btn.onclick = handleJobSelect;
+        }
+      } else if (jobs.length === 1) {
+        // 如果第一個不是補師，第二選可以開補師
+        if (jobs[0] === '補師') {
+          // 已選補師，不可再選
+          btn.onclick = null;
+        } else if (job === '坦') {
+          btn.classList.add('disabled');
+        } else {
+          btn.onclick = handleJobSelect;
+        }
+      }
+    }
+
+    // ---- 遠攻 ----
+    else { // 遠攻
+      if (job === '坦') {
+        btn.classList.add('disabled');
+      } else {
+        btn.onclick = handleJobSelect;
+      }
+    }
+
+    // 高亮
+    if (jobs.includes(job)) btn.classList.add('selected');
   });
 }
+
 function handleJobSelect(e) {
   const job = e.currentTarget.dataset.job;
   let jobs = formData.jobs || [];
