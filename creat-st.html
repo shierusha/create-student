@@ -429,7 +429,12 @@ document.getElementById('form-step-5').addEventListener('submit', function(e) {
   );
   // TODO: 串接 Supabase/後端
 });
-
+  document.querySelectorAll('textarea').forEach(function (ta) {
+    ta.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+  });
   </script>
 </body>
 </html>
