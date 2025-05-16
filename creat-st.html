@@ -109,6 +109,14 @@ textarea {
       transition: background 0.2s, box-shadow 0.2s;
       box-shadow: 0 2px 8px #1d407615;
     }
+
+    .nav-btns button {
+  width: 44%;
+}
+.nav-btns:only-child button, /* 只有一個按鈕時寬度90% */
+.nav-btns button:only-child {
+  width: 90%;
+}
     button:hover {
       background: #36b6ff;
     }
