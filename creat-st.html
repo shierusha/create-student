@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
  document.getElementById('btn-step-1').onclick = function () {
   const nameVal = document.getElementById('name').value.trim();
   const nickVal = document.getElementById('nickname').value.trim();
-  if (!nameVal) { alert('請輸入角色名稱'); return; }
+  if (!nameVal) { alert('請輸入角色本名'); return; }
   // 暱稱不用檢查
   formData.name = nameVal;
   formData.nickname = nickVal; // 可能是空字串
