@@ -375,12 +375,20 @@ function updateJobButtons() {
   });
 }
 
-
 function handleJobSelect(e) {
   const job = e.currentTarget.dataset.job;
   let jobs = formData.jobs || [];
+
   if (jobs.includes(job)) {
+    // 取消選擇
     jobs = jobs.filter(j => j !== job);
+
+    // 修正: 普攻不能只剩補師
+    if (formData.preferred_role === '普通攻擊手' && jobs.length === 1) {
+      if (jobs[0] === '補師' || jobs[0] === '坦') {
+        jobs = []; // 不允許只剩下補師或坦
+      }
+    }
   } else {
     if (jobs.length < 2) jobs.push(job);
   }
