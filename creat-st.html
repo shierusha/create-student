@@ -246,6 +246,22 @@ textarea {
       <div class="nav-btns"><button type="button" id="back-5">上一步</button><button type="submit">送出角色</button></div>
     </form>
   </div>
+  
+  <!-- 彈窗 -->
+<div id="confirm-modal" style="display:none;
+  position:fixed; z-index:2000; top:0; left:0; width:100vw; height:100vh; background:#1d407688;">
+  <div style="background:#fff; border-radius:1.2rem; box-shadow:0 6px 32px #0002; max-width:95vw; width:340px; padding:2rem 1.2rem 1.2rem; margin: 100px auto 0 auto; position:relative;">
+    <h3 style="margin:0 0 1.2em 0;">請確認角色資訊</h3>
+    <div id="modal-content" style="white-space:pre-line;"></div>
+    <div style="display:flex; gap:1.1em; margin-top:1.2em;">
+      <button id="modal-back-btn" style="background:#bfc8d8; color:#143158;">返回修改</button>
+      <button id="modal-confirm-btn">確定送出</button>
+    </div>
+  </div>
+</div>
+  
+  
+  
   <script>
 let formData = {
   name: '', nickname: '', alignment: '', gender: '', age: '', height: '', weight: '', race: '', personality: '', background: '', internal_notes: '',
@@ -444,12 +460,27 @@ document.getElementById('form-step-5').addEventListener('submit', function(e) {
   const skill1 = Array.from(document.querySelectorAll('#skills-1 input:checked')).map(x => x.value);
   const skill2 = Array.from(document.querySelectorAll('#skills-2 input:checked')).map(x => x.value);
   // 組合最終資料
-  const submitData = { ...formData, skill1, skill2 };
-  alert(
-    `角色名稱: ${submitData.name}\n定位: ${submitData.preferred_role}\n職業: ${submitData.jobs.join(', ')}\n` +
-    `技能1: ${submitData.skill1.join(', ')}\n技能2: ${submitData.skill2.join(', ')}\n` +
-    `（未來這裡會寫入資料庫）`
-  );
+document.getElementById('form-step-5').addEventListener('submit', function(e) {
+  e.preventDefault();
+  // ...技能等資料組合
+  const submitData = { ...formData /*, skill1, skill2 等 */ };
+  // 格式化彈窗內容
+  let content = `角色名稱：${submitData.name}\n定位：${submitData.preferred_role}\n職業：${(submitData.jobs || []).join('、')}\n技能1：${(submitData.skill1 || []).join('、')}\n技能2：${(submitData.skill2 || []).join('、')}`;
+  document.getElementById('modal-content').textContent = content;
+  document.getElementById('confirm-modal').style.display = '';
+
+  // 「返回修改」按鈕
+  document.getElementById('modal-back-btn').onclick = function() {
+    document.getElementById('confirm-modal').style.display = 'none';
+  };
+  // 「確定送出」按鈕（這裡才真正送出）
+  document.getElementById('modal-confirm-btn').onclick = function() {
+    document.getElementById('confirm-modal').style.display = 'none';
+    // 這裡寫進資料庫！
+    alert('（未來這裡會寫入資料庫）角色已送出！');
+    // 或執行你的 Supabase 新增邏輯
+  };
+});
   // TODO: 串接 Supabase/後端
 });
   document.querySelectorAll('textarea').forEach(function (ta) {
