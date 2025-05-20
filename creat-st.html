@@ -298,6 +298,7 @@ function showStep(step) {
     document.getElementById('starting_position').value = formData.starting_position || '近戰區';
   }
   if (step == 4) {
+    cleanIllegalJobs();
     updateJobButtons();
   }
 }
@@ -334,6 +335,34 @@ function validateStep4() {
   return !warn;
 }
 
+// --------- 職業違規自動清理 ---------
+function cleanIllegalJobs() {
+  const preferred = document.getElementById('preferred_role').value;
+  let jobs = formData.jobs || [];
+  if (preferred === '近攻') {
+    // 近攻不能選補師
+    jobs = jobs.filter(job => job !== '補師');
+  } else if (preferred === '普通攻擊手') {
+    // 普通攻擊手不能只剩補師/坦
+    if (jobs.length === 1 && (jobs[0] === '補師' || jobs[0] === '坦')) {
+      jobs = [];
+    }
+    // 普攻雙職時不能補師+坦
+    if (jobs.length === 2 && (jobs.includes('補師') && jobs.includes('坦'))) {
+      jobs = jobs.filter(job => job !== '坦'); // 優先清掉坦
+    }
+    // 只剩下單一補師或坦，清空
+    if (jobs.length === 1 && (jobs[0] === '補師' || jobs[0] === '坦')) {
+      jobs = [];
+    }
+  } else {
+    // 遠攻不能選坦
+    jobs = jobs.filter(job => job !== '坦');
+  }
+  formData.jobs = jobs;
+}
+
+// --------- 職業選擇邏輯 ---------
 function updateJobButtons() {
   const preferred = document.getElementById('preferred_role').value;
   const jobBtns = document.querySelectorAll('.job-btn');
@@ -399,10 +428,10 @@ function handleJobSelect(e) {
     // 取消選擇
     jobs = jobs.filter(j => j !== job);
 
-    // 修正: 普攻不能只剩補師
+    // 修正: 普攻不能只剩補師/坦
     if (formData.preferred_role === '普通攻擊手' && jobs.length === 1) {
       if (jobs[0] === '補師' || jobs[0] === '坦') {
-        jobs = []; // 不允許只剩下補師或坦
+        jobs = [];
       }
     }
   } else {
@@ -412,17 +441,20 @@ function handleJobSelect(e) {
   updateJobButtons();
 }
 
+// ------- 初始化 & 事件綁定 --------
 document.addEventListener('DOMContentLoaded', function () {
   showStep(1);
- document.getElementById('btn-step-1').onclick = function () {
-  const nameVal = document.getElementById('name').value.trim();
-  const nickVal = document.getElementById('nickname').value.trim();
-  if (!nameVal) { alert('請輸入角色本名'); return; }
-  // 暱稱不用檢查
-  formData.name = nameVal;
-  formData.nickname = nickVal; // 可能是空字串
-  showStep(2);
-};
+
+  document.getElementById('btn-step-1').onclick = function () {
+    const nameVal = document.getElementById('name').value.trim();
+    const nickVal = document.getElementById('nickname').value.trim();
+    if (!nameVal) { alert('請輸入角色本名'); return; }
+    // 暱稱不用檢查
+    formData.name = nameVal;
+    formData.nickname = nickVal;
+    showStep(2);
+  };
+
   document.getElementById('back-2').onclick = function () { showStep(1); };
   document.getElementById('btn-step-2').onclick = function () {
     if (!validateStep2()) return;
@@ -437,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.internal_notes = document.getElementById('internal_notes').value;
     showStep(3);
   };
+
   document.getElementById('back-3').onclick = function () { showStep(2); };
   document.getElementById('btn-step-3').onclick = function () {
     if (!validateStep3()) return;
@@ -444,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.starting_position = document.getElementById('starting_position').value;
     showStep(4);
   };
+
   document.getElementById('back-4').onclick = function () { showStep(3); };
   document.getElementById('btn-step-4').onclick = function () {
     if (!validateStep4()) return;
@@ -451,6 +485,12 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   document.getElementById('back-5').onclick = function () { showStep(4); };
   updateJobButtons();
+
+  // -------- 在職業頁/定位下拉變更時自動清除不合法職業 --------
+  document.getElementById('preferred_role').addEventListener('change', function() {
+    cleanIllegalJobs();
+    updateJobButtons();
+  });
 });
 
 // ===== 送出角色資料（最終步驟） =====
@@ -460,11 +500,7 @@ document.getElementById('form-step-5').addEventListener('submit', function(e) {
   const skill1 = Array.from(document.querySelectorAll('#skills-1 input:checked')).map(x => x.value);
   const skill2 = Array.from(document.querySelectorAll('#skills-2 input:checked')).map(x => x.value);
   // 組合最終資料
-document.getElementById('form-step-5').addEventListener('submit', function(e) {
-  e.preventDefault();
-  // ...技能等資料組合
-  const submitData = { ...formData /*, skill1, skill2 等 */ };
-  // 格式化彈窗內容
+  const submitData = { ...formData, skill1, skill2 };
   let content = `角色名稱：${submitData.name}\n定位：${submitData.preferred_role}\n職業：${(submitData.jobs || []).join('、')}\n技能1：${(submitData.skill1 || []).join('、')}\n技能2：${(submitData.skill2 || []).join('、')}`;
   document.getElementById('modal-content').textContent = content;
   document.getElementById('confirm-modal').style.display = '';
@@ -476,19 +512,20 @@ document.getElementById('form-step-5').addEventListener('submit', function(e) {
   // 「確定送出」按鈕（這裡才真正送出）
   document.getElementById('modal-confirm-btn').onclick = function() {
     document.getElementById('confirm-modal').style.display = 'none';
-    // 這裡寫進資料庫！
     alert('（未來這裡會寫入資料庫）角色已送出！');
     // 或執行你的 Supabase 新增邏輯
   };
 });
-  // TODO: 串接 Supabase/後端
-});
-  document.querySelectorAll('textarea').forEach(function (ta) {
-    ta.addEventListener('input', function () {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
+
+// -------- textarea 自動高度 --------
+document.querySelectorAll('textarea').forEach(function (ta) {
+  ta.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
   });
+});
+
+  // TODO: 串接 Supabase/後端
   </script>
 </body>
 </html>
