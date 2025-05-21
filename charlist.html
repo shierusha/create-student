@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>謝爾夏｜玩家首頁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./charlist.css">
+  <style>
+    .dashboard {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 2rem;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 24px 0 #1d40761a;
+    }
+    .user-bar {
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--main-blue);
+    }
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .char-card {
+      background: #f4f7fa;
+      border-radius: 1rem;
+      padding: 1.2rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 1px 6px #ccc;
+    }
+    .char-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+    }
+    .char-card .status {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 0.8rem;
+    }
+    .char-card .card-btns {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .card-btns button {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.95rem;
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="user-bar" id="user-name">👤 歡迎，使用者！</div>
+    <div class="btn-group">
+      <button onclick="location.href='create-student/creat-st.html'">創角</button>
+      <button onclick="logout()">登出</button>
+    </div>
+
+    <h2 style="text-align:center;">持有角色一覽</h2>
+    <div id="char-list">
+      <!-- 這裡未來會由 JS 動態生成 -->
+    </div>
+  </div>
+
+  <script>
+    // 顯示登入者名稱
+    const username = localStorage.getItem('player_username');
+    const userId = localStorage.getItem('player_id');
+    const userDiv = document.getElementById('user-name');
+    if (username) {
+      userDiv.textContent = `👤 歡迎，${username}！`;
+    } else {
+      userDiv.textContent = '👤 尚未登入';
+      setTimeout(() => {
+        window.location.href = 'school-battle/login.html';
+      }, 2000);
+    }
+
+    // 未來要從 Supabase 抓角色資料，這裡先用假資料模擬
+    const fakeCharacters = [
+      { name: '可愛貓', status: '已通過' },
+      { name: '糊塗鳥', status: '審核中' }
+    ];
+
+    const charList = document.getElementById('char-list');
+    fakeCharacters.forEach(char => {
+      const div = document.createElement('div');
+      div.className = 'char-card';
+      div.innerHTML = `
+        <h3>${char.name}</h3>
+        <div class="status">狀態：${char.status}</div>
+        <div class="card-btns">
+          <button>修改文字</button>
+          ${char.status === '已通過' ? '<button>學生證</button>' : ''}
+        </div>
+      `;
+      charList.appendChild(div);
+    });
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'school-battle/login.html';
+    }
+  </script>
+</body>
+</html>
