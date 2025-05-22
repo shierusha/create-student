@@ -113,62 +113,66 @@
     </table>
   </div>
 
-  <script>
-    const { createClient } = supabase;
-    const supa = createClient(
-      'https://jtijaauoeqpyyoicpcor.supabase.co',
-      'public-anon-key' // 請替換為你自己的 anon 公鑰
-    );
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  // Supabase 初始化
+  const SUPABASE_URL = 'https://jtijaauoeqpyyoicpcor.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0aWphYXVvZXFweXlvaWNwY29yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2MzIwOTQsImV4cCI6MjA2MjIwODA5NH0.2wwDuo8wMtmNIPaidTsTOjlZeqngq7g3w32uTXn3VM0';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function checkSession() {
-      const { data, error } = await supa.auth.getUser();
-      if (!data?.user || error) {
-        window.location.href = 'https://sheruka-game.github.io/login/login.html';
-      } else {
-        const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
-        document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
-        loadCharacters();
-      }
-    }
+  // 檢查登入狀態（延遲 300ms 等 Supabase 初始化完成）
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      checkSession();
+    }, 300);
+  });
 
-    function loadCharacters() {
-      const fakeCharacters = [
-        { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
-        { name: '狗狗', gender: '男', alignment: '黑', status: '審核中' }
-      ];
-      const charList = document.getElementById('char-list');
-      charList.innerHTML = '';
-      fakeCharacters.forEach(char => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${char.name}</td>
-          <td>${char.gender}</td>
-          <td>${char.alignment}</td>
-          <td class="${char.status === '通過' ? 'status-pass' : 'status-pending'}">
-            ${char.status === '通過' ? '已通過' : '審核中'}
-          </td>
-          <td>
-            <div class="action-buttons">
-              ${char.status === '通過' ? '<button>學生證</button>' : ''}
-              <button>修改</button>
-            </div>
-          </td>
-        `;
-        charList.appendChild(row);
-      });
-    }
-
-    function logout() {
-      localStorage.clear();
-      supa.auth.signOut();
+  //  判斷是否登入，沒登入就導回 login
+  async function checkSession() {
+    const { data, error } = await supabase.auth.getUser();
+    if (!data?.user || error) {
       window.location.href = 'https://sheruka-game.github.io/login/login.html';
+    } else {
+      const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
+      document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
+      loadCharacters(); //  成功登入才載入角色資料
     }
+  }
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    checkSession();
-  }, 300); // 延遲 300 毫秒再檢查登入狀態
-});
-  </script>
+  //  載入角色名單（目前用假資料）
+  function loadCharacters() {
+    const fakeCharacters = [
+      { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
+      { name: '狗狗', gender: '男', alignment: '黑', status: '審核中' }
+    ];
+    const charList = document.getElementById('char-list');
+    charList.innerHTML = '';
+    fakeCharacters.forEach(char => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${char.name}</td>
+        <td>${char.gender}</td>
+        <td>${char.alignment}</td>
+        <td class="${char.status === '通過' ? 'status-pass' : 'status-pending'}">
+          ${char.status === '通過' ? '已通過' : '審核中'}
+        </td>
+        <td>
+          <div class="action-buttons">
+            ${char.status === '通過' ? '<button>學生證</button>' : ''}
+            <button>修改</button>
+          </div>
+        </td>
+      `;
+      charList.appendChild(row);
+    });
+  }
+
+  // 登出按鈕功能
+  function logout() {
+    localStorage.clear();
+    supabase.auth.signOut();
+    window.location.href = 'https://sheruka-game.github.io/login/login.html';
+  }
+</script>
 </body>
 </html>
