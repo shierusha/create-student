@@ -164,7 +164,11 @@
       window.location.href = 'https://sheruka-game.github.io/login/login.html';
     }
 
+window.addEventListener('load', () => {
+  setTimeout(() => {
     checkSession();
+  }, 300); // 延遲 300 毫秒再檢查登入狀態
+});
   </script>
 </body>
 </html>
