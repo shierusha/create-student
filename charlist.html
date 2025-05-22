@@ -14,119 +14,157 @@
       background: var(--white);
       border-radius: var(--radius);
       box-shadow: 0 2px 24px 0 #1d40761a;
+      position: relative;
     }
     .user-bar {
       font-weight: 700;
       font-size: 1.1rem;
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       color: var(--main-blue);
     }
-    .char-row {
+    .top-btns {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.5rem;
       display: flex;
-      align-items: center;
-      padding: 0.8rem 1rem;
-      background: #f9fbfc;
-      border-bottom: 1px solid #dde3ec;
-      border-radius: 0.6rem;
-      margin-bottom: 0.8rem;
-      box-shadow: 0 1px 6px #0000000b;
+      gap: 0.7rem;
     }
-    .char-item {
-      flex: 1;
-      text-align: center;
-      font-weight: 500;
-    }
-    .char-item.passed { color: #2e8c3b; font-weight: bold; }
-    .char-item.pending { color: #997500; font-weight: bold; }
-    .char-actions { display: flex; gap: 0.5rem; justify-content: center; }
-    .char-actions button {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
-      border-radius: 0.6rem;
-    }
-    .fab-group {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .fab {
+    .top-btns button {
       background: var(--main-blue);
       color: white;
       border: none;
-      border-radius: 2rem;
-      padding: 0.8rem 1.4rem;
-      font-size: 1rem;
+      border-radius: 1.5rem;
+      padding: 0.5rem 1.1rem;
       font-weight: bold;
+      font-size: 0.95rem;
       cursor: pointer;
-      box-shadow: 0 4px 12px #0002;
       transition: background 0.2s;
     }
-    .fab:hover {
+    .top-btns button:hover {
       background: #36b6ff;
     }
+    table.char-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #f9fbfc;
+      border-radius: 0.6rem;
+      overflow: hidden;
+      box-shadow: 0 1px 6px #0000000b;
+    }
+    table.char-table th, table.char-table td {
+      padding: 0.9rem;
+      text-align: center;
+      border-bottom: 1px solid #dde3ec;
+    }
+    table.char-table th {
+      background: #eaf0f6;
+      color: #1d4076;
+      font-weight: bold;
+    }
+    table.char-table td.status-pass {
+      color: #2e8c3b;
+      font-weight: bold;
+    }
+    table.char-table td.status-pending {
+      color: #997500;
+      font-weight: bold;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+    }
+    .action-buttons button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border-radius: 0.6rem;
+      background-color: var(--main-blue);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .action-buttons button:hover {
+      background-color: #36b6ff;
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="dashboard">
-    <div class="user-bar" id="user-name"> ฅ^•ﻌ•^ฅ  歡迎，使用者！</div>
-    <h2 style="text-align:center;">持有角色一覽</h2>
-    <div id="char-list">
-      <!-- 動態角色列會插入在這裡 -->
+    <div class="top-btns">
+      <button onclick="location.href='create-student/creat-st.html'">🖊️ 創角</button>
+      <button onclick="logout()">🚪 登出</button>
     </div>
-  </div>
-
-  <div class="fab-group">
-    <button class="fab" onclick="location.href='create-student/creat-st.html'">🖊️ 創角</button>
-    <button class="fab" onclick="logout()">🚪 登出</button>
+    <div class="user-bar" id="user-name">ฅ^•ﻌ•^ฅ 歡迎，使用者！</div>
+    <h2 style="text-align:center;">持有角色一覽</h2>
+    <table class="char-table">
+      <thead>
+        <tr>
+          <th>名字</th>
+          <th>性別</th>
+          <th>陣營</th>
+          <th>狀態</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="char-list"></tbody>
+    </table>
   </div>
 
   <script>
-    // 顯示登入者名稱
-    const username = localStorage.getItem('player_username');
-    const userId = localStorage.getItem('player_id');
-    const userDiv = document.getElementById('user-name');
-    if (username) {
-      userDiv.textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
-    } else {
-      userDiv.textContent = '( Φ ω Φ ) 尚未登入';
-      setTimeout(() => {
+    const { createClient } = supabase;
+    const supa = createClient(
+      'https://jtijaauoeqpyyoicpcor.supabase.co',
+      'public-anon-key' // 請替換為你自己的 anon 公鑰
+    );
+
+    async function checkSession() {
+      const { data, error } = await supa.auth.getUser();
+      if (!data?.user || error) {
         window.location.href = 'https://sheruka-game.github.io/login/login.html';
-      }, 2000);
+      } else {
+        const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
+        document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
+        loadCharacters();
+      }
     }
 
-    // 假資料（後續可改為 Supabase 撈）
-    const fakeCharacters = [
-      { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
-      { name: '狗狗', gender: '男', alignment: '黑', status: '審核中' }
-    ];
-
-    const charList = document.getElementById('char-list');
-    fakeCharacters.forEach(char => {
-      const row = document.createElement('div');
-      row.className = 'char-row';
-      row.innerHTML = `
-        <div class="char-item">${char.name}</div>
-        <div class="char-item">${char.gender}</div>
-        <div class="char-item">${char.alignment}</div>
-        <div class="char-item ${char.status === '通過' ? 'passed' : 'pending'}">
-          ${char.status === '通過' ? '✅ 已通過' : '⏳ 審核中'}
-        </div>
-        <div class="char-actions">
-          ${char.status === '通過' ? '<button>學生證</button>' : ''}
-          <button>修改</button>
-        </div>
-      `;
-      charList.appendChild(row);
-    });
+    function loadCharacters() {
+      const fakeCharacters = [
+        { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
+        { name: '狗狗', gender: '男', alignment: '黑', status: '審核中' }
+      ];
+      const charList = document.getElementById('char-list');
+      charList.innerHTML = '';
+      fakeCharacters.forEach(char => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${char.name}</td>
+          <td>${char.gender}</td>
+          <td>${char.alignment}</td>
+          <td class="${char.status === '通過' ? 'status-pass' : 'status-pending'}">
+            ${char.status === '通過' ? '已通過' : '審核中'}
+          </td>
+          <td>
+            <div class="action-buttons">
+              ${char.status === '通過' ? '<button>學生證</button>' : ''}
+              <button>修改</button>
+            </div>
+          </td>
+        `;
+        charList.appendChild(row);
+      });
+    }
 
     function logout() {
-     localStorage.clear();
+      localStorage.clear();
+      supa.auth.signOut();
       window.location.href = 'https://sheruka-game.github.io/login/login.html';
     }
+
+    checkSession();
   </script>
 </body>
 </html>
