@@ -2,13 +2,13 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>謝爾夏｜玩家首頁</title>
+  <title>謝爾夏｜角色名單</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./charlist.css">
   <style>
     .dashboard {
-      max-width: 700px;
+      max-width: 900px;
       margin: 40px auto;
       padding: 2rem;
       background: var(--white);
@@ -19,54 +19,69 @@
       font-weight: 700;
       font-size: 1.1rem;
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       color: var(--main-blue);
     }
-    .btn-group {
+    .char-row {
       display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .char-card {
-      background: #f4f7fa;
-      border-radius: 1rem;
-      padding: 1.2rem;
-      margin-bottom: 1.2rem;
-      box-shadow: 0 1px 6px #ccc;
-    }
-    .char-card h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1.1rem;
-    }
-    .char-card .status {
-      font-size: 0.95rem;
-      color: #666;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      background: #f9fbfc;
+      border-bottom: 1px solid #dde3ec;
+      border-radius: 0.6rem;
       margin-bottom: 0.8rem;
+      box-shadow: 0 1px 6px #0000000b;
     }
-    .char-card .card-btns {
-      display: flex;
-      gap: 0.8rem;
-    }
-    .card-btns button {
-      padding: 0.5rem 0.9rem;
-      font-size: 0.95rem;
+    .char-item {
       flex: 1;
+      text-align: center;
+      font-weight: 500;
+    }
+    .char-item.passed { color: #2e8c3b; font-weight: bold; }
+    .char-item.pending { color: #997500; font-weight: bold; }
+    .char-actions { display: flex; gap: 0.5rem; justify-content: center; }
+    .char-actions button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      border-radius: 0.6rem;
+    }
+    .fab-group {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .fab {
+      background: var(--main-blue);
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.8rem 1.4rem;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px #0002;
+      transition: background 0.2s;
+    }
+    .fab:hover {
+      background: #36b6ff;
     }
   </style>
 </head>
 <body>
   <div class="dashboard">
-    <div class="user-bar" id="user-name">👤 歡迎，使用者！</div>
-    <div class="btn-group">
-      <button onclick="location.href='create-student/creat-st.html'">創角</button>
-      <button onclick="logout()">登出</button>
-    </div>
-
+    <div class="user-bar" id="user-name"> ฅ^•ﻌ•^ฅ  歡迎，使用者！</div>
     <h2 style="text-align:center;">持有角色一覽</h2>
     <div id="char-list">
-      <!-- 這裡未來會由 JS 動態生成 -->
+      <!-- 動態角色列會插入在這裡 -->
     </div>
+  </div>
+
+  <div class="fab-group">
+    <button class="fab" onclick="location.href='create-student/creat-st.html'">🖊️ 創角</button>
+    <button class="fab" onclick="logout()">🚪 登出</button>
   </div>
 
   <script>
@@ -75,38 +90,42 @@
     const userId = localStorage.getItem('player_id');
     const userDiv = document.getElementById('user-name');
     if (username) {
-      userDiv.textContent = `👤 歡迎，${username}！`;
+      userDiv.textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
     } else {
-      userDiv.textContent = '👤 尚未登入';
+      userDiv.textContent = '( Φ ω Φ ) 尚未登入';
       setTimeout(() => {
-        window.location.href = 'school-battle/login.html';
+        window.location.href = 'https://sheruka-game.github.io/login/login.html';
       }, 2000);
     }
 
-    // 未來要從 Supabase 抓角色資料，這裡先用假資料模擬
+    // 假資料（後續可改為 Supabase 撈）
     const fakeCharacters = [
-      { name: '可愛貓', status: '已通過' },
-      { name: '糊塗鳥', status: '審核中' }
+      { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
+      { name: '狗狗', gender: '男', alignment: '黑', status: '審核中' }
     ];
 
     const charList = document.getElementById('char-list');
     fakeCharacters.forEach(char => {
-      const div = document.createElement('div');
-      div.className = 'char-card';
-      div.innerHTML = `
-        <h3>${char.name}</h3>
-        <div class="status">狀態：${char.status}</div>
-        <div class="card-btns">
-          <button>修改文字</button>
-          ${char.status === '已通過' ? '<button>學生證</button>' : ''}
+      const row = document.createElement('div');
+      row.className = 'char-row';
+      row.innerHTML = `
+        <div class="char-item">${char.name}</div>
+        <div class="char-item">${char.gender}</div>
+        <div class="char-item">${char.alignment}</div>
+        <div class="char-item ${char.status === '通過' ? 'passed' : 'pending'}">
+          ${char.status === '通過' ? '✅ 已通過' : '⏳ 審核中'}
+        </div>
+        <div class="char-actions">
+          ${char.status === '通過' ? '<button>學生證</button>' : ''}
+          <button>修改</button>
         </div>
       `;
-      charList.appendChild(div);
+      charList.appendChild(row);
     });
 
     function logout() {
       localStorage.clear();
-      window.location.href = 'login/login.html';
+      window.location.href = 'https://sheruka-game.github.io/login/login.html';
     }
   </script>
 </body>
