@@ -94,8 +94,8 @@
 <body>
   <div class="dashboard">
     <div class="top-btns">
-      <button onclick="location.href='create-student/creat-st.html'">🖊️ 創角</button>
-      <button onclick="logout()">🚪 登出</button>
+      <button onclick="location.href='creat-st.html'">創角</button>
+      <button onclick="logout()">登出</button>
     </div>
     <div class="user-bar" id="user-name">ฅ^•ﻌ•^ฅ 歡迎，使用者！</div>
     <h2 style="text-align:center;">持有角色一覽</h2>
@@ -134,7 +134,7 @@
       window.location.href = 'https://sheruka-game.github.io/login/login.html';
     } else {
       const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
-      document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ 歡迎，${username}！`;
+      document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ  歡迎，${username}！`;
       loadCharacters(); //  成功登入才載入角色資料
     }
   }
