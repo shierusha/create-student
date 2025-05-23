@@ -131,7 +131,7 @@
   async function checkSession() {
     const { data, error } = await supabase.auth.getUser();
     if (!data?.user || error) {
-      window.location.href = 'https://sheruka-game.github.io/login/login.html';
+      window.location.href = 'https://shierusha.github.io/login/login.html';
     } else {
       const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
       document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ  歡迎，${username}！`;
@@ -171,7 +171,7 @@
   function logout() {
     localStorage.clear();
     supabase.auth.signOut();
-    window.location.href = 'https://sheruka-game.github.io/login/login.html';
+    window.location.href = 'https://shierusha.github.io/login/login.html';
   }
 </script>
 </body>
