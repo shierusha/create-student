@@ -113,67 +113,75 @@
     </table>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
- // ====== Supabase 設定 ======
+// ====== Supabase 設定 ======
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
 );
-  // 檢查登入狀態（延遲 300ms 等 Supabase 初始化完成）
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      checkSession();
-    }, 300);
-  });
 
-  //  判斷是否登入，沒登入就導回 login
-  async function checkSession() {
-    const { data, error } = await supabase.auth.getUser();
-    if (!data?.user || error) {
-      window.location.href = 'https://shierusha.github.io/login/login.html';
-    } else {
-      const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
-      document.getElementById('user-name').textContent = `ฅ^•ﻌ•^ฅ  歡迎，${username}！`;
-      loadCharacters(); //  成功登入才載入角色資料
-    }
-  }
+const alignmentMap = { white: '白', black: '黑' };
+const genderMap = { male: '男', female: '女', other: '其他', 男: '男', 女: '女', 其他: '其他' };
 
-  //  載入角色名單（目前用假資料）
-  function loadCharacters() {
-    const fakeCharacters = [
-      { name: '齊希狗勾', gender: '男', alignment: '白', status: '審核中' },
-      { name: '貓貓', gender: '女', alignment: '白', status: '通過' },
-      { name: '辣辣', gender: '女', alignment: '黑', status: '審核中' }
-    ];
-    const charList = document.getElementById('char-list');
-    charList.innerHTML = '';
-    fakeCharacters.forEach(char => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${char.name}</td>
-        <td>${char.gender}</td>
-        <td>${char.alignment}</td>
-        <td class="${char.status === '通過' ? 'status-pass' : 'status-pending'}">
-          ${char.status === '通過' ? '已通過' : '審核中'}
-        </td>
-        <td>
-          <div class="action-buttons">
-            ${char.status === '通過' ? '<button>學生證</button>' : ''}
-            <button>修改</button>
-          </div>
-        </td>
-      `;
-      charList.appendChild(row);
-    });
-  }
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    checkSession();
+  }, 300);
+});
 
-  // 登出按鈕功能
-  function logout() {
-    localStorage.clear();
-    supabase.auth.signOut();
+async function checkSession() {
+  const { data, error } = await client.auth.getUser();
+  if (!data?.user || error) {
     window.location.href = 'https://shierusha.github.io/login/login.html';
+  } else {
+    const username = localStorage.getItem('player_username') || data.user.user_metadata?.username || '使用者';
+    document.getElementById('user-name').textContent = `ฅ^•༎•^ฅ  歡迎，${username}！`;
+    loadCharacters(data.user.id);
   }
+}
+
+async function loadCharacters(player_id) {
+  const { data: students, error } = await client
+    .from('students')
+    .select('name, gender, alignment, approved')
+    .eq('player_id', player_id);
+
+  const charList = document.getElementById('char-list');
+  charList.innerHTML = '';
+
+ // 若資料為空 → 使用假資料
+  if (error || !students || students.length === 0) {
+    students = [
+      { name: '齊希狗勾', gender: 'male', alignment: 'white', approved: false },
+      { name: '貓貓', gender: 'female', alignment: 'white', approved: true },
+      { name: '辣辣', gender: 'female', alignment: 'black', approved: false }
+    ];
+  }
+
+  students.forEach(char => {
+    const row = document.createElement('tr');
+    const status = char.approved ? '已通過' : '審核中';
+    row.innerHTML = `
+      <td>${char.name}</td>
+      <td>${genderMap[char.gender] || char.gender}</td>
+      <td>${alignmentMap[char.alignment] || char.alignment}</td>
+      <td class="${status === '已通過' ? 'status-pass' : 'status-pending'}">${status}</td>
+      <td>
+        <div class="action-buttons">
+          ${char.approved ? '<button>學生證</button>' : ''}
+          <button>修改</button>
+        </div>
+      </td>
+    `;
+    charList.appendChild(row);
+  });
+}
+
+function logout() {
+  localStorage.clear();
+  client.auth.signOut();
+  window.location.href = 'https://shierusha.github.io/login/login.html';
+}
 </script>
 </body>
 </html>
