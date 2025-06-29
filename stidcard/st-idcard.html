@@ -109,43 +109,40 @@ body::before {
 
  /* 角色姓名區 */
 .bigname-box {
-  /* 讓大名條始終佔卡片高度 80%，寬度自動依比例 */
   position: absolute;
   left: 3.5%;
   top: 15%;
   height: 80%;
   width:4.54%;
-  /*aspect-ratio: 1/8.3;  長條比例根據設計微調 */
   display: flex;
   align-items: stretch;
   justify-content: center;
   z-index: 5;
   font-weight: 450;
-
-  /* 寬度不寫死，靠 aspect-ratio + height 控制，RWD不會炸 */
 }
 
 
 .bigname {
+ position: absolute;
   width: 100%;
   bottom: 0%;
   left: 0%;
-  font-size: calc(80vh / 11 * 0.7); 
+  font-size: calc(100% / 11 * 0.7); 
   letter-spacing: 0.12em;
 }
 
 
 .littlename{
+  position: absolute;
   width: 100%;
   bottom: 0%;
   left: 0%;
-  font-size: calc(45vh / 11 * 0.8); 
+  font-size: calc(100% / 11 * 0.8); 
   letter-spacing: 0.12em;        
 }
 
 .littlename-box{
   position: absolute;
-
   bottom: 3%;
   left:9%;
   width: 2.95%;
