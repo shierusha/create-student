@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>學生證</title>
   <style>
-    body {
+  body {
       background: url('https://shierusha.github.io/create-student/imgs/citybg.png') center center no-repeat;
       background-size: cover;
       min-height: 100vh;
@@ -19,15 +19,18 @@ body::before {
 }
 
 
-
+  /*翻轉區 */
     .flip-card {
      max-width: 75vw;
       aspect-ratio: 16/9;
-      margin: 20pt auto;
+      margin: 10pt auto;
       overflow: hidden;   /*超出部分隱藏起來 */
       border-radius: 16px;
       box-shadow: 0 0 24px #0004;
       max-height: 80vh; 
+  position: relative;
+  display: flex;
+  align-items: stretch;
     }
     .flip-card-inner {
       position: relative;
@@ -35,9 +38,7 @@ body::before {
       aspect-ratio: 16/9;
       max-height: 80vh;
 
-transition: transform 1s cubic-bezier(.47,0,.39,1.47);
-/* 這行      transition: transform 2s cubic-bezier(.4,2,.3,1); */
-
+      transition: transform 1.5s cubic-bezier(.47,0,.39,1.47);
       transform-style: preserve-3d;
     }
     .flip-card.flipped .flip-card-inner {
@@ -63,17 +64,18 @@ transition: transform 1s cubic-bezier(.47,0,.39,1.47);
     }
 
 
-    /* 你的原本內容 */
+    /* 卡片底 */
     .container-16-9 {
       position: relative;
-      max-width: 75vw;
+      width: 100%;
+     height: 100%; 
       aspect-ratio: 16/9;
 
       overflow: hidden;   /*超出部分隱藏起來 */
       border-radius: 16px;
       box-shadow: 0 0 24px #0004;
-      max-height: 80vh; 
     }
+
     .bg-img {
       position: absolute;
       width: 100%;
@@ -83,25 +85,134 @@ transition: transform 1s cubic-bezier(.47,0,.39,1.47);
       z-index: 1;
     }
 
-    .test-box {
-      position: absolute;
-      left: 20%; top: 20%;
-      width: 20%; height: 10%;
-      background: rgba(255,255,255,0.7);
-      border-radius: 10px;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2vw;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .test-box:hover {
-      background: rgba(255,255,255,0.9);
-    }
+ /* 角色圖片區 */
+.imgarea {
+  position: absolute; 
+  top: 10%;
+  width: 45%;
+  height: 90%;
+  overflow: hidden;
+  z-index: 4;
+ 
+
+}
+
+.char-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+ /* 角色姓名區 */
+.bigname-box {
+  /* 讓大名條始終佔卡片高度 80%，寬度自動依比例 */
+  position: absolute;
+  left: 3.5%;
+  top: 15%;
+  height: 80%;
+  width:4.6%;
+  /*aspect-ratio: 1/8.3;  長條比例根據設計微調 */
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  z-index: 5;
+  font-weight: 450;
+
+  /* 寬度不寫死，靠 aspect-ratio + height 控制，RWD不會炸 */
+}
 
 
+.bigname {
+  width: 100%;
+  bottom: 0%;
+  left: 0%;
+  font-size: calc(80vh / 11 * 0.7); 
+  letter-spacing: 0.12em;
+}
+
+
+.littlename{
+  width: 100%;
+  bottom: 0%;
+  left: 0%;
+  font-size: calc(45vh / 11 * 0.8); 
+  letter-spacing: 0.12em;        
+}
+
+.littlename-box{
+  position: absolute;
+
+  bottom: 3%;
+  left:9%;
+  width: 3%;
+  height: 45%;
+  font-size: 0.6em;
+  font-weight: 40;  
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  z-index: 5;
+  font-weight: 400;
+}
+
+.name-box {
+  position: absolute;
+  background: rgba(61, 162, 173, 0.8);
+  border-radius: 5px;
+  color: #fff;
+
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+
+
+  flex-direction: column;
+  justify-content: flex-end; /* 貼底 */
+
+  font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+  box-shadow: 0 2px 10px #0002;
+  text-align: center;
+
+  padding: 0.3em 0;   
+  overflow: visible;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: hidden;
+
+  display: flex;
+  line-height: 1.15;
+  z-index: 5;
+}
+
+/* 角色文字框區 */
+.row {
+  position: absolute; 
+  top: 12%;
+  right: 3.5%;
+  width: 65%;
+  height: 80%;
+  z-index: 5;
+  border: 2px dashed rgba(255,255,255,0.2);  /* 可關掉 */
+}
+
+
+/* 文字框效果 */
+.info-box {
+  position: absolute; 
+  background: #fff; /* 淺藍半透明  background: rgba(173,216,230,0.75); /* 淺藍半透明 */
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  font-size: 0.6em;
+  z-index: 5;
+  overflow: hidden;
+}
+
+ /*翻轉按鈕 */
     .flip-btn {
       display: block;
       margin: 24px auto 0 auto;
@@ -121,26 +232,64 @@ transition: transform 1s cubic-bezier(.47,0,.39,1.47);
   </style>
 </head>
 <body>
+ 
   <div class="flip-card" id="flipCard">
     <div class="flip-card-inner">
-      <!-- 正面 -->
+      <!-- 正面BG -->
       <div class="flip-card-front">
         <div class="container-16-9">
-          <img class="bg-img" src="https://shierusha.github.io/create-student/imgs/background.png" alt="background" />
-          <div class="test-box">__</div>
+          <img class="bg-img" src="https://media.discordapp.net/attachments/1180816913983602739/1387145571306967091/f4e0f65432425441.jpg?ex=6860e4bc&is=685f933c&hm=9c2ada8fd8aedfb3651012f00672f19ad76160d04562c64d567a4826a54296f0&=&format=webp&width=1289&height=725" alt="background" />
+
+          <!-- 正面 -->
+<div class="imgarea"> 
+  <img class="char-img" src="https://shierusha.github.io/create-student/stidcard/img/001.png" alt="角色圖片">
+</div>
+<div class="bigname-box">
+  <div class="name-box bigname">佐佐莉・安達亞</div>
+</div>
+<div class="littlename-box">
+  <div class="name-box littlename">佐佐莉</div>
+</div>
+
+<div class="row">
+  <div class="info-box" style=" width:45%; height:7%;   padding-left:1em;">
+    陣營
+  </div>
+</div>
+          <!-- 正面 -->
+
         </div>
       </div>
-      <!-- 背面 -->
+      <!-- 背面BG -->
       <div class="flip-card-back">
-        <div class="container-16-9">
-           <img class="bg-img" src="https://shierusha.github.io/create-student/imgs/background.png" alt="background" />
-       
+        <div  class="container-16-9">
+          <img class="bg-img" style="font-size: calc(1vw + 1vh);" src="https://shierusha.github.io/create-student/imgs/background.png" alt="background" />
+      <!-- 背面 -->
+<div class="imgarea"> 
+  <img class="char-img" src="https://shierusha.github.io/create-student/stidcard/img/089.png" alt="角色圖片"></div>
+
+<div class="bigname-box">
+  <div class="name-box bigname">彼崔爾齊希</div>
+</div>
+<div class="littlename-box">
+  <div class="name-box littlename">莫德雷德</div>
+</div>
+
+<div class="name-box littlename" ></div>
+
+
+<div class="row" ></div>
+          <!--  背面 -->
+
         </div>
       </div>
     </div>
   </div>
+  <!--  背面 -->
   <button class="flip-btn" onclick="document.getElementById('flipCard').classList.toggle('flipped')">
     翻面
   </button>
+
+
 </body>
 </html>
