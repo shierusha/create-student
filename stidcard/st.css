@@ -107,14 +107,12 @@ body::before {
   left: 3.5%;
   top: 15%;
   height: 80%;
-  aspect-ratio: 1/10;  /*長條比例根據設計微調 */
+  width:5.2%;
   display: flex;
   align-items: stretch;
   justify-content: center;
   z-index: 5;
   font-weight: 450;
-
-  /* 寬度不寫死，靠 aspect-ratio + height 控制，RWD不會炸 */
 }
 
 
@@ -138,7 +136,7 @@ body::before {
 
   bottom: 3%;
   left:9%;
-  width: 2.95%;
+  width: 3.45%;
   height: 45%;
   display: flex;
   align-items: stretch;
