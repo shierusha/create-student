@@ -2,6 +2,7 @@ body {
       background: url('https://shierusha.github.io/create-student/imgs/citybg.png') center center no-repeat;
       background-size: cover;
       min-height: 100vh;
+      font-family: 'Noto Sans TC', sans-serif;
     }
 body::before {
   content: "";
