@@ -184,8 +184,6 @@ body::before {
   width: 65%;
   height: 80%;
   z-index: 5;
-  border: 2px dashed rgba(255,255,255,0.2);
-  /* 其他... */
 }
 .row-1 {
   position: absolute;
@@ -193,10 +191,9 @@ body::before {
   width: 48%;
   height: 100%;
   z-index: 5;
-  border: 2px dashed rgba(255,255,255,0.2);
   display: flex;
   flex-direction: column;
-  gap: 2.5%; /* 這樣每個 info-box 之間有 1em 間隔 */
+  gap: 2.5%; 
 }
 
 /* 文字框效果 */
