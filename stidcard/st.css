@@ -15,7 +15,7 @@ body::before {
 
 
   /*翻轉區 */
-.flip-card {
+    .flip-card {
      max-width: 75vw;
       aspect-ratio: 16/9;
       margin: 10pt auto;
@@ -26,8 +26,8 @@ body::before {
   position: relative;
   display: flex;
   align-items: stretch;
-}
-.flip-card-inner {
+    }
+    .flip-card-inner {
       position: relative;
       width: 100%;
       aspect-ratio: 16/9;
@@ -199,7 +199,7 @@ body::before {
 /* 文字框效果 */
 .info-row {
   display: flex;
-  gap: 2%;         /* 兩格之間留點空隙，可調整 */
+  gap: 1%;         /* 兩格之間留點空隙，可調整 */
   width: 100%;
 }
 .info-box {
