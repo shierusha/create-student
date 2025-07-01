@@ -7,8 +7,7 @@
 <link rel="stylesheet" href="st.css">
 </head>
 <body>
- 
- 
+  
 <div class="flip-card" id="flipCard">
 <div class="flip-card-inner">
       <!-- 正面BG ------------------------------------->
@@ -54,27 +53,33 @@
 
     <div class="info-box" style="height:15%;">
       <span class="info-label">個性</span>
-      <span class="info-value">貓貓的女額! 香香軟軟 還會給貓貓好多罐罐</span>
+      <span class="info-value" style="margin-top: 0.35em;">貓貓的女額! 香香軟軟 還會給貓貓好多罐罐</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
     </div>
 
     <div class="info-box" style="height:7%;">
       <span class="info-label">喜歡</span>
       <span class="info-value">肯定是貓貓!</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
     </div>
 
     <div class="info-box" style="height:7%;">
       <span class="info-label">討厭</span>
       <span class="info-value">欺負佐佐的壞人!</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
     </div>
     <div class="info-box" style="height:7%;border-radius:5px 5px 0px 0px;">
       <span class="info-label">角色備註</span>
       <span style="color: #495079; font-weight: 700;  letter-spacing: 0.05em; padding-left: 0.3em; ">裏設定</span>
     </div>
     <div class="info-box" style="height:31%;margin-top:-2.8%;border-radius:0px 0px 5px 5px;">
-      <span class="info-value">
-          # 佐佐超厲害 <br>
+      <span class="info-value"style="margin-top: 0.35em;"># 佐佐超厲害
           # 是貓貓的女額
       </span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
     </div>   
   </div>
 
@@ -96,10 +101,11 @@
   font-weight: 700;  letter-spacing: 0.05em; padding-left: 0.3em; ">設定</span>
     </div>
     <div class="info-box" style="height:60%;margin-top:-2.8%;border-radius:0px 0px 5px 5px;">
-      <span class="info-value">
-          # 佐佐超厲害 <br>
+      <span class="info-value"style="margin-top: 0.35em;"># 佐佐超厲害
           # 是貓貓的女額
       </span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
     </div> 
   </div>
 </div>
@@ -170,15 +176,20 @@
         <div class="info-box" style="width:57.7%;border-radius:0px 0px 0px 5px;">
           <span class="info-label">技能<br>描述</span>
           <span class="info-value">囉囉嗦嗦真的很囉囉嗦嗦</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
         </div>
         <div class="info-box" style="width:42%;border-radius:0px 0px 5px 0px;">
           <span class="info-value">被貓貓嫌棄</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
         </div>
       </div>
       <div class="info-row" style="gap:0.3%; height:7%; ">
         <div class="info-box" style=" width:43.4%; border-radius: 5px 5px 0px 0px;">
           <span class="info-label">技能</span>
           <span class="info-value">齊希囉囉嗦嗦囉嗦</span>
+
         </div>
         <div class="info-box" style="width:14%; border-radius: 5px 5px 0px 0px;">
           <span class="info-label">CD</span>
@@ -194,9 +205,13 @@
         <div class="info-box" style="width:57.7%;border-radius:0px 0px 0px 5px;">
           <span class="info-label">技能<br>描述</span>
           <span class="info-value">囉囉嗦嗦真的很囉囉嗦嗦</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
         </div>
         <div class="info-box" style="width:42%;border-radius:0px 0px 5px 0px;">
           <span class="info-value">被貓貓嫌棄</span>
+  <button class="show-more-btn" style="display:none;">...MORE</button>
+
         </div>
       </div>
   </div>
@@ -212,31 +227,23 @@
     翻面
   </button>
 
+
+
 <script>
-function setBignameFontSize() {
-  document.querySelectorAll('.bigname-box').forEach(box => {
-    const nameDiv = box.querySelector('.name-box.bigname');
+function setNameFontSize(selector, maxChars) {
+  document.querySelectorAll(selector).forEach(box => {
+    const nameDiv = box.querySelector('.name-box');
     if (!nameDiv) return;
-    const maxChars = 12;
-    const boxHeight = box.offsetHeight;
-    const fontSize = boxHeight / maxChars * 0.98;
+    const fontSize = box.offsetHeight / maxChars * 0.98;
     nameDiv.style.fontSize = fontSize + "px";
   });
 }
-function setLittlenameFontSize() {
-  document.querySelectorAll('.littlename-box').forEach(box => {
-    const nameDiv = box.querySelector('.name-box.littlename');
-    if (!nameDiv) return;
-    const maxChars = 9;
-    const boxHeight = box.offsetHeight;
-    const fontSize = boxHeight / maxChars * 0.98;
-    nameDiv.style.fontSize = fontSize + "px";
-  });
-}
+
 function fitAllNameBoxes() {
-  setBignameFontSize();
-  setLittlenameFontSize();
+  setNameFontSize('.bigname-box', 12);
+  setNameFontSize('.littlename-box', 9);
 }
+
 function setInfoBoxFontSize() {
   const infoBoxes = document.querySelectorAll('.info-box');
   if (!infoBoxes.length) return;
@@ -250,13 +257,16 @@ function setInfoBoxFontSize() {
     box.style.fontSize = fontSize + "px";
   });
 }
+
 function fitAll() {
   fitAllNameBoxes();
   setInfoBoxFontSize();
 }
+
 window.addEventListener('DOMContentLoaded', fitAll);
 window.addEventListener('resize', fitAll);
 window.addEventListener('load', fitAll);
+
 </script>
 
 </body>
