@@ -321,7 +321,7 @@ function checkLongTextByCharCount(N = 13) {
       btn.style.display = 'block';
       btn.onclick = function() {
         // 標題優先抓 info-label, 沒有就用 data-title (button自訂)，最後才 "內容"
-        const label = box.querySelector('.info-label')?.innerText || this.dataset.title || "效果";
+        const label = this.dataset.title || box.querySelector('.info-label')?.innerText || "效果";
         showInfoModal(label, value.innerHTML);
       }
     } else {
