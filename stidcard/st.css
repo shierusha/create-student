@@ -204,7 +204,9 @@ body::before {
 }
 .info-box {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  position: relative; /* 讓子元素能絕對定位 */
+
   background: rgba(173,216,230,0.8);
   border-radius: 5px;
   box-shadow: 0 2px 12px #0001;
@@ -217,6 +219,8 @@ body::before {
 
 .info-label {
   position: relative;
+  align-self: center;
+
   padding-right: 0.8em;  /* 預留分隔線空間 */
   color: #495079;
   font-weight: 700;
@@ -236,13 +240,35 @@ body::before {
 }
 
 .info-value {
+  display: block;
   margin-left: 0.5em;
   color: #222;
   font-weight: 500;
   letter-spacing: 0.01em;
   flex: 1 1 0;
   overflow-wrap: break-word;
+white-space: pre-line;
 }
+.show-more-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 1.2en;   
+  background:#bcd6e7;/* 跟 info-box 背景一致 */
+  border: none;
+  border-radius: 5pt;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0 1.2em;
+  font-size: 0.75em;
+  transition: background 0.2s;
+/* JS   display: none; 控制顯示 */
+}
+.show-more-btn:hover {
+  color: #b30000;
+}
+
 
 
 
