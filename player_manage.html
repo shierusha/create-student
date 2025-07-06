@@ -14,8 +14,8 @@
     th, td { border-bottom: 1px solid #eef2fa; padding: 0.44em 0.63em; text-align: left; }
     th { background: #f4f7fa; font-size: 1em;}
     .btn { background: #1767a0; color: #fff; border: none; border-radius: 0.5em; padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em;}
-    .btn-edit { background: #f89b29;}
-    .btn-link { background: #43b24a;}
+    .btn-edit { background: #21694b;}
+    .btn-link { background: #346689;}
     /* Dialog */
     .modal-bg {
       display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
@@ -23,12 +23,13 @@
       justify-content:center; align-items: center;
     }
     .modal {
-      background: #fff; border-radius: 1em; max-width: 370px; padding: 2em 1.5em;
-      box-shadow: 0 4px 24px #0004; position: relative;
+      background: #fff; border-radius: 1em; max-width: 85%; min-width: 25%; padding: 2em 1.5em;
+      box-shadow: 0 4px 24px #0004; position: relative; 
     }
     .modal h3 { margin-top: 0; margin-bottom: 1em;}
     .modal .note-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7em;}
-    .modal .note-content { flex: 1; margin-right: 1em; }
+    .modal .note-content { flex: 1; margin-right: 1em;  white-space: pre-line;  /* 讓 \n 換行 */
+  word-break: break-all;  /* 長字也會自動換行 */}
     .modal input[type="checkbox"] { transform: scale(1.2); }
     .modal .close-btn { position: absolute; top: 0.6em; right: 1em; background: none; border:none; font-size:1.6em; color:#999; cursor:pointer;}
     .modal .modal-actions { margin-top: 1.3em; text-align: right;}
