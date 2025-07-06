@@ -184,7 +184,7 @@
     notesCache.forEach(n => {
       html += `
         <div class="note-row">
-          <div class="note-content">${n.content.replace(/</g, "&lt;")}</div>
+          <div class="note-content">${n.content}</div>
           <input type="checkbox" ${n.is_public ? 'checked' : ''} data-nid="${n.note_id}" onchange="toggleNotePublic(this)">
           <label>公開</label>
         </div>
