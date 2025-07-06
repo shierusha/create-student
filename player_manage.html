@@ -38,35 +38,6 @@
       .container {padding: 1em;}
       .modal {padding: 1.2em;}
     }
- <!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>謝爾夏｜角色管理</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    /* ...（你原本的 CSS 可保留）... */
-    .btn { background: #1767a0; color: #fff; border: none; border-radius: 0.5em; padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em;}
-    .btn-link { background: #43b24a;}
-    .btn-audit { background: #f89b29;}
-    .btn-del { background: #f66464;}
-    .expand-row { background: #f7f9fd; }
-    .collapse-content { padding: 1em 2em; }
-    /* 審核彈窗 */
-    .modal-bg {
-      display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
-      background:rgba(0,0,0,0.22); z-index: 1001;
-      justify-content:center; align-items: center;
-    }
-    .modal {
-      background: #fff; border-radius: 1em; max-width: 370px; padding: 2em 1.5em;
-      box-shadow: 0 4px 24px #0004; position: relative;
-    }
-    .modal h3 { margin-top: 0; margin-bottom: 1em;}
-    .modal .close-btn { position: absolute; top: 0.6em; right: 1em; background: none; border:none; font-size:1.6em; color:#999; cursor:pointer;}
-    .modal .audit-option { margin: 0.7em 0;}
-    .modal .audit-option label { margin-left: 0.5em;}
-    .modal .btn {margin:0;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -90,52 +61,80 @@
       </table>
     </div>
     <div style="text-align: right;">
-      <button class="btn" onclick="location.href='admin.html'">返回</button>
+      <button class="btn" onclick="location.href='player.html'">返回</button>
     </div>
   </div>
-
-  <!-- 審核彈窗 -->
-  <div class="modal-bg" id="audit-modal-bg">
-    <div class="modal" id="audit-modal">
-      <button class="close-btn" onclick="closeAuditModal()">×</button>
-      <h3>審核狀態設定</h3>
-      <div class="audit-option">
-        <input type="radio" id="audit-pass" name="audit" value="PASS">
-        <label for="audit-pass">已通過</label>
-      </div>
-      <div class="audit-option">
-        <input type="radio" id="audit-wait" name="audit" value="WAIT">
-        <label for="audit-wait">審核中</label>
-      </div>
-      <div class="audit-option">
-        <input type="radio" id="audit-bad" name="audit" value="BAD">
-        <label for="audit-bad">未通過</label>
-      </div>
+  <!-- Modal Dialog -->
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal" id="modal">
+      <button class="close-btn" onclick="closeModal()">×</button>
+      <h3>公開狀態設定</h3>
+      <div id="notes-list"></div>
       <div class="modal-actions">
-        <button class="btn btn-audit" onclick="saveAuditStatus()">儲存</button>
+        <button class="btn btn-edit" onclick="saveNotes()">儲存</button>
       </div>
     </div>
   </div>
-
 <script>
-  // Supabase init
+  // ====== Supabase 設定 ======
   const client = window.supabase.createClient(
     'https://wfhwhvodgikpducrhgda.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
   );
-  let studentData = [];
-  let reviewMap = {};
-  let expandRow = null; // 學生證展開
-  let deleteMode = false; // 刪除模式
-  let auditStuId = null; // 正在審核 student_id
 
-  // 審核enum對應中文
-  function getReviewStatus(s) {
-    if (s === "WAIT") return "審核中";
-    if (s === "PASS") return "已通過";
-    if (s === "BAD") return "未通過";
-    return "未審核";
+  let user = null, player = null, myStudents = [], reviewMap = {};
+
+  async function init() {
+    setMsg('載入中...');
+    // 檢查登入
+    let { data: userData } = await client.auth.getUser();
+    if (!userData.user) {
+      location.href = 'login.html'; return;
+    }
+    user = userData.user;
+    // 查玩家
+    let { data: players, error: pErr } = await client.from('players').select('player_id,username').eq('email', user.email).single();
+    if (pErr || !players) {
+      location.href = 'login.html'; return;
+    }
+    player = players;
+
+    // 查所有我的學生（角色）
+    let { data: students, error: sErr } = await client.from('students')
+      .select('student_id,name,gender,alignment')
+      .eq('player_id', player.player_id);
+    if (sErr) { setMsg('角色載入失敗'); return; }
+    myStudents = students || [];
+
+    // 查所有審核狀態
+    let { data: reviews } = await client.from('student_reviews')
+      .select('student_id,status');
+    reviewMap = {};
+    (reviews||[]).forEach(r=>{ reviewMap[r.student_id]=r.status; });
+    renderTable();
+    setMsg('');
   }
+
+  function renderTable() {
+    const tbody = document.getElementById('data-tbody');
+    tbody.innerHTML = '';
+    myStudents.forEach(stu => {
+      const reviewStatus = getReviewStatus(reviewMap[stu.student_id]);
+      tbody.innerHTML += `
+        <tr>
+          <td>${stu.name}</td>
+          <td>${getGender(stu.gender)}</td>
+          <td>${getAlignment(stu.alignment)}</td>
+          <td>${reviewStatus}</td>
+          <td>
+            <button class="btn btn-link" onclick="openStudentCard('${stu.student_id}')">學生證</button>
+            <button class="btn btn-edit" onclick="openNotesModal('${stu.student_id}')">公開設定</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
   function getGender(g) {
     if (g === "M") return "男";
     if (g === "F") return "女";
@@ -147,127 +146,82 @@
     if (a === "black") return "黑";
     return a || "-";
   }
-
-  async function loadData() {
-    setMsg('載入中...');
-    // 取得學生資料
-    let { data: students, error: sErr } = await client.from('students')
-      .select('student_id,name,gender,alignment');
-    if (sErr) { setMsg('角色載入失敗'); return; }
-    studentData = students || [];
-    // 取得審核狀態
-    let { data: reviews } = await client.from('student_reviews').select('student_id,status');
-    reviewMap = {};
-    (reviews||[]).forEach(r=>{ reviewMap[r.student_id]=r.status; });
-    renderTable();
-    setMsg('');
+  function getReviewStatus(s) {
+    if (s === "WAIT") return "審核中";
+    if (s === "PASS") return "已通過";
+    if (s === "BAD") return "未通過";
+    return "未審核";
   }
 
-  function renderTable() {
-    const tbody = document.getElementById('data-tbody');
-    tbody.innerHTML = '';
-    studentData.forEach(stu => {
-      const reviewStatus = getReviewStatus(reviewMap[stu.student_id]);
-      tbody.innerHTML += `
-        <tr>
-          <td>${stu.name}</td>
-          <td>${getGender(stu.gender)}</td>
-          <td>${getAlignment(stu.alignment)}</td>
-          <td>${reviewStatus}</td>
-          <td>
-            <button class="btn btn-link" onclick="toggleStudentCard('${stu.student_id}')">學生證</button>
-            <button class="btn btn-audit" onclick="openAuditModal('${stu.student_id}')">審核</button>
-            <button class="btn btn-del" style="display:${deleteMode?'':'none'}" onclick="delStudent('${stu.student_id}')">刪除</button>
-          </td>
-        </tr>
-        ${expandRow === stu.student_id ? `
-        <tr class="expand-row"><td colspan="5">
-          <div class="collapse-content" id="card-${stu.student_id}">載入中...</div>
-        </td></tr>` : ""}
+  // 學生證連結（你可以改成你的學生證網址規則）
+  function openStudentCard(student_id) {
+    // 假設學生證網址為 student_card.html?sid=xxxx
+    window.open(`https://shierusha.github.io/school-battle/students/st-idcard.html?sid=${student_id}`, "_blank");
+  }
+
+  // ========== 公開設定 Modal ==========
+  let currentStuId = null, notesCache = [];
+  async function openNotesModal(student_id) {
+    currentStuId = student_id;
+    document.getElementById('modal-bg').style.display = 'flex';
+    setModalMsg("載入中...");
+    // 查這角色的所有筆記
+    let { data: notes, error } = await client.from('student_notes')
+      .select('note_id,content,is_public')
+      .eq('student_id', student_id);
+    notesCache = notes || [];
+    renderNotesList();
+    setModalMsg("");
+  }
+  function closeModal() {
+    document.getElementById('modal-bg').style.display = 'none';
+    notesCache = [];
+    currentStuId = null;
+  }
+  function renderNotesList() {
+    let html = '';
+    if (!notesCache.length) html = '<div style="color:#888;">沒有筆記</div>';
+    notesCache.forEach(n => {
+      html += `
+        <div class="note-row">
+          <div class="note-content">${n.content}</div>
+          <input type="checkbox" ${n.is_public ? 'checked' : ''} data-nid="${n.note_id}" onchange="toggleNotePublic(this)">
+          <label>公開</label>
+        </div>
       `;
     });
-    // 若展開學生證，立即加載內容
-    if (expandRow) showStudentCard(expandRow);
+    document.getElementById('notes-list').innerHTML = html;
   }
-
-  // 學生證顯示/收合
-  function toggleStudentCard(student_id) {
-    if (expandRow === student_id) {
-      expandRow = null; renderTable(); return;
+  function toggleNotePublic(cb) {
+    const nid = cb.getAttribute('data-nid');
+    const note = notesCache.find(n => n.note_id === nid);
+    if (note) note.is_public = cb.checked;
+  }
+  async function saveNotes() {
+    setModalMsg("儲存中...");
+    let ok = true;
+    for (let n of notesCache) {
+      let { error } = await client.from('student_notes').update({ is_public: n.is_public }).eq('note_id', n.note_id);
+      if (error) ok = false;
     }
-    expandRow = student_id; renderTable();
+    setModalMsg(ok ? "儲存完成！" : "部分筆記儲存失敗");
+    setTimeout(closeModal, 900);
   }
-  async function showStudentCard(student_id) {
-    // 可根據你的需求，這裡也可 window.open 新頁面
-    let { data: stu, error } = await client.from('students').select('*').eq('student_id', student_id).single();
-    if (!stu) document.getElementById(`card-${student_id}`).innerHTML = "查無學生資料";
-    else {
-      let html = "<b>學生證</b><ul>";
-      for (let k in stu) html += `<li><b>${k}</b>：${stu[k]}</li>`;
-      html += "</ul>";
-      document.getElementById(`card-${student_id}`).innerHTML = html;
-    }
+  function setMsg(msg) {
+    document.getElementById('msg').textContent = msg || '';
+  }
+  function setModalMsg(msg) {
+    document.getElementById('notes-list').style.color = msg ? "#1d4076" : "";
+    if (msg) document.getElementById('notes-list').innerHTML = msg;
   }
 
-  // 刪除
-  async function delStudent(student_id) {
-    if (!deleteMode) return;
-    if (!confirm('確定要刪除這個角色？')) return;
-    let { error } = await client.from("students").delete().eq("student_id", student_id);
-    if (error) setMsg("刪除失敗: " + error.message, true);
-    else setMsg("已刪除角色");
-    await loadData();
-  }
+  window.openStudentCard = openStudentCard;
+  window.openNotesModal = openNotesModal;
+  window.closeModal = closeModal;
+  window.toggleNotePublic = toggleNotePublic;
+  window.saveNotes = saveNotes;
 
-  // 切換刪除模式
-  function toggleDeleteMode() {
-    deleteMode = !deleteMode;
-    renderTable();
-  }
-
-  // ================= 審核 ====================
-  function openAuditModal(student_id) {
-    auditStuId = student_id;
-    // 讀取狀態自動選
-    let status = reviewMap[student_id] || "WAIT";
-    document.getElementById('audit-pass').checked = (status === "PASS");
-    document.getElementById('audit-wait').checked = (status === "WAIT");
-    document.getElementById('audit-bad').checked = (status === "BAD");
-    document.getElementById('audit-modal-bg').style.display = 'flex';
-  }
-  function closeAuditModal() {
-    document.getElementById('audit-modal-bg').style.display = 'none';
-    auditStuId = null;
-  }
-  async function saveAuditStatus() {
-    let status = document.querySelector('input[name="audit"]:checked').value;
-    // 有就 update，沒就 insert
-    let { data: review } = await client.from('student_reviews').select('student_id').eq('student_id', auditStuId).single();
-    if (review) {
-      await client.from('student_reviews').update({ status }).eq('student_id', auditStuId);
-    } else {
-      await client.from('student_reviews').insert({ student_id: auditStuId, status });
-    }
-    reviewMap[auditStuId] = status;
-    renderTable();
-    closeAuditModal();
-  }
-
-  function setMsg(msg, err) {
-    document.getElementById('msg').innerHTML = msg ? `<span style="color:${err ? '#d44':'#1767a0'}">${msg}</span>` : '';
-  }
-
-  // =========== 首次載入 ============
-  document.addEventListener('DOMContentLoaded', function () {
-    loadData();
-    // 你也可以補 renderSearchField、toggleDeleteMode 相關 UI
-  });
-  window.toggleStudentCard = toggleStudentCard;
-  window.openAuditModal = openAuditModal;
-  window.closeAuditModal = closeAuditModal;
-  window.saveAuditStatus = saveAuditStatus;
-  window.toggleDeleteMode = toggleDeleteMode;
-  window.delStudent = delStudent;
+  init();
 </script>
 </body>
 </html>
