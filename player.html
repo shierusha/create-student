@@ -25,12 +25,12 @@
     async function checkPlayer() {
       let { data: { user } } = await client.auth.getUser();
       if (!user) {
-        location.href='login.html'; return;
+        location.href='https://shierusha.github.io/login/login.html'; return;
       }
       // 查玩家名字
       let { data, error } = await client.from('players').select('username').eq('email', user.email).single();
       if (error || !data) {
-        location.href='login.html'; return;
+        location.href='https://shierusha.github.io/login/login.html'; return;
       }
       document.getElementById('player-welcome').textContent = `歡迎 ${data.username} 玩家`;
     }
