@@ -20,6 +20,9 @@
       border-radius: var(--radius);
       box-shadow: 0 2px 24px 0 #1d40761a;
       padding: 2.5rem 2rem 2rem 2rem;
+      z-index:2;  position: relative;
+      margin-bottom: 40px;  /* 你可以改成你想要的數字 */
+
     }
     h2 {
       color: var(--main-blue);
