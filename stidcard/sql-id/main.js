@@ -217,7 +217,6 @@ function renderNotesRows() {
     ta.className = 'note-content';
     ta.value = note.content;
     ta.rows = 2;
-    ta.maxLength = 80;
     ta.placeholder = '請輸入角色設定／裏設定';
     ta.style.flex = '1';
     ta.style.resize = 'none';
