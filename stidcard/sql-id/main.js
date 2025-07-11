@@ -40,8 +40,12 @@ let formData = {
   likes: '',       // 喜歡
   hate: '',         // 討厭
   background: '',     // 背景故事 
-notes: [{content:'', is_public:true}]
+notes: [{content:'', is_public:true}],
   // 下一頁繼續加
+  element: '',         // 屬性
+  weakness_id: '',     // 屬性弱點（weakness_id！不是字串）
+  preferred_role: '',  // 定位
+  starting_position: ''// 站位
 };
 let currentStep = 1;
 
