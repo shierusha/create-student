@@ -610,13 +610,18 @@ function handleJobSelect(e) {
 
   if (jobs.includes(job)) {
     jobs = jobs.filter(j => j !== job);
+    formData.skills = [ {}, {} ]; // 取消職業也清空技能
   } else {
-    if (jobs.length < maxCount) jobs.push(job);
+    if (jobs.length < maxCount) {
+      jobs.push(job);
+      formData.skills = [ {}, {} ]; // 選新職業也清空技能
+    }
   }
   formData.occupation_type = jobs;
   updateJobButtons();
-  updateStudentCard(); // <--- 一定要有！
+  updateStudentCard();
 }
+
 
 // 4. 驗證
 function validateStep7() {
