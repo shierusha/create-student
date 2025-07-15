@@ -101,18 +101,10 @@ if (step === 6) {
   document.getElementById('preferred_role').value = formData.preferred_role || '';
   document.getElementById('starting_position').value = formData.starting_position || '';
 }
- if (step === 7) {
-    renderJobGrid();
-    formData.occupation_type = formData.occupation_type || [];
-    updateJobButtons();
-  }
-  // =========== 第8頁 ================
-  if (step === 8) {
-    if (typeof renderSkillsPage === "function") {
-      renderSkillsPage(formData.skills);  // skills.js 內你可以自己寫的同步/預覽
-    }
-  }
-  updateStudentCard();
+if (step === 7) {
+  renderJobGrid();
+  formData.occupation_type = formData.occupation_type || [];
+  updateJobButtons();
 }
 updateStudentCard();
 }
@@ -682,4 +674,5 @@ document.getElementById('nickname').addEventListener('input', function() {
   });
 
 });
+
 
