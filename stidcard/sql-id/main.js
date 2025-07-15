@@ -49,9 +49,11 @@ let formData = {
   element: '',         // 屬性
   weakness_id: '',     // 屬性弱點
   preferred_role: '',  // 定位
-  starting_position: ''// 站位
-  // 技能相關以後再加
+  starting_position: '',// 起始站位
+  occupation_type: [],   // 職業（第七頁選的那個）
+  skills: [ {}, {} ]     // 技能一、技能二，預設空物件，給 skills.js 用
 };
+
 let currentStep = 1;
 
 // ==========================
