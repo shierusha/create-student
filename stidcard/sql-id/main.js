@@ -106,8 +106,14 @@ if (step === 7) {
   formData.occupation_type = formData.occupation_type || [];
   updateJobButtons();
 }
-updateStudentCard();
-}
+ if (step === 8) {
+    if (typeof renderSkillsPage === "function") {
+      renderSkillsPage(formData.skills);  // skills.js 內你可以自己寫的同步/預覽
+    }
+  }
+  updateStudentCard();
+} 
+
 // ==========================
 // (6) 第6頁 下拉選單渲染
 // ==========================
