@@ -137,7 +137,7 @@ function renderStep6Dropdowns() {
   if (userRole === 'admin') {
     let html = '';
     baseElementList.forEach(item => {
-      html += `<label style="margin-right:10px;">
+      html += `<label style="margin-right:10px;width: 15px">
         <input type="checkbox" class="element-multi-checkbox" value="${item.value}">${item.text}
       </label>`;
     });
