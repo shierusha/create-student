@@ -11,47 +11,31 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
 );
 
-// ==========================
-// (3) 當你有登入時可以用這段來同步 userRole
-// ==========================
-/*
 let currentPlayerId = null;
-async function checkPlayer() {
-  let { data: { user } } = await client.auth.getUser();
-  if (!user) {
-    location.href='https://shierusha.github.io/login/login.html';
-    return;
-  }
-  currentPlayerId = user.id;
-  // 判斷權限（用於 admin 下拉選單顯示）
-  userRole = user.role === 'admin' ? 'admin' : 'player';
-}
-window.addEventListener('DOMContentLoaded', checkPlayer);
-*/
-let currentPlayerId = null; // 這行可保留
+
 // ==========================
 // (4) 所有表單資料
 // ==========================
 let formData = {
-  name: '',       // 角色本名
-  nickname: '',   // 角色稱呼
-  alignment: '',  // 陣營
-  gender: '',     // 性別
-  age: '',        // 年齡
-  height: '',     // 身高
-  weight: '',     // 體重
-  race: '',       // 種族
-  personality: '', // 個性
-  likes: '',       // 喜歡
-  hate: '',        // 討厭
-  background: '',  // 背景故事 
+  name: '',
+  nickname: '',
+  alignment: '',
+  gender: '',
+  age: '',
+  height: '',
+  weight: '',
+  race: '',
+  personality: '',
+  likes: '',
+  hate: '',
+  background: '',
   notes: [{content:'', is_public:true}],
-  element: '',         // 屬性
-  weakness_id: '',     // 屬性弱點
-  preferred_role: '',  // 定位
-  starting_position: '',// 起始站位
-  occupation_type: [],   // 職業（第七頁選的那個）
-  skills: [ {}, {} ]     // 技能一、技能二，預設空物件，給 skills.js 用
+  element: [],         // 直接陣列
+  weakness_id: '',
+  preferred_role: '',
+  starting_position: '',
+  occupation_type: [],
+  skills: [ {}, {} ]
 };
 
 let currentStep = 1;
@@ -60,7 +44,6 @@ let currentStep = 1;
 // (5) 步驟切換 function
 // ==========================
 function showStep(step) {
-  // 步驟條高亮
   document.querySelectorAll('.step').forEach((el, idx) => {
     if (idx === step - 1) {
       el.classList.add('active');
@@ -68,13 +51,10 @@ function showStep(step) {
       el.classList.remove('active');
     }
   });
-
-  // 分頁切換
   document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active')); 
   document.getElementById(`form-step-${step}`).classList.add('active');
   currentStep = step;
 
-  // ====== 自動回填各頁資料 ======
   if (step === 1) {
     document.getElementById('name').value = formData.name || '';
     document.getElementById('nickname').value = formData.nickname || '';
@@ -95,33 +75,33 @@ function showStep(step) {
   if (step === 5) {
     initNotesForm();
   }
-if (step === 6) {
-  renderStep6Dropdowns();
-  // 自動同步第6頁的下拉回填
-  document.getElementById('element').value = formData.element || '';
-  document.getElementById('weakness_id').value = formData.weakness_id || '';
-  document.getElementById('preferred_role').value = formData.preferred_role || '';
-  document.getElementById('starting_position').value = formData.starting_position || '';
-}
-if (step === 7) {
-  renderJobGrid();
-  formData.occupation_type = formData.occupation_type || [];
-  updateJobButtons();
-}
- if (step === 8) {
+  if (step === 6) {
+    renderStep6Dropdowns();
+    updateElementUI(); // 單/多選切換
+    syncElementValueToUI();
+    document.getElementById('weakness_id').value = formData.weakness_id || '';
+    document.getElementById('preferred_role').value = formData.preferred_role || '';
+    document.getElementById('starting_position').value = formData.starting_position || '';
+  }
+  if (step === 7) {
+    renderJobGrid();
+    formData.occupation_type = formData.occupation_type || [];
+    updateJobButtons();
+  }
+  if (step === 8) {
     if (typeof renderSkillsPage === "function") {
-      renderSkillsPage(formData.skills);  // skills.js 內你可以自己寫的同步/預覽
+      renderSkillsPage(formData.skills);
     }
   }
   updateStudentCard();
-} 
+}
 
 // ==========================
-// (6) 第6頁 下拉選單渲染
+// (6) 第6頁 下拉選單渲染+多選渲染
 // ==========================
 function renderStep6Dropdowns() {
-  // === 屬性 ===
-  let elementList = [
+  // === 屬性清單（不含「無」）
+  let baseElementList = [
     { value: 'fire', text: '火' },
     { value: 'water', text: '水' },
     { value: 'ice', text: '冰' },
@@ -132,39 +112,56 @@ function renderStep6Dropdowns() {
     { value: 'light', text: '光' }
   ];
 
-  // 只有 admin 加入「無」(空值)
+  // === 複製一份給單選用、多選用、弱點用
+  let elementSelectList = [...baseElementList];
+  let weakSelectList = [...baseElementList];
+
+  // === 單選屬性 select 加入「無」or「請選擇」
   if (userRole === 'admin') {
-    elementList.unshift({ value: '', text: '無（沒有屬性）' });
+    elementSelectList.unshift({ value: '', text: '無（沒有屬性）' });
   } else {
-    elementList.unshift({ value: '', text: '請選擇屬性' });
+    elementSelectList.unshift({ value: '', text: '請選擇屬性' });
   }
-  
+
+  // === 單選下拉渲染
   const elSelect = document.getElementById('element');
   elSelect.innerHTML = '';
-  elementList.forEach(item => {
+  elementSelectList.forEach(item => {
     let opt = document.createElement('option');
     opt.value = item.value;
     opt.text = item.text;
     elSelect.appendChild(opt);
   });
-  elSelect.value = formData.element || '';
 
-  // === 屬性弱點（同上，且第一個是無）===
+  // === 多選渲染（僅 admin）
+  if (userRole === 'admin') {
+    let html = '';
+    baseElementList.forEach(item => {
+      html += `<label style="margin-right:10px;">
+        <input type="checkbox" class="element-multi-checkbox" value="${item.value}">${item.text}
+      </label>`;
+    });
+    document.getElementById('element-multi-select').innerHTML = html;
+    document.getElementById('multi-element-toggle').style.display = '';
+  } else {
+    document.getElementById('multi-element-toggle').style.display = 'none';
+    document.getElementById('element-multi-select').style.display = 'none';
+    document.getElementById('element-single-select').style.display = '';
+  }
+
+  // === 屬性弱點選單（獨立一份，不會重複「無」）
   const weakSelect = document.getElementById('weakness_id');
   weakSelect.innerHTML = '<option value="">無（沒有屬性弱點）</option>';
-  window.weaknessDict = {}; // 先清空
-
-  elementList.forEach(item => {
+  window.weaknessDict = {};
+  weakSelectList.forEach(item => {
     let opt = document.createElement('option');
     opt.value = item.value;
     opt.text = item.text;
     weakSelect.appendChild(opt);
-    // 同時補充字典
     window.weaknessDict[item.value] = { element: item.value };
   });
-  weakSelect.value = formData.weakness_id || '';
 
-  // === 定位 ===
+  // === 定位選單 ===
   const roleList = [
     { value: 'melee', text: '近戰攻擊手' },
     { value: 'ranger', text: '遠攻攻擊手' },
@@ -178,9 +175,8 @@ function renderStep6Dropdowns() {
     opt.text = item.text;
     roleSelect.appendChild(opt);
   });
-  roleSelect.value = formData.preferred_role || '';
 
-  // === 站位 ===
+  // === 站位選單 ===
   const positionList = [
     { value: 'close', text: '近戰區' },
     { value: 'far', text: '遠攻區' }
@@ -197,13 +193,61 @@ function renderStep6Dropdowns() {
     opt.text = item.text;
     posSelect.appendChild(opt);
   });
-  posSelect.value = formData.starting_position || '';
-} // 這一行一定要留！
+}
 
-// ==========================
-// (7) 第6頁 select 監聽
-// ==========================
-['element', 'weakness_id', 'preferred_role', 'starting_position'].forEach(id => {
+
+// ========== 多選切換 UI邏輯 ==========
+function updateElementUI() {
+  const enableMulti = document.getElementById('enable-multi-element');
+  if (userRole !== 'admin') {
+    document.getElementById('element-single-select').style.display = '';
+    document.getElementById('element-multi-select').style.display = 'none';
+    return;
+  }
+  if (enableMulti.checked) {
+    document.getElementById('element-single-select').style.display = 'none';
+    document.getElementById('element-multi-select').style.display = '';
+  } else {
+    document.getElementById('element-single-select').style.display = '';
+    document.getElementById('element-multi-select').style.display = 'none';
+  }
+}
+
+// ========== 監聽切換單/多選UI ==========
+if (document.getElementById('enable-multi-element')) {
+  document.getElementById('enable-multi-element').addEventListener('change', function() {
+    updateElementUI();
+    syncElementValueToUI();
+  });
+}
+
+// ========== 單/多選值與 formData 同步 ==========
+function syncElementValueToUI() {
+  // 多選狀態
+  const enableMulti = document.getElementById('enable-multi-element');
+  if (userRole === 'admin' && enableMulti.checked) {
+    // 勾選還原
+    document.querySelectorAll('.element-multi-checkbox').forEach(cb => {
+      cb.checked = (formData.element && formData.element.includes(cb.value));
+      cb.addEventListener('change', function() {
+        let arr = Array.from(document.querySelectorAll('.element-multi-checkbox:checked')).map(c => c.value);
+        formData.element = arr;
+        updateStudentCard();
+      });
+    });
+  } else {
+    // 下拉單選
+    const elSelect = document.getElementById('element');
+    elSelect.value = (formData.element && formData.element.length > 0) ? formData.element[0] : '';
+    elSelect.onchange = function() {
+      formData.element = this.value ? [this.value] : [];
+      updateStudentCard();
+    };
+  }
+}
+
+// ========== 其他第六頁欄位監聽 ==========
+['weakness_id', 'preferred_role', 'starting_position'].forEach(id => {
   document.getElementById(id).addEventListener('change', function() {
     formData[id] = this.value;
     updateStudentCard();
@@ -215,7 +259,7 @@ function renderStep6Dropdowns() {
 // ==========================
 document.getElementById('btn-step-6').onclick = function () {
   // admin 可以空值, 其他人不行
-  if (userRole !== 'admin' && !formData.element) {
+  if (userRole !== 'admin' && (!formData.element || formData.element.length === 0)) {
     alert('請選擇屬性');
     return;
   }
@@ -232,6 +276,7 @@ document.getElementById('btn-step-6').onclick = function () {
 document.getElementById('back-6').onclick = function () {
   showStep(5);
 };
+
 
 // ==========================
 // (9) 你的步驟切換與 notes 相關全保留
@@ -436,23 +481,26 @@ function updateStudentCard() {
   document.querySelectorAll('[data-key="students.hate"]').forEach(el => el.textContent = formData.hate || '');
   document.querySelectorAll('[data-key="students.background"]').forEach(el => el.textContent = formData.background || '');
   // ========== 第六頁資料同步卡片 ==========
-// 屬性
+// 屬性（支援多選陣列）
 document.querySelectorAll('[data-key="students.element"]').forEach(el => {
-  let val = '';
-  switch(formData.element) {
-    case 'fire': val = '火'; break;
-    case 'water': val = '水'; break;
-    case 'ice': val = '冰'; break;
-    case 'wind': val = '風'; break;
-    case 'earth': val = '土'; break;
-    case 'thunder': val = '雷'; break;
-    case 'dark': val = '暗'; break;
-    case 'light': val = '光'; break;
-    case '': val = '無'; break; 
-    default: val = '';
+  const translate = {
+    fire: '火', water: '水', ice: '冰', wind: '風',
+    earth: '土', thunder: '雷', dark: '暗', light: '光'
+  };
+  let output = '';
+
+  if (Array.isArray(formData.element)) {
+    output = formData.element.map(e => translate[e] || '').filter(Boolean).join(' / ');
+    if (!output) output = '無';
+  } else if (typeof formData.element === 'string') {
+    output = translate[formData.element] || '無';
+  } else {
+    output = '無';
   }
-  el.textContent = val;
+
+  el.textContent = output;
 });
+
 
 // 屬性弱點（需同步顯示弱點屬性）
 document.querySelectorAll('[data-key="element_weakness.element"]').forEach(el => {
@@ -610,18 +658,13 @@ function handleJobSelect(e) {
 
   if (jobs.includes(job)) {
     jobs = jobs.filter(j => j !== job);
-    formData.skills = [ {}, {} ]; // 取消職業也清空技能
   } else {
-    if (jobs.length < maxCount) {
-      jobs.push(job);
-      formData.skills = [ {}, {} ]; // 選新職業也清空技能
-    }
+    if (jobs.length < maxCount) jobs.push(job);
   }
   formData.occupation_type = jobs;
   updateJobButtons();
-  updateStudentCard();
+  updateStudentCard(); // <--- 一定要有！
 }
-
 
 // 4. 驗證
 function validateStep7() {
@@ -689,3 +732,5 @@ document.getElementById('nickname').addEventListener('input', function() {
 });
 
 
+//document.querySelectorAll('.form-page').forEach(f=>f.classList.remove('active'));
+//ocument.getElementById('form-step-6').classList.add('active');
