@@ -41,6 +41,71 @@ let formData = {
 let currentStep = 1;
 
 // ==========================
+// (3) 技能效果資料初始化區塊
+// ==========================
+window.skillEffectsList = null; // 預設為空
+
+async function initSkillEffectsList(callback) {
+  if (window.skillEffectsList && window.skillEffectsList.length) {
+    if (callback) callback(window.skillEffectsList);
+    return;
+  }
+  // 查詢 skill_effects
+  const { data, error } = await client.from('skill_effects').select('*');
+  if (error) {
+    alert('載入技能效果資料失敗：' + error.message);
+    window.skillEffectsList = [];
+    if (callback) callback([]);
+    return;
+  }
+  window.skillEffectsList = data || [];
+  if (callback) callback(window.skillEffectsList);
+}
+
+// ==========================
+// (3.1) 移動技能資料初始化區塊
+// ==========================
+window.movementSkillsList = null;
+
+async function initMovementSkillsList(callback) {
+  if (window.movementSkillsList && window.movementSkillsList.length) {
+    if (callback) callback(window.movementSkillsList);
+    return;
+  }
+  const { data, error } = await client.from('movement_skills').select('*');
+  if (error) {
+    alert('載入移動技能資料失敗：' + error.message);
+    window.movementSkillsList = [];
+    if (callback) callback([]);
+    return;
+  }
+  window.movementSkillsList = data || [];
+  if (callback) callback(window.movementSkillsList);
+}
+
+// ==========================
+// (3.2) 負作用資料初始化區塊
+// ==========================
+window.skillDebuffList = null;
+
+async function initSkillDebuffList(callback) {
+  if (window.skillDebuffList && window.skillDebuffList.length) {
+    if (callback) callback(window.skillDebuffList);
+    return;
+  }
+  const { data, error } = await client.from('skill_debuff').select('*');
+  if (error) {
+    alert('載入負作用資料失敗：' + error.message);
+    window.skillDebuffList = [];
+    if (callback) callback([]);
+    return;
+  }
+  window.skillDebuffList = data || [];
+  if (callback) callback(window.skillDebuffList);
+}
+
+
+// ==========================
 // (5) 步驟切換 function
 // ==========================
 function showStep(step) {
