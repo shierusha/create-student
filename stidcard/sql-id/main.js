@@ -153,9 +153,9 @@ function showStep(step) {
     formData.occupation_type = formData.occupation_type || [];
     updateJobButtons();
   }
-  if (step === 8) {
-    if (typeof renderSkillsPage === "function") {
-      renderSkillsPage(formData.skills);
+ if (step === 8) {
+    if (typeof initAllSkillListsThenRender === "function") {
+      initAllSkillListsThenRender();
     }
   }
   updateStudentCard();
