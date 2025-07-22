@@ -247,7 +247,7 @@ body.dark-bg::before {
   position: absolute;
   right: 0;
   bottom: 0;
-  height: 1.2en;  
+  height: 1.2em;  
   max-width: 28%;   /* 可依需求設最大寬度 */ 
   background:#FFF;
   border: none;
