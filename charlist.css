@@ -8,7 +8,6 @@
     }
     body {
       font-family: 'Noto Sans TC', sans-serif;
-      background: var(--light);
       min-height: 100vh;
       color: var(--main-blue);
       margin: 0;
