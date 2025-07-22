@@ -3,16 +3,469 @@
 <head>
   <meta charset="UTF-8">
   <title>學生證申請/修改表</title>
+  
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="st.css">
+<link rel="stylesheet" href="sql-id/ap-stu-card.css">
+<link rel="stylesheet" href="https://shierusha.github.io/create-student/charlist.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
+    <div class="flip-card row-card" id="flipCard">
+    <div class="flip-card-front">
+      <div class="container-16-9">
+        <img class="bg-img" src="https://shierusha.github.io/school-battle/teachers/img/8.webp" alt="background" />
+        <!-- 座號 -->
+        <div class="student-id" data-key="students.student_code"></div>
+        <!-- 正面角色圖片 -->
+        <div class="imgarea">
+          <img class="char-img" data-key="student_images.image_url" src="(student_images的image_url)" alt="角色圖片">
+        </div>
+        <div class="bigname-box">
+          <div class="name-box bigname" data-key="students.name"></div>
+        </div>
+        <div class="littlename-box">
+          <div class="name-box littlename" data-key="students.nickname"></div>
+        </div>
+        <div class="row">
+          <div class="row-1" style="left: 0;">
+            <div class="info-box" style="height:7%;">
+              <span class="info-label">陣營</span>
+              <span class="info-value" data-key="students.alignment"></span>
+            </div>
+            <div class="info-box" style="height:7%;">
+              <span class="info-label">種族</span>
+              <span class="info-value" data-key="students.race"></span>
+            </div>
+            <div class="info-row" style="gap:2%;height:7%;">
+              <div class="info-box" style=" width:49%;">
+                <span class="info-label">年齡</span>
+                <span class="info-value" data-key="students.age"></span>
+              </div>
+              <div class="info-box" style=" width:49%;">
+                <span class="info-label">性別</span>
+                <span class="info-value" data-key="students.gender"></span>
+              </div>
+            </div>
+            <div class="info-box" style="height:15%;">
+              <span class="info-label">個性</span>
+              <span class="info-value" data-key="students.personality" style="margin-top: 0.35em;"></span>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
+            </div>
+            <div class="info-box" style="height:7%;">
+              <span class="info-label">喜歡</span>
+              <span class="info-value" data-key="students.likes"></span>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
+            </div>
+            <div class="info-box" style="height:7%;">
+              <span class="info-label">討厭</span>
+              <span class="info-value" data-key="students.hate"></span>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
+            </div>
+            <div class="info-box" style="height:7%;border-radius:5px 5px 0px 0px;">
+              <span class="info-label">角色設定</span>
+              <span style="color: #495079; font-weight: 700; letter-spacing: 0.05em; padding-left: 0.3em; align-self: center;">裏設定</span>
+            </div>
+            <div class="info-box" style="height:25%;margin-top:-2.8%;border-radius:0px 0px 5px 5px;">
+              <span class="info-value" data-key="student_notes.content" style="margin-top: 0.35em;"></span>
+              <button class="show-more-btn" data-title="角色設定/裏設定">...MORE</button>
+            </div>
+          </div>
+          <div class="row-1" style="right:0;">
+            <div class="info-row" style="gap:2%; height:7%;">
+              <div class="info-box" style=" width:49%;">
+                <span class="info-label">身高</span>
+                <span class="info-value" data-key="students.height"></span>
+              </div>
+              <div class="info-box" style=" width:49%;">
+                <span class="info-label">體重</span>
+                <span class="info-value" data-key="students.weight"></span>
+              </div>
+            </div>
+            <div class="info-box" style="height:7%;border-radius:5px 5px 0px 0px;">
+              <span class="info-label">背景故事</span>
+              <span style="color: #495079; font-weight: 700; letter-spacing: 0.05em; padding-left: 0.3em; align-self: center;">備註</span>
+            </div>
+            <div class="info-box" style="height:60%;margin-top:-2.8%;border-radius:0px 0px 5px 0px;">
+              <span class="info-value" data-key="students.background" style="margin-top: 0.35em;"></span>
+              <button class="show-more-btn" data-title="背景故事/備註">...MORE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- 正面 END -->
+
+    <div class="flip-card-back">
+      <div class="container-16-9">
+        <img class="bg-img" src="https://shierusha.github.io/school-battle/teachers/img/8.webp" alt="background" />
+<div class="skill-diamond"
+     data-key="student_skills.extra_skills"
+     title="顯示額外技能"
+     tabindex="0"
+     style="cursor:pointer"
+     value="如果有第三個以上的技能 點這裡顯示彈出式視窗 顯示技能名稱(換行)技能效果敘述"></div>
+        <div class="student-id" data-key="students.student_code"></div>
+        <div class="imgarea">
+          <img class="char-img" data- key="student_images.image_url" src="(student_images的image_url)" alt="角色圖片">
+        </div>
+        <div class="bigname-box">
+          <div class="name-box bigname" data-key="students.name"></div>
+        </div>
+        <div class="littlename-box">
+          <div class="name-box littlename" data-key="students.nickname"></div>
+        </div>
+        <div class="row">
+          <div class="row-1" style="width: 100%;">
+            <div class="info-box" style="height:7%;">
+              <span class="info-label">職業</span>
+              <span class="info-value" data-key="students.occupation_type"></span>
+            </div>
+            <div class="info-row" style="height:7%;">
+              <div class="info-box" style=" width:49.5%;">
+                <span class="info-label">屬性</span>
+                <span class="info-value" data-key="students.element"></span>
+              </div>
+              <div class="info-box" style=" width:49.5%;">
+                <span class="info-label">屬性弱點</span>
+                <span class="info-value" data-key="element_weakness.element"></span>
+              </div>
+            </div>
+            <div class="info-row" style="height:7%;">
+              <div class="info-box" style=" width:49.5%;">
+                <span class="info-label">定位</span>
+                <span class="info-value" data-key="students.preferred_role"></span>
+              </div>
+              <div class="info-box" style=" width:49.5%;">
+                <span class="info-label">起始站位</span>
+                <span class="info-value" data-key="students.starting_position"></span>
+              </div>
+            </div>
+            <!-- 技能一 -->
+            <div class="info-row" style="gap:0.3%; height:7%;">
+              <div class="info-box" style=" width:43.4%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">技能</span>
+                <span class="info-value" data-key="student_skills.1.skill_name"></span>
+              </div>
+              <div class="info-box" style="width:14%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">CD</span>
+                <span class="info-value" data-key="student_skills.1.final_cd"></span>
+              </div>
+              <div class="info-box" style="width:42%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">效果</span>
+                <span class="info-value" data-key="student_skills.1.max_targets"></span>
+                <span class="info-value" data-key="student_skills.1.range"></span>
+              </div>
+            </div>
+            <div class="info-row" style="gap:0.3%;height:27%; margin-top:-1.38%;">
+              <div class="info-box" style="width:57.7%;border-radius:0px 0px 0px 5px;">
+                <span class="info-label">技能<br>描述</span>
+                <span class="info-value" data-key="student_skills.1.description"> </span>
+                <button class="show-more-btn" data-title="技能描述">...MORE</button>
+              </div>
+              <div class="info-box" style="width:42%;border-radius:0px 0px 5px 0px;">
+                <span class="info-value" data-key="student_skills.1.effectsAndDebuffs"></span>
+                <button class="show-more-btn" style="display:none;">...MORE</button>
+              </div>
+            </div>
+            <!-- 技能二 -->
+            <div class="info-row" style="gap:0.3%; height:7%;">
+              <div class="info-box" style=" width:43.4%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">技能</span>
+                <span class="info-value" data-key="student_skills.2.skill_name"></span>
+              </div>
+              <div class="info-box" style="width:14%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">CD</span>
+                <span class="info-value" data-key="student_skills.2.final_cd"></span>
+              </div>
+              <div class="info-box" style="width:42%; border-radius: 5px 5px 0px 0px;">
+                <span class="info-label">效果</span>
+                <span class="info-value" data-key="student_skills.2.max_targets"></span>
+                <span class="info-value" data-key="student_skills.2.range"></span>
+              </div>
+            </div>
+            <div class="info-row" style="gap:0.3%;height:27%; margin-top:-1.38%;">
+              <div class="info-box" style="width:57.7%;border-radius:0px 0px 0px 5px;">
+                <span class="info-label">技能<br>描述</span>
+                <span class="info-value" data-key="student_skills.2.description"></span>
+                <button class="show-more-btn" data-title="技能描述">...MORE</button>
+              </div>
+              <div class="info-box" style="width:42%;border-radius:0px 0px 5px 0px;">
+                <div class="info-value-group">
+                  <span class="info-value" data-key="student_skills.2.effectsAndDebuffs"></span>
+                </div>
+                <button class="show-more-btn" style="display:none;">...MORE</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- 背面 END -->
+  </div>
+
+  <div id="info-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header" id="info-modal-title">標題</div>
+      <div class="modal-body" id="info-modal-body"></div>
+    </div>
+  </div>
+
+<!--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+
+
+  <div class="center" style="">
+    <h2>謝爾夏 創角系統</h2>
+    <div class="steps">
+    <!-- 第1頁 角色名稱/暱稱 -->
+      <div class="step" id="step-1">1</div>
+    <!-- 第2頁 基本資訊 -->
+      <div class="step" id="step-2">2</div>
+    <!-- 第3頁 喜歡討厭 -->
+      <div class="step" id="step-3">3</div>
+    <!-- 第4頁 角色個性/故事背景 -->
+      <div class="step" id="step-4">4</div>
+    <!-- 第5頁 角色設定/裏設定 -->
+      <div class="step" id="step-5">5</div>
+    <!-- 第6頁 角色戰鬥定位/起始戰鬥位置 -->
+      <div class="step" id="step-6">6</div>
+    <!-- 第7頁 角色職業 -->
+      <div class="step" id="step-7">7</div>
+    <!-- 第8頁 角色技能-->
+      <div class="step" id="step-8">8</div>
+    </div>
+
+<!-- 第1頁 角色名稱/暱稱 -->
+<form id="form-step-1" class="form-page active">
+  <label for="name">角色本名 <span style="color:#e33">*</span></label>
+  <input type="text" id="name" maxlength="10"  required placeholder="請輸入角色本名">
+  
+  <label for="nickname">角色稱呼</label>
+  <input type="text" id="nickname" maxlength="7" placeholder="對戲中顯示的角色暱稱，若無則顯示本名">
+
+  <div class="nav-btns">
+    <button type="button" id="btn-step-1">下一步</button>
+  </div>
+</form>
+
+<!-- 第2頁 基本資料 -->
+<form id="form-step-2" class="form-page">
+  <div id="warn-2" class="warn" style="display:none;"></div>
+  
+  <label for="alignment">陣營</label>
+  <select id="alignment" required>
+    <option value="white">白</option>
+    <option value="black">黑</option>
+  </select>
+
+  <label for="gender">性別</label>
+  <select id="gender" required>
+    <option value="M">男</option>
+    <option value="F">女</option>
+    <option value="O">其他</option>
+  </select>
+
+  <label for="age">年齡</label>
+  <input type="number" id="age" min="0" max="20" required placeholder="請輸入年齡">
+
+  <label for="height">身高 (cm)</label>
+<input type="number" id="height" min="130" max="200" required placeholder="請輸入身高">
+
+
+  <label for="weight">體重 (kg)</label>
+  <input type="number" id="weight" min="1" max="200" step="0.1" required placeholder="請輸入體重">
+
+  <label for="race">種族</label>
+  <input type="text" id="race" maxlength="9" required placeholder="請輸入種族">
+
+  <div class="nav-btns">
+    <button type="button" id="back-2">上一步</button>
+    <button type="button" id="btn-step-2">下一步</button>
+  </div>
+</form>
+
+<!-- 第3頁 喜歡討厭個性 -->
+<form id="form-step-3" class="form-page">
+  <label for="personality">個性</label>
+  <textarea id="personality" maxlength="80" rows="2" placeholder="請輸入個性"></textarea>
+
+  <label for="likes">喜歡</label>
+  <textarea id="likes" maxlength="50" rows="2" placeholder="請輸入喜歡的事物"></textarea>
+
+  <label for="hate">討厭</label>
+  <textarea id="hate" maxlength="50" rows="2" placeholder="請輸入討厭的事物"></textarea>
+
+  <div class="nav-btns">
+    <button type="button" id="back-3">上一步</button>
+    <button type="button" id="btn-step-3">下一步</button>
+  </div>
+</form>
+
+<!-- 第4頁 故事背景 -->
+<form id="form-step-4" class="form-page">
+  <label for="background">故事背景</label>
+  <textarea id="background" maxlength="300" rows="3" placeholder="請輸入角色的故事背景"></textarea>
+
+  <div class="nav-btns">
+    <button type="button" id="back-4">上一步</button>
+    <button type="button" id="btn-step-4">下一步</button>
+  </div>
+</form>
+
+<!-- 第5頁 角色設定/裏設定 -->
+<form id="form-step-5" class="form-page">
+  <label style="margin-bottom:0.6em;">角色設定/裏設定 <span style="color:#888;">（可多條、顯示為設定、不顯示為裏設定）</span></label>
+  <div id="note-list">
+    <!-- 這裡 JS 動態產生多個 note-row -->
+    <!-- 範例一條（JS會自動複製產生）：
+    <div class="note-row">
+      <label>
+        <input type="checkbox" class="note-public" checked>
+        顯示
+      </label>
+      <textarea class="note-content" maxlength="80" rows="2" placeholder="請輸入角色設定／裏設定"></textarea>
+      <button type="button" class="delete-note-btn" style="margin-left: 0.4em;">刪除</button>
+    </div>
+    -->
+  </div>
+  <button type="button" id="add-note-btn" style="margin-top:0.8em;">＋新增 角色設定/裏設定</button>
+  <div class="nav-btns">
+    <button type="button" id="back-5">上一步</button>
+    <button type="button" id="btn-step-5">下一步</button>
+  </div>
+</form>
+
+<!-- 第6頁 角色戰鬥定位/起始戰鬥位置 -->
+<form id="form-step-6" class="form-page">
+  <label for="element">屬性 <span style="color:#e33">*</span></label>
+
+  <!-- Admin 專用的多屬性切換器 -->
+  <div id="multi-element-toggle" style="display:none; margin-bottom: 0.5em;">
+    <label>
+      <input type="checkbox" id="enable-multi-element"  />
+      掛單專用
+    </label>
+  </div>  
+  
+  <!-- 單選：一般使用者用 -->
+  <div id="element-single-select">
+    <select id="element">
+      <option value="">請選擇屬性</option>
+      <option value="fire">火</option>
+      <option value="water">水</option>
+      <option value="ice">冰</option>
+      <option value="wind">風</option>
+      <option value="earth">土</option>
+      <option value="thunder">雷</option>
+      <option value="dark">暗</option>
+      <option value="light">光</option>
+    </select>
+  </div>
+
+  <!-- 多選：admin 勾選後顯示 -->
+  <div id="element-multi-select">
+    <div class="element-options" >
+      <label><input type="checkbox" value="fire"> 火</label>
+      <label><input type="checkbox" value="water"> 水</label>
+      <label><input type="checkbox" value="ice"> 冰</label>
+      <label><input type="checkbox" value="wind"> 風</label>
+      <label><input type="checkbox" value="earth"> 土</label>
+      <label><input type="checkbox" value="thunder"> 雷</label>
+      <label><input type="checkbox" value="dark"> 暗</label>
+      <label><input type="checkbox" value="light"> 光</label>
+    </div>
+  </div>
+  </select>
+
+  <label for="weakness_id">屬性弱點 <span style="color:#888;">（不分敵我，受到該屬性的 普通/技能攻擊、恢復、增益、妨礙時 CC-5一次）</span></label>
+  <select id="weakness_id">
+    <option value="">無</option>
+    <!-- JS 生成：每個 option 的 value=weakness_id，text=中文屬性 -->
+  </select>
+
+  <label for="preferred_role">定位 <span style="color:#e33">*</span>
+  </label>
+    <span style="color:#888;">
+      （近戰攻擊手|近攻 CC70、遠攻 CC25）<br>
+      （遠攻攻擊手|近攻 CC25、遠攻 CC70）<br>
+      （普通攻擊手|近攻 CC55、遠攻 CC55）</span>
+  <select id="preferred_role" required>
+    <option value="">請選擇定位</option>
+    <option value="melee">近戰攻擊手</option>
+    <option value="ranger">遠攻攻擊手</option>
+    <option value="balance">普通攻擊手</option>
+  </select>
+
+  <label for="starting_position">起始站位 <span style="color:#e33">*</span>
+<span style="color:#888;">（近戰區周圍有敵人、遠攻區周圍沒有敵人）</span></label>
+  <select id="starting_position" required>
+    <option value="">請選擇站位</option>
+    <option value="close">近戰區</option>
+    <option value="far">遠攻區</option>
+    <!-- 管理員才會多一個 option value="" 無，前端用 JS 動態插入 -->
+  </select>
+
+  <div class="nav-btns">
+   
+    <button type="button" id="back-6">上一步</button>
+    <button type="button" id="btn-step-6">下一步</button>
+  </div>
+</form>
+
+<form id="form-step-7" class="form-page">
+  <div id="warn-7" class="warn" style="display:none;"></div>
+  <label>請選擇職業
+<span style="color:#888;">（至少一個、至多兩個）</span></label>
+</label>
+  <div class="job-grid" id="job-grid">
+    <div class="job-btn" data-job="attack">攻擊手</div>
+    <div class="job-btn" data-job="tank">坦克</div>
+    <div class="job-btn" data-job="jammer">妨礙手</div>
+    <div class="job-btn" data-job="buffer">增益手</div>
+    <div class="job-btn" data-job="healer">補師</div>
+  </div>
+  <div class="nav-btns">
+    <button type="button" id="back-7">上一步</button>
+    <button type="button" id="btn-step-7">下一步</button>
+  </div>
+</form>
+
+<!-- 第8頁 技能填寫 -->
+<form id="form-step-8" class="form-page">
+  <div class="skills-section">
+    <!-- 星級/角色狀態說明 -->
+    <div class="star-info">
+      此角色的星級為
+      <span id="role-star-bar" class="star-yellow">✯✯✯✯✯✯✯✯</span>
+      <!-- (抓職業選擇決定星星數量 專職8顆 雙職7顆 其他數量的職業直接寫問題學生) -->
+      請搭配出符合星星數量的技能吧!
+      <!-- 問題學生版: 此角色為問題學生 -->
+      <div class="star-total-box" style="margin-top:0.5em; font-weight:bold;">
+        現在星級：<span id="current-star-total" style="color: #FFD700;">0</span>
+        <span id="star-status" style="margin-left: 1em; font-weight:normal;"></span>
+        <!-- JS 會即時更新這兩個欄位 -->
+      </div>
+    </div>
+
+    <!-- 技能欄位動態插入點 -->
+    <div class="skills-container"></div>
+
+    <!-- 管理員新增技能按鈕 -->
+    <div class="admin-skill-btn-block" style="margin-top:2em; text-align:center;">
+      <button type="button" id="admin-add-skill-btn" style="display:none;">新增技能</button>
+    </div>
+    
+    <!-- 底部操作按鈕 -->
+    <div class="nav-btns">
+      <button type="button" id="back-8">上一步</button>
+      <button type="submit" id="submit-8">測試</button>
+    </div>
+  </div>
+</form>
+
+
+  
+<script src="https://shierusha.github.io/create-student/stidcard/sql-id/example.js"></script>
 <script src="sql-id/main.js"></script>
-
-<script>
-
-</script>
+<script src="sql-id/set-8.js"></script>
 
 </body>
 </html>
