@@ -57,23 +57,19 @@ window.addEventListener('load', fitAll);
 
 // 更多
 // 判斷 info-value 超過 13 字才顯示 ...MORE
-function checkLongTextByCharCount(N = 13) {
+function checkLongTextByCharCount() {
   document.querySelectorAll('.info-box').forEach(box => {
     const value = box.querySelector('.info-value');
     const btn = box.querySelector('.show-more-btn');
     if (!value || !btn) return;
-    if (value.innerText.trim().length > N) {
-      btn.style.display = 'block';
-      btn.onclick = function() {
-        // 標題優先抓 info-label, 沒有就用 data-title (button自訂)，最後才 "內容"
-        const label = this.dataset.title || box.querySelector('.info-label')?.innerText || "效果";
-        showInfoModal(label, value.innerHTML);
-      }
-    } else {
-      btn.style.display = 'none';
+    btn.style.display = 'block';  // 直接永遠顯示
+    btn.onclick = function() {
+      const label = this.dataset.title || box.querySelector('.info-label')?.innerText || "效果";
+      showInfoModal(label, value.innerHTML);
     }
   });
 }
+
 // 初次和視窗大小變動時都要判斷一次
 window.addEventListener('DOMContentLoaded', () => checkLongTextByCharCount(13));
 window.addEventListener('resize', () => checkLongTextByCharCount(13));
