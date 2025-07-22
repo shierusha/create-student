@@ -57,7 +57,7 @@ window.addEventListener('load', fitAll);
 
 // 更多
 // 判斷 info-value 超過 13 字才顯示 ...MORE
-function checkLongTextByCharCount(N = 13) {
+/*function checkLongTextByCharCount(N = 13) {
   document.querySelectorAll('.info-box').forEach(box => {
     const value = box.querySelector('.info-value');
     const btn = box.querySelector('.show-more-btn');
@@ -73,7 +73,7 @@ function checkLongTextByCharCount(N = 13) {
       btn.style.display = 'none';
     }
   });
-}
+}*/
 // 初次和視窗大小變動時都要判斷一次
 window.addEventListener('DOMContentLoaded', () => checkLongTextByCharCount(13));
 window.addEventListener('resize', () => checkLongTextByCharCount(13));
