@@ -1752,9 +1752,9 @@ function buildSkillEffectsPreview(skill, showCustom) {
 }
 
 
-/* 自動切換到第8頁
+//自動切換到第8頁
 document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
-const step8 = document.getElementById('form-step-8');
-if (step8) step8.classList.add('active');*/
+const step1 = document.getElementById('form-step-1');
+if (step8) step1.classList.add('active');
  
 // ========== END ==========
