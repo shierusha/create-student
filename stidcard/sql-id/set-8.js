@@ -631,85 +631,75 @@ passiveOptionsDiv.appendChild(condInput);
   let adminCD = (typeof userRole !== 'undefined' && userRole === 'admin' && skill.cd_val !== undefined) ? skill.cd_val : null;
   let finalCD = isPassive ? '' : (hasForceZero ? 0 : (adminCD !== null ? adminCD : autoCD));
 
-  // 寫入CD到 formData（必要時）
-  if (isPassive) {
-    formData.skills[idx].cd_val = null;
-  } else if (hasForceZero) {
-    formData.skills[idx].cd_val = 0;
-  } else if (typeof userRole !== 'undefined' && userRole === 'admin' && adminCD !== null) {
-    formData.skills[idx].cd_val = Number(adminCD);
-  } else {
-    formData.skills[idx].cd_val = autoCD;
-  }
+  
+// --- 顯示CD編輯區 ---
+let calcLabel = document.createElement('label');
+calcLabel.innerText = '計算CD ';
+calcLabel.style.fontWeight = 'bold';
+calcLabel.style.marginRight = '0.5em';
+cdDiv.appendChild(calcLabel);
 
-  // --- 顯示CD編輯區 ---
-  let calcLabel = document.createElement('label');
-  calcLabel.innerText = '計算CD ';
-  calcLabel.style.fontWeight = 'bold';
-  calcLabel.style.marginRight = '0.5em';
-  cdDiv.appendChild(calcLabel);
+let calcInput = document.createElement('input');
+calcInput.type = 'number';
+calcInput.value = autoCD;
+calcInput.style.width = '4em';
+calcInput.style.margin = '0 8px 0 0';
+calcInput.disabled = true;
+calcInput.style.background = '#f3f3f3';
+calcInput.style.color = '#888';
+cdDiv.appendChild(calcInput);
 
-  let calcInput = document.createElement('input');
-  calcInput.type = 'number';
-  calcInput.value = autoCD;
-  calcInput.style.width = '4em';
-  calcInput.style.margin = '0 8px 0 0';
-  calcInput.disabled = true;
-  calcInput.style.background = '#f3f3f3';
-  calcInput.style.color = '#888';
-  cdDiv.appendChild(calcInput);
+// 管理員編輯
+if (typeof userRole !== 'undefined' && userRole === 'admin' && !hasForceZero && !isPassive) {
+  let cdLabel = document.createElement('label');
+  cdLabel.innerText = '修改CD ';
+  cdLabel.style.fontWeight = 'bold';
+  cdLabel.style.marginLeft = '1.1em';
+  cdDiv.appendChild(cdLabel);
 
-  // 管理員編輯
-  if (typeof userRole !== 'undefined' && userRole === 'admin' && !hasForceZero && !isPassive) {
-    let cdLabel = document.createElement('label');
-    cdLabel.innerText = '修改CD ';
-    cdLabel.style.fontWeight = 'bold';
-    cdLabel.style.marginLeft = '1.1em';
-    cdDiv.appendChild(cdLabel);
+  let cdInput = document.createElement('input');
+  cdInput.type = 'number';
+  cdInput.min = 0;
+  cdInput.value = (adminCD !== null ? adminCD : autoCD);
+  cdInput.style.width = '4em';
+  cdInput.style.margin = '0 6px';
+  cdDiv.appendChild(cdInput);
 
-    let cdInput = document.createElement('input');
-    cdInput.type = 'number';
-    cdInput.min = 0;
-    cdInput.value = (adminCD !== null ? adminCD : autoCD);
-    cdInput.style.width = '4em';
-    cdInput.style.margin = '0 6px';
-    cdDiv.appendChild(cdInput);
+  let editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.innerText = '修改';
+  editBtn.style.background = '#cc3232';
+  editBtn.style.color = '#fff';
+  editBtn.style.fontSize = '0.93em';
+  editBtn.style.padding = '0 0.6em';
+  editBtn.style.height = '1.7em';
+  editBtn.style.width = '3em';
+  editBtn.style.margin = '0.7em';
+  editBtn.style.border = 'none';
+  editBtn.style.borderRadius = '0.4em';
+  editBtn.onclick = function () {
+    formData.skills[idx].cd_val = Number(cdInput.value) || 0;
+    renderSkillPassiveAndCdBlock(idx, block, formData.skills[idx]);
+  };
+  cdDiv.appendChild(editBtn);
+}
 
-    let editBtn = document.createElement('button');
-    editBtn.type = 'button';
-    editBtn.innerText = '修改';
-    editBtn.style.background = '#cc3232';
-    editBtn.style.color = '#fff';
-    editBtn.style.fontSize = '0.93em';
-    editBtn.style.padding = '0 0.6em';
-    editBtn.style.height = '1.7em';
-    editBtn.style.width = '3em';
-    editBtn.style.margin = '0.7em';
-    editBtn.style.border = 'none';
-    editBtn.style.borderRadius = '0.4em';
-    editBtn.onclick = function () {
-      formData.skills[idx].cd_val = Number(cdInput.value) || 0;
-      renderSkillPassiveAndCdBlock(idx, block, formData.skills[idx]);
-    };
-    cdDiv.appendChild(editBtn);
-  }
+block.appendChild(cdDiv);
 
-  block.appendChild(cdDiv);
+// ========== 技能CD實際顯示區 ==========
+let cdShow = document.createElement('div');
+cdShow.style.fontSize = '1em';
+cdShow.style.color = '#222';
+cdShow.style.marginTop = '0.25em';
 
-  // ========== 技能CD實際顯示區 ==========
-  let cdShow = document.createElement('div');
-  cdShow.style.fontSize = '1em';
-  cdShow.style.color = '#222';
-  cdShow.style.marginTop = '0.25em';
-
-  if (isPassive) {
-    cdShow.innerText = '技能CD：被動';
-  } else if (hasForceZero) {
-    cdShow.innerText = '技能CD：0（已套用指定技能效果）';
-  } else {
-    cdShow.innerText = `技能CD：${finalCD !== null && finalCD !== undefined && finalCD !== '' ? finalCD : ''}`;
-  }
-  block.appendChild(cdShow);
+if (isPassive) {
+  cdShow.innerText = '技能CD：被動';
+} else if (hasForceZero) {
+  cdShow.innerText = '技能CD：0（已套用指定技能效果）';
+} else {
+  cdShow.innerText = `技能CD：${finalCD !== null && finalCD !== undefined && finalCD !== '' ? finalCD : ''}`;
+}
+block.appendChild(cdShow);
 }
 
 
@@ -1299,12 +1289,16 @@ function renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect) 
       delBtn.style.height = '1.7em';
       delBtn.style.margin = '8px';
       delBtn.style.fontSize = '0.9em';
-      delBtn.onclick = function () {
-        formData.skills[idx].debuffs.splice(chooseIdx, 1);
-        renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect);
-        if (typeof updateCurrentSkillStarTotal === 'function') updateCurrentSkillStarTotal();
-        updateSkillPreview();
-      };
+     delBtn.onclick = function () {
+  formData.skills[idx].debuffs.splice(chooseIdx, 1);
+  renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect);
+  // ↓↓↓ 這三行加上去
+  refreshSkillStarHint(idx, formData.skills[idx]);
+  renderSkillPassiveAndCdBlock(idx, document.querySelectorAll('.cd-block')[idx], formData.skills[idx]);
+  if (typeof updateCurrentSkillStarTotal === 'function') updateCurrentSkillStarTotal();
+  updateSkillPreview();
+};
+
       row.appendChild(delBtn);
 
       chosenDiv.appendChild(row);
@@ -1512,11 +1506,14 @@ function renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect) 
           }
           if (!Array.isArray(formData.skills[idx].debuffs)) formData.skills[idx].debuffs = [];
           formData.skills[idx].debuffs.push(chosen);
-          renderSkillDebuffBlock._showAdd[idx] = false;
-          renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect);
-          if (typeof updateCurrentSkillStarTotal === 'function') updateCurrentSkillStarTotal();
-          updateSkillPreview();
-        };
+  renderSkillDebuffBlock._showAdd[idx] = false;
+  renderSkillDebuffBlock(idx, block, occ, targetSelect, maxTargetSelect);
+  // ↓↓↓ 這三行加上去
+  refreshSkillStarHint(idx, formData.skills[idx]);
+  renderSkillPassiveAndCdBlock(idx, document.querySelectorAll('.cd-block')[idx], formData.skills[idx]);
+  if (typeof updateCurrentSkillStarTotal === 'function') updateCurrentSkillStarTotal();
+  updateSkillPreview();
+};
         rightWrap.appendChild(addBtn);
 
         row.appendChild(rightWrap);
