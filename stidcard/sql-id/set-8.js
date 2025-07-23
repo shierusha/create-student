@@ -242,12 +242,6 @@ function renderSkillsPage(skillsArr) {
   container.innerHTML = '';
 
   // 清空事件時專用：重置所有效果&移動
-  function resetSkillEffectsAndMovement(skill) {
-    skill.effect_ids = [];
-    skill.effect_scores = [];
-    skill.use_movement = false;
-    skill.move_ids = '';
-  }
 
   for (let idx = 0; idx < skillsArr.length; idx++) {
     const skill = skillsArr[idx] || {};
@@ -1736,20 +1730,29 @@ if(domSkill2Cd) {
   if(domSkill2Effs) domSkill2Effs.innerText = buildSkillEffectsPreview(s2, true);
 
   // 額外技能
-  const extraSkills = (formData.skills||[]).slice(2);
-  const domSkillDiamond = document.querySelector('.skill-diamond');
-  if(domSkillDiamond && extraSkills.length > 0){
-    let popupText = extraSkills.map(skill =>
-      (skill.skill_name || '[未命名]') + '\n' +
-      (skill.description || '') + '\n' +
-      buildSkillEffectsPreview(skill, true)
-    ).join('\n\n');
-    domSkillDiamond.setAttribute('value', popupText);
-    domSkillDiamond.style.display = '';
-  } else if(domSkillDiamond) {
-    domSkillDiamond.setAttribute('value', '如果有第三個以上的技能 點這裡顯示彈出式視窗 顯示技能名稱(換行)技能效果敘述(換行)');
-    domSkillDiamond.style.display = 'none';
-  }
+const extraSkills = (formData.skills||[]).slice(2);
+const domSkillDiamond = document.querySelector('.skill-diamond');
+if(domSkillDiamond && extraSkills.length > 0){
+  let popupText = extraSkills.map(skill =>
+    (skill.skill_name || '[未命名]') + '\n' +
+    (skill.description || '')
+  ).join('\n\n');
+  domSkillDiamond.setAttribute('value', popupText);
+  domSkillDiamond.style.display = '';
+} else if(domSkillDiamond) {
+  domSkillDiamond.setAttribute('value', '');
+  domSkillDiamond.style.display = 'none';
+}
+
+if (domSkillDiamond) {
+  domSkillDiamond.onclick = function() {
+    const txt = this.getAttribute('value');
+    if (txt && txt.length > 0) {
+      showModal('額外技能', txt); // 這裡不用 replace
+    }
+  };
+}
+
 }
 
 // 協助把效果、移動、原創、負作用轉為卡面顯示
@@ -1782,9 +1785,9 @@ function buildSkillEffectsPreview(skill, showCustom) {
 
 
 // 自動切換到第8頁
-document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+/*document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
 const step8 = document.getElementById('form-step-8');
-if (step8) step8.classList.add('active');
+if (step8) step8.classList.add('active');*/
 
  
 // ========== END ========== 
