@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <div class="flip-card row-card" id="flipCard">
+       <div class="flip-card row-card" id="flipCard">
     <div class="flip-card-front">
       <div class="container-16-9">
         <img class="bg-img" src="https://shierusha.github.io/school-battle/teachers/img/8.webp" alt="background" />
@@ -51,17 +51,17 @@
             <div class="info-box" style="height:15%;">
               <span class="info-label">個性</span>
               <span class="info-value" data-key="students.personality" style="margin-top: 0.35em;"></span>
-              <button class="show-more-btn" >...MORE</button>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
             </div>
             <div class="info-box" style="height:7%;">
               <span class="info-label">喜歡</span>
               <span class="info-value" data-key="students.likes"></span>
-              <button class="show-more-btn">...MORE</button>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
             </div>
             <div class="info-box" style="height:7%;">
               <span class="info-label">討厭</span>
               <span class="info-value" data-key="students.hate"></span>
-              <button class="show-more-btn">...MORE</button>
+              <button class="show-more-btn" style="display:none;">...MORE</button>
             </div>
             <div class="info-box" style="height:7%;border-radius:5px 5px 0px 0px;">
               <span class="info-label">角色設定</span>
@@ -165,7 +165,7 @@
               </div>
               <div class="info-box" style="width:42%;border-radius:0px 0px 5px 0px;">
                 <span class="info-value" data-key="student_skills.1.effectsAndDebuffs"></span>
-                <button class="show-more-btn" >...MORE</button>
+                <button class="show-more-btn" style="display:none;">...MORE</button>
               </div>
             </div>
             <!-- 技能二 -->
@@ -194,7 +194,7 @@
                 <div class="info-value-group">
                   <span class="info-value" data-key="student_skills.2.effectsAndDebuffs"></span>
                 </div>
-                <button class="show-more-btn" >...MORE</button>
+                <button class="show-more-btn" style="display:none;">...MORE</button>
               </div>
             </div>
           </div>
@@ -313,7 +313,7 @@
 
 <!-- 第5頁 角色設定/裏設定 -->
 <form id="form-step-5" class="form-page">
-  <label style="margin-bottom:0.6em;">角色設定/裏設定 <span style="color:#888;">（可多條、顯示為設定、不顯示為裏設定）(人格、性格、能力不可隨意更新，請務必確認無錯後，再送審)</span></label>
+  <label style="margin-bottom:0.6em;">角色設定/裏設定 <span style="color:#888;">（可多條、顯示為設定、不顯示為裏設定）</span></label>
   <div id="note-list">
     <!-- 這裡 JS 動態產生多個 note-row -->
     <!-- 範例一條（JS會自動複製產生）：
@@ -419,8 +419,8 @@
   <div class="job-grid" id="job-grid">
     <div class="job-btn" data-job="attack">攻擊手</div>
     <div class="job-btn" data-job="tank">坦克</div>
-    <div class="job-btn" data-job="jammer">妨礙手</div>
     <div class="job-btn" data-job="buffer">增益手</div>
+    <div class="job-btn" data-job="jammer">妨礙手</div>
     <div class="job-btn" data-job="healer">補師</div>
   </div>
   <div class="nav-btns">
@@ -461,6 +461,7 @@
     </div>
   </div>
 </form>
+
 
 
   
