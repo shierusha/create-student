@@ -9,6 +9,20 @@ function resetSkillEffectsAndMovement(skill) {
   skill.custom_effect_enable = false; 
   skill.custom_effect_score = 0;     
 }
+//===========抓顯示用CD==========================
+function getSkillFinalCD(skill, idx) {
+  // 被動技能直接顯示 X
+  if (skill.is_passive) return 'X';
+  // 指定ID強制CD=0
+  let cdForceZeroEffectId = '27004404-af5a-43b0-bcd4-b8396616e4d8';
+  if (skill.effect_ids && skill.effect_ids.includes(cdForceZeroEffectId)) return 0;
+  // 管理員自訂CD
+  if (typeof userRole !== 'undefined' && userRole === 'admin' && skill.cd_val !== undefined && skill.cd_val !== null) return skill.cd_val;
+  // 一般自動計算CD
+  if (typeof calcSkillCD === "function") return calcSkillCD(idx, skill);
+  // 預設顯示 X
+  return 'X';
+}
 
 // ========== 技能CD計算（補師例外/移動判斷版） ==========
 function calcSkillCD(idx, skill) {
@@ -607,6 +621,7 @@ passiveOptionsDiv.appendChild(condInput);
       renderSkillPassiveAndCdBlock(idx, block, formData.skills[idx]);
       renderSkillAccumStarBlock && renderSkillAccumStarBlock(idx, document.querySelectorAll('.accum-star-block')[idx], formData.skills[idx]);
       if (typeof refreshSkillStarHint === "function") refreshSkillStarHint(idx, formData.skills[idx]);
+        updateSkillPreview();
     });
 
     passiveDiv.appendChild(passiveOptionsDiv);
@@ -680,6 +695,8 @@ if (typeof userRole !== 'undefined' && userRole === 'admin' && !hasForceZero && 
   editBtn.onclick = function () {
     formData.skills[idx].cd_val = Number(cdInput.value) || 0;
     renderSkillPassiveAndCdBlock(idx, block, formData.skills[idx]);
+  updateSkillPreview();
+
   };
   cdDiv.appendChild(editBtn);
 }
@@ -1667,15 +1684,11 @@ function updateSkillPreview() {
   const domSkill1Name = document.querySelector('[data-key="student_skills.1.skill_name"]');
   if(domSkill1Name) domSkill1Name.innerText = s1.skill_name || '';
 
-  const domSkill1Cd = document.querySelector('[data-key="student_skills.1.final_cd"]');
-  if(domSkill1Cd) {
-    // 技能1基本上不會是被動
-    if (s1.is_passive) {
-      domSkill1Cd.innerText = '';
-    } else {
-      domSkill1Cd.innerText = (s1.cd_val !== undefined && s1.cd_val !== null) ? s1.cd_val : '';
-    }
-  }
+ const domSkill1Cd = document.querySelector('[data-key="student_skills.1.final_cd"]');
+if(domSkill1Cd) {
+  domSkill1Cd.innerText = getSkillFinalCD(s1, 0);
+}
+
 
   const domSkill1Targets = document.querySelector('[data-key="student_skills.1.max_targets"]');
   if(domSkill1Targets) domSkill1Targets.innerText = s1.max_targets ? 
@@ -1695,15 +1708,11 @@ function updateSkillPreview() {
   const domSkill2Name = document.querySelector('[data-key="student_skills.2.skill_name"]');
   if(domSkill2Name) domSkill2Name.innerText = s2.skill_name || '';
 
-  const domSkill2Cd = document.querySelector('[data-key="student_skills.2.final_cd"]');
-  if(domSkill2Cd) {
-    // 技能2是被動時不顯示CD
-    if (s2.is_passive) {
-      domSkill2Cd.innerText = '';
-    } else {
-      domSkill2Cd.innerText = (s2.cd_val !== undefined && s2.cd_val !== null) ? s2.cd_val : '';
-    }
-  }
+ const domSkill2Cd = document.querySelector('[data-key="student_skills.2.final_cd"]');
+if(domSkill2Cd) {
+  domSkill2Cd.innerText = getSkillFinalCD(s2, 1);
+}
+
 
   const domSkill2Targets = document.querySelector('[data-key="student_skills.2.max_targets"]');
   if(domSkill2Targets) domSkill2Targets.innerText = s2.max_targets ?
