@@ -1,3 +1,4 @@
+//學生證卡之JS 不可更動
 function setNameFontSize(selector, maxChars) {
   document.querySelectorAll(selector).forEach(box => {
     const nameDiv = box.querySelector('.name-box');
