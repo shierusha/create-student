@@ -1,4 +1,4 @@
-//BATA 測試用 JS
+//BATA 測試用JS
 function resetSkillEffectsAndMovement(skill) {
   skill.effect_ids = [];
   skill.effect_scores = [];
@@ -98,17 +98,15 @@ function updateCurrentSkillStarTotal() {
     }
   }
 
-  // 控管送出
-  if (submitBtn) {
-    if ((isProblem && formData.skills.length > 0) || (!isProblem && totalStar === targetStar)) {
-      submitBtn.disabled = false;
-      submitBtn.style.opacity = '';
-      submitBtn.title = '';
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = 0.6;
-      submitBtn.title = '技能星數需剛好才可送出';
-    }
+// 控管送出if (submitBtn) {
+  if ((typeof userRole !== 'undefined' && userRole === 'admin') || (!isProblem && totalStar === targetStar)) {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '';
+    submitBtn.title = '';
+  } else {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = 0.6;
+    submitBtn.title = '技能星數需剛好才可送出';
   }
 }
 
@@ -242,8 +240,7 @@ function renderSkillsPage(skillsArr) {
     const block = document.createElement('div');
     block.className = 'skill-block';
     
-      block.appendChild(renderSkillStarHintBlock(idx, skill));
-
+    block.appendChild(renderSkillStarHintBlock(idx, skill));
 
     // --- 技能名稱區 ---
     const skillHeader = document.createElement('div');
@@ -257,12 +254,10 @@ function renderSkillsPage(skillsArr) {
     nameInput.placeholder = '請輸入技能名稱';
     nameInput.value = skill.skill_name || '';
     nameInput.addEventListener('input', (e) => {
-      formData.skills[idx].skill_name = e.target.value;
-      updateSkillPreview(); 
+        formData.skills[idx].skill_name = e.target.value;
+        updateSkillPreview(); 
     });
-    
     updateSkillPreview();
-
     block.appendChild(nameInput);
 
     // --- 3.5區：被動+CD ---
@@ -283,47 +278,58 @@ function renderSkillsPage(skillsArr) {
     descInput.placeholder = '請填寫技能描述...';
     descInput.value = skill.description || '';
     descInput.addEventListener('input', (e) => {
-      formData.skills[idx].description = e.target.value;
-      updateSkillPreview();
+        formData.skills[idx].description = e.target.value;
+        updateSkillPreview();
     });
-
     descDiv.appendChild(descInput);
     block.appendChild(descDiv);
 
-  // --- 技能施放對象 ---
+    // --- 技能施放對象 ---
     const targetMap = {
-      tank:   ['self', 'enemy', 'ally'],
-      attack: ['enemy', 'ally'],
-      jammer: ['enemy', 'ally'],
-      healer: ['self', 'ally', 'team'],
-      buffer: ['self', 'ally', 'team'],
+        tank:   ['self', 'enemy', 'ally'],
+        attack: ['enemy', 'ally'],
+        jammer: ['enemy', 'ally'],
+        healer: ['self', 'ally', 'team'],
+        buffer: ['self', 'ally', 'team'],
     };
     const labelMap = { self: '自身', enemy: '敵方', ally: '隊友(不含自身)', team: '我方', 'self+enemy': '自身+敵方' };
     const occ = Array.isArray(formData.occupation_type) ? formData.occupation_type : [];
     let allowedSet = new Set();
     occ.forEach(job => {
-      if (targetMap[job]) targetMap[job].forEach(t => allowedSet.add(t));
+        if (targetMap[job]) targetMap[job].forEach(t => allowedSet.add(t));
     });
     // 四大特殊組合
     const hasAttack = occ.includes('attack'), hasJammer = occ.includes('jammer'), hasHealer = occ.includes('healer'), hasBuffer = occ.includes('buffer');
     if ((hasAttack && hasBuffer) || (hasAttack && hasHealer) || (hasJammer && hasHealer) || (hasJammer && hasBuffer)) allowedSet.add('self+enemy');
     let targetSelect = null;
-    if (allowedSet.size > 0) {
-      const targetLabel = document.createElement('label');
-      targetLabel.innerText = '技能施放對象';
-      block.appendChild(targetLabel);
-      targetSelect = document.createElement('select');
-      ['self','enemy','ally','team','self+enemy'].forEach(key=>{
-        if(allowedSet.has(key)){
-          const option=document.createElement('option');
-          option.value=key;
-          option.innerText=labelMap[key];
-          targetSelect.appendChild(option);
+   if (allowedSet.size > 0) {
+    const targetLabel = document.createElement('label');
+    targetLabel.innerText = '技能施放對象';
+    block.appendChild(targetLabel);
+    targetSelect = document.createElement('select');
+
+    // 新增「請選擇」option
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.innerText = '請選擇';
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    targetSelect.appendChild(placeholderOption);
+
+    ['self','enemy','ally','team','self+enemy'].forEach(key => {
+        if (allowedSet.has(key)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.innerText = labelMap[key];
+            targetSelect.appendChild(option);
         }
-      });
-      targetSelect.value = targetSelect.options[0]?.value || '';
-      block.appendChild(targetSelect);
-    }
+    });
+
+    // 一開始預設為空
+    targetSelect.value = '';
+    block.appendChild(targetSelect);
+}
+
 
     // --- 技能施放對象人數 ---
     const maxTargetLabel = document.createElement('label');
@@ -331,32 +337,34 @@ function renderSkillsPage(skillsArr) {
     block.appendChild(maxTargetLabel);
     const maxTargetSelect = document.createElement('select');
     [{ val: 1, label: '單體' }, { val: 2, label: '範圍 (2)' }, { val: 3, label: '範圍 (3)' }].forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.val;
-      option.innerText = opt.label;
-      maxTargetSelect.appendChild(option);
+        const option = document.createElement('option');
+        option.value = opt.val;
+        option.innerText = opt.label;
+        maxTargetSelect.appendChild(option);
     });
     maxTargetSelect.value = skill.max_targets || 1;
+    formData.skills[idx].max_targets = parseInt(maxTargetSelect.value, 10);   // <-- 關鍵：同步到 formData
+
     function syncMaxTargetWithTarget() {
-      if (!targetSelect) return;
-      const val = targetSelect.value;
-      if (val === 'self' || val === 'self+enemy') {
-        maxTargetSelect.value = 1;
-        maxTargetSelect.disabled = true;
-        formData.skills[idx].max_targets = 1;
-      } else {
-        maxTargetSelect.disabled = false;
-        formData.skills[idx].max_targets = parseInt(maxTargetSelect.value, 10);
-      }
+        if (!targetSelect) return;
+        const val = targetSelect.value;
+        if (val === 'self' || val === 'self+enemy') {
+            maxTargetSelect.value = 1;
+            maxTargetSelect.disabled = true;
+            formData.skills[idx].max_targets = 1;
+        } else {
+            maxTargetSelect.disabled = false;
+            formData.skills[idx].max_targets = parseInt(maxTargetSelect.value, 10);
+        }
     }
     if (targetSelect) syncMaxTargetWithTarget();
     block.appendChild(maxTargetSelect);
 
     // --- 技能有效距離 ---
     const rangeOptionsMap = {
-      melee: [{ val: 'same_zone', label: '近距離（同區）' }],
-      ranger: [{ val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }],
-      balance: [{ val: 'same_zone', label: '近距離（同區）' }, { val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }]
+        melee: [{ val: 'same_zone', label: '近距離（同區）' }],
+        ranger: [{ val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }],
+        balance: [{ val: 'same_zone', label: '近距離（同區）' }, { val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }]
     };
     const preferredRole = formData.preferred_role || 'balance';
     const rangeOptions = rangeOptionsMap[preferredRole] || rangeOptionsMap['balance'];
@@ -365,13 +373,16 @@ function renderSkillsPage(skillsArr) {
     block.appendChild(rangeLabel);
     const rangeSelect = document.createElement('select');
     rangeOptions.forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.val;
-      option.innerText = opt.label;
-      rangeSelect.appendChild(option);
+        const option = document.createElement('option');
+        option.value = opt.val;
+        option.innerText = opt.label;
+        rangeSelect.appendChild(option);
     });
     rangeSelect.value = skill.range || rangeOptions[0].val;
+    formData.skills[idx].range = rangeSelect.value;   // <-- 關鍵：同步到 formData
     block.appendChild(rangeSelect);
+
+
 
     // ====== 四大主要功能區塊，各自包一個 div ======
     let skillEffectDiv = document.createElement('div');
@@ -724,7 +735,11 @@ function renderSkillEffectBlock(idx, block, targetSelect, maxTargetSelect, range
     buff: '增益', buff_only: '增益',
     debuff: '妨礙', debuff_only: '妨礙'
   };
-  const banInSkill2 = ["1511fbab-3767-4616-b45a-548a45251435"];
+  const banInSkill2 = 
+        ["1511fbab-3767-4616-b45a-548a45251435",
+  "56950199-5e6d-43f9-9857-64cb7b9de393",
+  "81dd47b8-22be-44b4-8e06-c1cf8ff15ff1"
+];
   const onlyInSkill2 = ["59f833c2-03da-4bc6-a67d-2dc15e156e4d"];
   const specialSkill2Id = "59f833c2-03da-4bc6-a67d-2dc15e156e4d";
 
@@ -1582,6 +1597,11 @@ if (formStep8) {
       allGood = false;
       errMsg += `請填寫技能${idx + 1}敘述\n`;
     }
+  // 技能施放對象必選
+  if (!skill.target_faction || skill.target_faction === '') {
+    allGood = false;
+    errMsg += `請選擇技能${idx + 1}的施放對象\n`;
+  }
     // 技能效果、移動技能、原創技能三選一
     if (
       (!Array.isArray(skill.effect_ids) || skill.effect_ids.length === 0)
@@ -1591,6 +1611,8 @@ if (formStep8) {
       allGood = false;
       errMsg += `技能${idx + 1}必須至少選一個效果\n`;
     }
+    
+    
     // 累積☆判斷
     let extraStar = 0;
     if (skill.is_passive && skill.passive_trigger_limit === 'unlimited') extraStar += 4;
@@ -1613,6 +1635,9 @@ if (formStep8) {
     }
     let holdScore = (Array.isArray(skill.debuffs) ? skill.debuffs.reduce((a, d) => a + Number(d.offset_score || 0), 0) : 0);
     let holdStar = Math.floor(holdScore / 5);
+    
+
+    
     if (extraStar > holdStar) {
       allGood = false;
       errMsg += `技能${idx + 1}「${skill.skill_name || '未命名'}」累積☆未被足夠★抵銷！\n`;
@@ -1623,11 +1648,10 @@ if (formStep8) {
     alert(errMsg);
     return;
   }
+   
   // saveSkillsToDatabase(formData);
   alert("驗證通過！！");
 };
-
-
 }
 
 // 初始化畫面
@@ -1751,9 +1775,10 @@ function buildSkillEffectsPreview(skill, showCustom) {
 }
 
 
-//自動切換到第8頁
-/*document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
-const step1 = document.getElementById('form-step-1');
-if (step8) step1.classList.add('active');*/
+// 自動切換到第8頁
+document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+const step8 = document.getElementById('form-step-8');
+if (step8) step8.classList.add('active');
+
  
-// ========== END ==========
+// ========== END ========== 
