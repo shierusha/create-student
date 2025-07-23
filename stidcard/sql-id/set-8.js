@@ -1,5 +1,4 @@
-//申請/修改學生證預覽表之JS之第8頁
-
+//BATA 測試用 JS
 function resetSkillEffectsAndMovement(skill) {
   skill.effect_ids = [];
   skill.effect_scores = [];
@@ -293,9 +292,9 @@ function renderSkillsPage(skillsArr) {
 
   // --- 技能施放對象 ---
     const targetMap = {
-      tank:   ['self', 'enemy'],
-      attack: ['enemy'],
-      jammer: ['enemy'],
+      tank:   ['self', 'enemy', 'ally'],
+      attack: ['enemy', 'ally'],
+      jammer: ['enemy', 'ally'],
       healer: ['self', 'ally', 'team'],
       buffer: ['self', 'ally', 'team'],
     };
@@ -1753,8 +1752,8 @@ function buildSkillEffectsPreview(skill, showCustom) {
 
 
 //自動切換到第8頁
-document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+/*document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
 const step1 = document.getElementById('form-step-1');
-if (step8) step1.classList.add('active');
+if (step8) step1.classList.add('active');*/
  
 // ========== END ==========
