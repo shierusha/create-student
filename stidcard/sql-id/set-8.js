@@ -1777,8 +1777,8 @@ function buildSkillEffectsPreview(skill, showCustom) {
 
 // 自動切換到第8頁
 document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
-const step5 = document.getElementById('form-step-5');
-if (step5) step5.classList.add('active');
+const step8 = document.getElementById('form-step-8');
+if (step8) step8.classList.add('active');
 
  
 // ========== END ========== 
