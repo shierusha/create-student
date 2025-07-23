@@ -1,3 +1,4 @@
+//申請/修改學生證預覽表之JS
 function setNameFontSize(selector, maxChars) {
   document.querySelectorAll(selector).forEach(box => {
     const nameDiv = box.querySelector('.name-box');
