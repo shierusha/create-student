@@ -761,9 +761,9 @@ function renderSkillsPage(skillsArr) {
 
   // --- 技能施放對象 ---
     const targetMap = {
-      tank:   ['self', 'enemy'],
-      attack: ['enemy'],
-      jammer: ['enemy'],
+      tank:   ['self', 'enemy', 'ally'],
+      attack: ['enemy', 'ally'],
+      jammer: ['enemy', 'ally'],
       healer: ['self', 'ally', 'team'],
       buffer: ['self', 'ally', 'team'],
     };
