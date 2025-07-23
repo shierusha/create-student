@@ -1,4 +1,4 @@
-
+//申請/修改學生證預覽表之JS之第8頁
 
 function resetSkillEffectsAndMovement(skill) {
   skill.effect_ids = [];
