@@ -1,8 +1,52 @@
 //codepen測試中主程式js
-// ==========================
-// (1) 切換 admin/player（開發測試用 ）
-// ==========================
-let userRole = 'admin'; // ← 你要測 admin 下拉就改成 'admin'，正式會用登入資料
+// =======================
+// 登入身分自動查詢
+// =======================
+(async function syncRoleFromDB() {
+  const playerId = localStorage.getItem('player_id');
+  if (!playerId) {
+    // 未登入就跳回登入頁
+    window.location.href = 'https://shierusha.github.io/login/';
+    return;
+  }
+
+  // 建立 supabase client（如果你的 JS 裡已經有就不用重複寫）
+  const client = window.supabase
+    ? window.supabase.createClient(
+        'https://wfhwhvodgikpducrhgda.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
+      )
+    : null;
+
+  // 查詢玩家資料表
+  let data, error;
+  try {
+    ({ data, error } = await client
+      .from('players')
+      .select('role,username')
+      .eq('player_id', playerId)
+      .single());
+  } catch (e) {
+    alert('查詢玩家權限失敗，請重新登入');
+    localStorage.clear();
+    window.location.href = 'https://shierusha.github.io/login/';
+    return;
+  }
+  if (error || !data) {
+    alert('查無此玩家，請重新登入');
+    localStorage.clear();
+    window.location.href = 'https://shierusha.github.io/login/';
+    return;
+  }
+  // 設定全域
+  window.userRole = data.role || 'player';
+  window.currentPlayerId = playerId;
+  window.currentPlayerUsername = data.username || '';
+
+  // 如果你有 localStorage 也可以順便同步
+  localStorage.setItem('player_role', data.role);
+  localStorage.setItem('player_username', data.username);
+})();
 
 // ==========================
 // (2) Supabase 初始化
