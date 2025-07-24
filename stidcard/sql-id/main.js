@@ -193,11 +193,16 @@ function showStep(step) {
     formData.occupation_type = formData.occupation_type || [];
     updateJobButtons();
   }
- if (step === 8) {
+if (step === 8) {
     if (typeof initAllSkillListsThenRender === "function") {
       initAllSkillListsThenRender();
     }
-  }
+    // ---- 這裡加 ----
+    const addBtn = document.getElementById('admin-add-skill-btn');
+    if (addBtn) {
+      addBtn.style.display = (typeof userRole !== 'undefined' && userRole === 'admin') ? '' : 'none';
+    }
+}
   updateStudentCard();
 }
 
