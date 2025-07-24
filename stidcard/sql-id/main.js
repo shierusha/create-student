@@ -6,7 +6,7 @@
   const playerId = localStorage.getItem('player_id');
   if (!playerId) {
     // 未登入就跳回登入頁
-    window.location.href = 'https://shierusha.github.io/login/';
+    window.location.href = 'https://shierusha.github.io/login/login';
     return;
   }
 
