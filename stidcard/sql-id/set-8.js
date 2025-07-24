@@ -1775,19 +1775,25 @@ function buildSkillEffectsPreview(skill, showCustom) {
     arr.push(skill.custom_effect_description);
   }
   // 負作用
-  if(Array.isArray(skill.debuffs)){
-    skill.debuffs.forEach(d=>{
-      arr.push('# '+(d.debuff_name||''));
-    });
-  }
+if (Array.isArray(skill.debuffs)) {
+  skill.debuffs.forEach(d => {
+    let label = '';
+    // toally → 目標；self → 自身
+    if (d.applied_to === 'toally') label = '目標 ';
+    else label = '自身 ';
+    // 顯示：# 目標 debuff名稱
+    arr.push(`# ${label}${d.debuff_name || ''}`);
+  });
+}
+
   return arr.join('\n');
 }
 
 
 // 自動切換到第8頁
-/*document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
 const step8 = document.getElementById('form-step-8');
-if (step8) step8.classList.add('active');*/
+if (step8) step8.classList.add('active');
 
  
 // ========== END ========== 
