@@ -836,6 +836,6 @@ document.getElementById('nickname').addEventListener('input', function() {
 
 });
 
-
+showStep(1); 
 //document.querySelectorAll('.form-page').forEach(f=>f.classList.remove('active'));
 //ocument.getElementById('form-step-6').classList.add('active');
