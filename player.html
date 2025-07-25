@@ -34,13 +34,14 @@
         .eq('email', user.email)
         .single();
       if (error || !data) {
-        location.href = 'https://shierusha.github.io/login/login; return;
+        location.href = 'https://shierusha.github.io/login/login'; return;
       }
       // 如果是 admin，直接跳到 admin 頁
       if (data.role === 'admin') {
         location.href = 'https://shierusha.github.io/login/admin';
         return;
       }
+      // 正常玩家才會顯示歡迎詞
       document.getElementById('player-welcome').textContent = `歡迎 ${data.username} 玩家`;
     }
 
