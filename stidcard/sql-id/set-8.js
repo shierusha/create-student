@@ -1791,9 +1791,9 @@ if (Array.isArray(skill.debuffs)) {
 
 
 // 自動切換到第8頁
-document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+/*document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
 const step8 = document.getElementById('form-step-8');
-if (step8) step8.classList.add('active');
+if (step8) step8.classList.add('active');*/
 
  
 // ========== END ========== 
