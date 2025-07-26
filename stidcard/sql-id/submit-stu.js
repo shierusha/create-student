@@ -6,42 +6,38 @@ async function checkStudentNameDuplicate(name, student_id = null) {
   let { data, error } = await query;
   return data && data.length > 0;
 }
-
 async function submitAllStudentData() {
-   // 1. 檢查是否登入
+  // 1. 檢查登入
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
   if (!player_id) {
     alert('請先登入！');
     return;
   }
 
-  // 2. 【這裡加：檢查角色名稱重複】
-  // 如果是修改，帶上 student_id；新增則不用
+  // 2. 角色名稱唯一檢查
   const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
   if (isDup) {
     alert('角色名稱已被申請，請換一個！');
     return;
   }
 
-  // --------- 技能分數計算 ---------
+  // 3. 技能分數、自動 type 判斷
   let totalSkillScore = (formData.skills || [])
     .map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0))
     .reduce((a, b) => a + b, 0);
   let occNum = (formData.occupation_type || []).length;
   let expectScore = occNum === 1 ? 8 : occNum === 2 ? 7 : 3;
 
-  // --------- 自動判斷 type ---------
   let isOriginal = formData.skills.some(s => s.custom_effect_enable);
   let isPassive = formData.skills.some(s => s.is_passive);
   let isScoreWrong = totalSkillScore !== expectScore;
   let isMultiJob = occNum > 2;
-  // 優先順序：問題學生 > 特殊學生 > 一般學生
   let stuType = "normal";
   if (isMultiJob || isScoreWrong) stuType = "problem";
   else if (isOriginal || isPassive) stuType = "special";
 
   let studentsInsert = {
-    student_id: formData.student_id || undefined, // 一定要補這行
+    student_id: formData.student_id || undefined, // 編輯時有 id
     player_id,
     name: formData.name,
     nickname: formData.nickname,
@@ -65,7 +61,7 @@ async function submitAllStudentData() {
     student_code: null
   };
 
-  // --- upsert 學生 ---
+  // 4. upsert 學生
   let { data: stuData, error: stuErr } = await client
     .from('students')
     .upsert([studentsInsert], { onConflict: 'student_id' })
@@ -73,18 +69,17 @@ async function submitAllStudentData() {
     .single();
 
   if (stuErr) {
-  // 這一行是防止名稱重複
-  if (stuErr.message && stuErr.message.includes('students_name_key')) {
-    alert('角色名稱已被申請，請換一個！');
+    // 雙重防呆：資料庫唯一索引仍可能攔下
+    if (stuErr.message && stuErr.message.includes('students_name_key')) {
+      alert('角色名稱已被申請，請換一個！');
+      return;
+    }
+    alert('角色基本資料寫入失敗：' + (stuErr?.message || ''));
     return;
   }
-  alert('角色基本資料寫入失敗：' + (stuErr?.message || ''));
-  return;
-}
-
   const student_id = stuData.student_id;
 
-  // --- 角色設定/裏設定 notes ---
+  // 5. notes
   await client.from('student_notes').delete().eq('student_id', student_id);
   const notes = (formData.notes || []).map((n, i) => ({
     student_id,
@@ -100,7 +95,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // --- 原創技能寫進 skill_effects（如有） ---
+  // 6. 原創技能（如有）
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
@@ -123,7 +118,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // --- 技能資料表 student_skills ---
+  // 7. 技能主表
   await client.from('student_skills').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
@@ -156,7 +151,7 @@ async function submitAllStudentData() {
     skill._skill_id = skillData.id;
   }
 
-  // --- 技能中介表 ---
+  // 8. 技能效果/負作用連結表
   await client.from('student_skill_effect_links').delete().eq('student_id', student_id);
   await client.from('student_skill_debuff_links').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
@@ -179,7 +174,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // --- 審核狀態 student_reviews ---
+  // 9. 新增審核狀態
   await client.from('student_reviews').delete().eq('student_id', student_id);
   await client.from('student_reviews').insert([{
     reviewer_id: null,
@@ -192,3 +187,4 @@ async function submitAllStudentData() {
 
   alert('資料儲存成功！');
 }
+
