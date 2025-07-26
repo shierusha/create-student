@@ -1,9 +1,28 @@
+async function checkStudentNameDuplicate(name, student_id = null) {
+  let query = client.from('students').select('student_id').eq('name', name);
+  if (student_id) {
+    query = query.neq('student_id', student_id);
+  }
+  let { data, error } = await query;
+  return data && data.length > 0;
+}
+
 async function submitAllStudentData() {
+   // 1. 檢查是否登入
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
   if (!player_id) {
     alert('請先登入！');
     return;
   }
+
+  // 2. 【這裡加：檢查角色名稱重複】
+  // 如果是修改，帶上 student_id；新增則不用
+  const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
+  if (isDup) {
+    alert('角色名稱已被申請，請換一個！');
+    return;
+  }
+
   // --------- 技能分數計算 ---------
   let totalSkillScore = (formData.skills || [])
     .map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0))
@@ -52,10 +71,16 @@ async function submitAllStudentData() {
     .select()
     .single();
 
-  if (stuErr || !stuData) {
-    alert('角色基本資料寫入失敗：' + (stuErr?.message || ''));
+  if (stuErr) {
+  // 這一行是防止名稱重複
+  if (stuErr.message && stuErr.message.includes('students_name_key')) {
+    alert('角色名稱已被申請，請換一個！');
     return;
   }
+  alert('角色基本資料寫入失敗：' + (stuErr?.message || ''));
+  return;
+}
+
   const student_id = stuData.student_id;
 
   // --- 角色設定/裏設定 notes ---
