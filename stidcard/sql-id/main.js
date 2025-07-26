@@ -840,9 +840,10 @@ document.getElementById('nickname').addEventListener('input', function() {
   });
 
 });
-/*
+
+
+
 // 撈學生資料並回填 formData（完整填回所有步驟）
-// stuId = student_id（uuid格式）
 async function loadStudentDataToForm(stuId) {
   if (!stuId) return;
   // 撈主要 student
@@ -851,7 +852,7 @@ async function loadStudentDataToForm(stuId) {
     alert('查無此學生！');
     return;
   }
-  // 填 formData（各頁欄位）
+  // 1. 基本欄位
   formData.name = student.name || '';
   formData.nickname = student.nickname || '';
   formData.alignment = student.alignment || '';
@@ -869,39 +870,45 @@ async function loadStudentDataToForm(stuId) {
   formData.preferred_role = student.preferred_role || '';
   formData.starting_position = student.starting_position || '';
   formData.occupation_type = Array.isArray(student.occupation_type) ? student.occupation_type : (student.occupation_type ? [student.occupation_type] : []);
-  formData.student_id = stuId; // 記得存下 id
+  formData.student_id = stuId;
 
-  // 裡設定 notes（多條要查 student_notes）
-  const { data: notesArr, error: noteErr } = await client.from('student_notes').select('*').eq('student_id', stuId).order('sort_order');
+  // 2. notes
+  const { data: notesArr } = await client.from('student_notes').select('*').eq('student_id', stuId).order('sort_order');
   if (notesArr && notesArr.length) {
     formData.notes = notesArr.map(n => ({ content: n.content, is_public: !!n.is_public }));
   } else {
     formData.notes = [{ content: '', is_public: true }];
   }
 
-  // 技能（student_skills）：最多兩個＋問題學生可能更多
-  const { data: skillsArr, error: skillErr } = await client.from('student_skills').select('*').eq('student_id', stuId).order('skill_slot');
+  // 3. 技能（包含效果/debuff 關聯）
+  const { data: skillsArr } = await client.from('student_skills').select('*').eq('student_id', stuId).order('skill_slot');
   if (skillsArr && skillsArr.length) {
-    // 可以更細：還可撈效果、debuff，這裡先塞基本資料
-    formData.skills = skillsArr.map(s => ({
-      ...s,
-      // 陣列欄位如有要自己處理轉回
-      effect_ids: s.effect_ids || [],
-      debuffs: s.debuffs || []
-    }));
+    // 補撈效果 ID & debuff ID
+    for (let i = 0; i < skillsArr.length; i++) {
+      let skill = skillsArr[i];
+      // 撈 effect_ids
+      const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
+      skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
+      // 撈 debuffs
+      const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
+      // 你可以等前端再去對應 skillDebuffList 組合 debuff 物件
+      skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
+    }
+    formData.skills = skillsArr;
   } else {
     formData.skills = [{}, {}];
   }
 
   // 重新渲染目前頁面
-  showStep(currentStep); // 或者你要強制 showStep(1) 重新切到第一頁也可
+  showStep(currentStep);
   updateStudentCard();
+  // 技能頁如果已經進入過要手動 render
+  if (typeof initAllSkillListsThenRender === "function" && currentStep === 8) {
+    initAllSkillListsThenRender();
+  }
 }
 
 // URL帶stu自動填表
 const stuId = new URLSearchParams(location.search).get('stu');
 if (stuId) loadStudentDataToForm(stuId);
-*/
 
-//document.querySelectorAll('.form-page').forEach(f=>f.classList.remove('active'));
-//ocument.getElementById('form-step-6').classList.add('active');
