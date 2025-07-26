@@ -880,24 +880,30 @@ async function loadStudentDataToForm(stuId) {
     formData.notes = [{ content: '', is_public: true }];
   }
 
-  // 3. 技能（包含效果/debuff 關聯）
-  const { data: skillsArr } = await client.from('student_skills').select('*').eq('student_id', stuId).order('skill_slot');
-  if (skillsArr && skillsArr.length) {
+ // 3. 技能（含效果/debuff/被動條件）
+const { data: skillsArr } = await client
+  .from('student_skills')
+  .select('*, passive_trigger:passive_trigger_id(condition)')
+  .eq('student_id', stuId)
+  .order('skill_slot');
+
+if (skillsArr && skillsArr.length) {
+  for (let i = 0; i < skillsArr.length; i++) {
+    let skill = skillsArr[i];
     // 補撈效果 ID & debuff ID
-    for (let i = 0; i < skillsArr.length; i++) {
-      let skill = skillsArr[i];
-      // 撈 effect_ids
-      const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
-      skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
-      // 撈 debuffs
-      const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
-      // 你可以等前端再去對應 skillDebuffList 組合 debuff 物件
-      skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
-    }
-    formData.skills = skillsArr;
-  } else {
-    formData.skills = [{}, {}];
+    const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
+    skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
+    // 補撈 debuffs
+    const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
+    skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
+    // 把 passive_trigger 的 condition 拉回到 skill.passive_trigger_condition，這樣前端不用動
+    skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
   }
+  formData.skills = skillsArr;
+} else {
+  formData.skills = [{}, {}];
+}
+
 
   // 重新渲染目前頁面
   showStep(currentStep);
