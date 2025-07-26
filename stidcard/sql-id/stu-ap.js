@@ -1,4 +1,22 @@
 //申請/修改學生證預覽表之JS
+
+// 1. 查圖片的 url（只抓一張，假設一個學生一張圖）
+const { data: imageData, error: imgErr } = await client
+  .from('student_images')
+  .select('image_url')
+  .eq('student_id', student_id)
+  .single(); // 或 .maybeSingle() 如果不保證一定有
+
+if (imgErr) {
+  console.error('找不到圖片：', imgErr.message);
+} else if (imageData && imageData.image_url) {
+  document.querySelector('.char-img').src = imageData.image_url;
+} else {
+  // 沒有圖片可以用預設圖
+  document.querySelector('.char-img').src = '/default-image.png';
+}
+
+
 function setNameFontSize(selector, maxChars) {
   document.querySelectorAll(selector).forEach(box => {
     const nameDiv = box.querySelector('.name-box');
