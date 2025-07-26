@@ -13,7 +13,7 @@ if (imgErr) {
   document.querySelector('.char-img').src = imageData.image_url;
 } else {
   // 沒有圖片可以用預設圖
-  document.querySelector('.char-img').src = '/default-image.png';
+  document.querySelector('.char-img').src = 'https://shierusha.github.io/create-student/stidcard/img/export-1.png';
 }
 
 
