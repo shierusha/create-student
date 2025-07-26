@@ -1590,77 +1590,79 @@ if (backBtn) {
 }
 const formStep8 = document.getElementById('form-step-8');
 if (formStep8) {
- formStep8.onsubmit = function (e) {
-  e.preventDefault();
-  let allGood = true, errMsg = "";
+  formStep8.onsubmit = async function (e) {
+    e.preventDefault();
+    let allGood = true, errMsg = "";
 
-  formData.skills.forEach((skill, idx) => {
-    // 技能名稱必填
-    if (!skill.skill_name || !skill.skill_name.trim()) {
-      allGood = false;
-      errMsg += `請填寫技能${idx + 1}名稱\n`;
-    }
-    // 技能敘述必填
-    if (!skill.description || !skill.description.trim()) {
-      allGood = false;
-      errMsg += `請填寫技能${idx + 1}敘述\n`;
-    }
-  // 技能施放對象必選
-  if (!skill.target_faction || skill.target_faction === '') {
-    allGood = false;
-    errMsg += `請選擇技能${idx + 1}的施放對象\n`;
-  }
-    // 技能效果、移動技能、原創技能三選一
-    if (
-      (!Array.isArray(skill.effect_ids) || skill.effect_ids.length === 0)
-      && !skill.use_movement
-      && !skill.custom_effect_enable
-    ) {
-      allGood = false;
-      errMsg += `技能${idx + 1}必須至少選一個效果\n`;
-    }
-    
-    
-    // 累積☆判斷
-    let extraStar = 0;
-    if (skill.is_passive && skill.passive_trigger_limit === 'unlimited') extraStar += 4;
-    let scoreSum = (Array.isArray(skill.effect_scores) ? skill.effect_scores.reduce((a, b) => a + b, 0) : 0)
-      + (skill.use_movement ? ((Array.isArray(formData.occupation_type) && formData.occupation_type.length === 1) ? 20 : 15) : 0)
-      + (skill.custom_effect_enable ? 15 : 0);
-    if (scoreSum >= 30) extraStar += 2;
-    let ccScore = 0;
-    if (Array.isArray(skill.effect_ids) && window.skillEffectsList) {
-      skill.effect_ids.forEach(eid => {
-        let eff = window.skillEffectsList.find(e => e.effect_id === eid);
-        if (eff && eff.cc_score) ccScore += Number(eff.cc_score);
-      });
-    }
-    let ccStars = 0;
-    if (ccScore >= 15) {
-      ccStars = Math.floor(ccScore / 5);
-      if (ccStars > 6) ccStars = 6;
-      extraStar += ccStars;
-    }
-    let holdScore = (Array.isArray(skill.debuffs) ? skill.debuffs.reduce((a, d) => a + Number(d.offset_score || 0), 0) : 0);
-    let holdStar = Math.floor(holdScore / 5);
-    
+    formData.skills.forEach((skill, idx) => {
+      // 技能名稱必填
+      if (!skill.skill_name || !skill.skill_name.trim()) {
+        allGood = false;
+        errMsg += `請填寫技能${idx + 1}名稱\n`;
+      }
+      // 技能敘述必填
+      if (!skill.description || !skill.description.trim()) {
+        allGood = false;
+        errMsg += `請填寫技能${idx + 1}敘述\n`;
+      }
+      // 技能施放對象必選
+      if (!skill.target_faction || skill.target_faction === '') {
+        allGood = false;
+        errMsg += `請選擇技能${idx + 1}的施放對象\n`;
+      }
+      // 技能效果、移動技能、原創技能三選一
+      if (
+        (!Array.isArray(skill.effect_ids) || skill.effect_ids.length === 0)
+        && !skill.use_movement
+        && !skill.custom_effect_enable
+      ) {
+        allGood = false;
+        errMsg += `技能${idx + 1}必須至少選一個效果\n`;
+      }
+      // 累積☆判斷
+      let extraStar = 0;
+      if (skill.is_passive && skill.passive_trigger_limit === 'unlimited') extraStar += 4;
+      let scoreSum = (Array.isArray(skill.effect_scores) ? skill.effect_scores.reduce((a, b) => a + b, 0) : 0)
+        + (skill.use_movement ? ((Array.isArray(formData.occupation_type) && formData.occupation_type.length === 1) ? 20 : 15) : 0)
+        + (skill.custom_effect_enable ? 15 : 0);
+      if (scoreSum >= 30) extraStar += 2;
+      let ccScore = 0;
+      if (Array.isArray(skill.effect_ids) && window.skillEffectsList) {
+        skill.effect_ids.forEach(eid => {
+          let eff = window.skillEffectsList.find(e => e.effect_id === eid);
+          if (eff && eff.cc_score) ccScore += Number(eff.cc_score);
+        });
+      }
+      let ccStars = 0;
+      if (ccScore >= 15) {
+        ccStars = Math.floor(ccScore / 5);
+        if (ccStars > 6) ccStars = 6;
+        extraStar += ccStars;
+      }
+      let holdScore = (Array.isArray(skill.debuffs) ? skill.debuffs.reduce((a, d) => a + Number(d.offset_score || 0), 0) : 0);
+      let holdStar = Math.floor(holdScore / 5);
 
-    
-    if (extraStar > holdStar) {
-      allGood = false;
-      errMsg += `技能${idx + 1}「${skill.skill_name || '未命名'}」累積☆未被足夠★抵銷！\n`;
-    }
-  });
+      if (extraStar > holdStar) {
+        allGood = false;
+        errMsg += `技能${idx + 1}「${skill.skill_name || '未命名'}」累積☆未被足夠★抵銷！\n`;
+      }
+    });
 
-  if (!allGood) {
-    alert(errMsg);
-    return;
-  }
-   
-  // saveSkillsToDatabase(formData);
-  alert("驗證通過！！");
-};
+    if (!allGood) {
+      alert(errMsg);
+      return;
+    }
+
+    // 真正送出資料
+    try {
+      await submitAllStudentData();
+      alert("驗證通過，角色已送出！");
+    } catch (err) {
+      alert("送出失敗：" + (err.message || err));
+    }
+  };
 }
+
 
 // 初始化畫面
 if (typeof formData !== 'undefined' && Array.isArray(formData.skills)) {
