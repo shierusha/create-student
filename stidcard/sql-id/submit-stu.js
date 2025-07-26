@@ -152,23 +152,24 @@ async function submitAllStudentData() {
   await client.from('student_skills').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
+
     const cd = typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null;
-    let skillInsert = {
-      student_id,
-      skill_slot: i + 1,
-      skill_name: skill.skill_name,
-      description: skill.description,
-      final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
-      final_cd: (cd === "X" || cd === "" || cd == null) ? null : Number(cd),
-      is_passive: !!skill.is_passive,
-      passive_trigger_limit: skill.passive_trigger_limit || null,
-      linked_movement_id: skill.use_movement ? skill.move_ids : null,
-      max_targets: skill.max_targets,
-      target_faction: skill.target_faction,
-      require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
-        let eff = window.skillEffectsList.find(e => e.effect_id === eid);
-        return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
-      }),
+let skillInsert = {
+  student_id,
+  skill_slot: i + 1,
+  skill_name: skill.skill_name,
+  description: skill.description,
+  final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
+  final_cd: (cd === "X" || cd === "" || cd == null) ? null : Number(cd),
+  is_passive: !!skill.is_passive,
+  passive_trigger_limit: skill.passive_trigger_limit || null,
+  linked_movement_id: skill.use_movement ? skill.move_ids : null,
+  max_targets: skill.max_targets,
+  target_faction: skill.target_faction,
+  require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
+    let eff = window.skillEffectsList.find(e => e.effect_id === eid);
+    return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
+  }),
       custom_skill_uuid: skill.custom_skill_uuid || null,
       range: skill.range || null,
       passive_trigger_id: skill._passive_trigger_id_to_save || null
@@ -182,30 +183,24 @@ async function submitAllStudentData() {
   }
 
   // ---------- 6. 技能效果/負作用連結表 ----------
-  // 改：先查所有 skill_id 再 in 刪除
-  const { data: skills } = await client.from('student_skills').select('id').eq('student_id', student_id);
-  const skillIds = skills.map(s => s.id);
-
-  if (skillIds.length > 0) {
-    await client.from('student_skill_effect_links').delete().in('skill_id', skillIds);
-    await client.from('student_skill_debuff_links').delete().in('skill_id', skillIds);
-  }
-
+  await client.from('student_skill_effect_links').delete().eq('student_id', student_id);
+  await client.from('student_skill_debuff_links').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     if (Array.isArray(skill.effect_ids) && skill.effect_ids.length > 0) {
       let rows = skill.effect_ids.map(eid => ({
-        skill_id: skill._skill_id,
-        effect_id: eid
+  skill_id: skill._skill_id,
+  effect_id: eid
       }));
       await client.from('student_skill_effect_links').insert(rows);
     }
     if (Array.isArray(skill.debuffs) && skill.debuffs.length > 0) {
-      let rows = skill.debuffs.map(d => ({
-        skill_id: skill._skill_id,
-        debuff_id: d.debuff_id,
-        applied_to: d.applied_to || 'self'
-      }));
+let rows = skill.debuffs.map(d => ({
+  student_id,
+  skill_id: skill._skill_id,
+  debuff_id: d.debuff_id,
+  applied_to: d.applied_to || 'self'
+}));
       await client.from('student_skill_debuff_links').insert(rows);
     }
   }
@@ -217,8 +212,8 @@ async function submitAllStudentData() {
     student_id,
     status: null,
     review_notes: null,
-    submitted_at: new Date().toISOString()
-    // reviewed_at: null   // 你的 schema 沒這一欄，不能傳
+    submitted_at: new Date().toISOString(),
+    reviewed_at: null
   }]);
 
   alert('資料儲存成功！');
