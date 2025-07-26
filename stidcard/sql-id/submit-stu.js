@@ -216,20 +216,3 @@ async function submitAllStudentData() {
 
   alert('資料儲存成功！');
 }
-
-// 撈 student_skills（包含 passive_trigger 的 condition）
-const { data: skillsArr, error: skillErr } = await client
-  .from('student_skills')
-  .select('*, passive_trigger:passive_trigger_id (condition)')
-  .eq('student_id', stuId)
-  .order('skill_slot');
-
-if (skillsArr && skillsArr.length) {
-  formData.skills = skillsArr.map(s => ({
-    ...s,
-    passive_trigger_condition: s.passive_trigger?.condition || '', // 填給表單用
-    // 其他欄位也一樣帶進去
-  }));
-} else {
-  formData.skills = [{}, {}];
-}
