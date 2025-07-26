@@ -152,22 +152,24 @@ async function submitAllStudentData() {
   await client.from('student_skills').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
-    let skillInsert = {
-      student_id,
-      skill_slot: i + 1,
-      skill_name: skill.skill_name,
-      description: skill.description,
-      final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
-      final_cd: typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null,
-      is_passive: !!skill.is_passive,
-      passive_trigger_limit: skill.passive_trigger_limit || null,
-      linked_movement_id: skill.use_movement ? skill.move_ids : null,
-      max_targets: skill.max_targets,
-      target_faction: skill.target_faction,
-      require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
-        let eff = window.skillEffectsList.find(e => e.effect_id === eid);
-        return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
-      }),
+
+    const cd = typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null;
+let skillInsert = {
+  student_id,
+  skill_slot: i + 1,
+  skill_name: skill.skill_name,
+  description: skill.description,
+  final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
+  final_cd: (cd === "X" || cd === "" || cd == null) ? null : Number(cd),
+  is_passive: !!skill.is_passive,
+  passive_trigger_limit: skill.passive_trigger_limit || null,
+  linked_movement_id: skill.use_movement ? skill.move_ids : null,
+  max_targets: skill.max_targets,
+  target_faction: skill.target_faction,
+  require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
+    let eff = window.skillEffectsList.find(e => e.effect_id === eid);
+    return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
+  }),
       custom_skill_uuid: skill.custom_skill_uuid || null,
       range: skill.range || null,
       passive_trigger_id: skill._passive_trigger_id_to_save || null
