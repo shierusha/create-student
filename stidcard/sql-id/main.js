@@ -177,6 +177,9 @@ function showStep(step) {
     document.getElementById('likes').value = formData.likes || '';
     document.getElementById('hate').value = formData.hate || '';
   }
+   if (step === 4) {
+   document.getElementById('background').value = formData.background || '';
+ }
   if (step === 5) {
     initNotesForm();
   }
