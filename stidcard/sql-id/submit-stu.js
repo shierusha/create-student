@@ -41,6 +41,7 @@ async function submitAllStudentData() {
   else if (isOriginal || isPassive) stuType = "special";
 
   let studentsInsert = {
+    student_id: formData.student_id || undefined, // 一定要補這行
     player_id,
     name: formData.name,
     nickname: formData.nickname,
