@@ -840,7 +840,7 @@ document.getElementById('nickname').addEventListener('input', function() {
   });
 
 });
-
+/*
 // 撈學生資料並回填 formData（完整填回所有步驟）
 // stuId = student_id（uuid格式）
 async function loadStudentDataToForm(stuId) {
@@ -901,7 +901,7 @@ async function loadStudentDataToForm(stuId) {
 // URL帶stu自動填表
 const stuId = new URLSearchParams(location.search).get('stu');
 if (stuId) loadStudentDataToForm(stuId);
-
+*/
 
 //document.querySelectorAll('.form-page').forEach(f=>f.classList.remove('active'));
 //ocument.getElementById('form-step-6').classList.add('active');
