@@ -903,6 +903,8 @@ if (skillsArr && skillsArr.length) {
     skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
   }
   formData.skills = skillsArr;
+    fillDebuffDetailToSkills(skillsArr, window.skillDebuffList);
+  formData.skills = skillsArr;
 } else {
   formData.skills = [{}, {}];
 }
