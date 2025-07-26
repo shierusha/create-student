@@ -195,11 +195,12 @@ let skillInsert = {
       await client.from('student_skill_effect_links').insert(rows);
     }
     if (Array.isArray(skill.debuffs) && skill.debuffs.length > 0) {
-      let rows = skill.debuffs.map(d => ({
-        skill_id: skill._skill_id,
-        debuff_id: d.debuff_id
-        applied_to: d.applied_to || 'self'
-      }));
+let rows = skill.debuffs.map(d => ({
+  student_id,
+  skill_id: skill._skill_id,
+  debuff_id: d.debuff_id,
+  applied_to: d.applied_to || 'self'
+}));
       await client.from('student_skill_debuff_links').insert(rows);
     }
   }
