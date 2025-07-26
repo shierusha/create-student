@@ -221,5 +221,4 @@ async function submitAllStudentData() {
     // reviewed_at: null   // 你的 schema 沒這一欄，不能傳
   }]);
 
-  alert('資料儲存成功！');
 }
