@@ -1,3 +1,4 @@
+// 先把判斷角色名稱是否重複的方法放最前面
 async function checkStudentNameDuplicate(name, student_id = null) {
   let query = client.from('students').select('student_id').eq('name', name);
   if (student_id) {
@@ -6,28 +7,28 @@ async function checkStudentNameDuplicate(name, student_id = null) {
   let { data, error } = await query;
   return data && data.length > 0;
 }
+
+// --- 主送出方法 ---
 async function submitAllStudentData() {
-  // 1. 檢查登入
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
   if (!player_id) {
     alert('請先登入！');
     return;
   }
 
-  // 2. 角色名稱唯一檢查
+  // 檢查名稱唯一
   const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
   if (isDup) {
     alert('角色名稱已被申請，請換一個！');
     return;
   }
 
-  // 3. 技能分數、自動 type 判斷
+  // 分數、類型自動判斷
   let totalSkillScore = (formData.skills || [])
     .map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0))
     .reduce((a, b) => a + b, 0);
   let occNum = (formData.occupation_type || []).length;
   let expectScore = occNum === 1 ? 8 : occNum === 2 ? 7 : 3;
-
   let isOriginal = formData.skills.some(s => s.custom_effect_enable);
   let isPassive = formData.skills.some(s => s.is_passive);
   let isScoreWrong = totalSkillScore !== expectScore;
@@ -37,7 +38,7 @@ async function submitAllStudentData() {
   else if (isOriginal || isPassive) stuType = "special";
 
   let studentsInsert = {
-    student_id: formData.student_id || undefined, // 編輯時有 id
+    student_id: formData.student_id || undefined,
     player_id,
     name: formData.name,
     nickname: formData.nickname,
@@ -61,7 +62,7 @@ async function submitAllStudentData() {
     student_code: null
   };
 
-  // 4. upsert 學生
+  // ---------- 1. upsert 學生 ----------
   let { data: stuData, error: stuErr } = await client
     .from('students')
     .upsert([studentsInsert], { onConflict: 'student_id' })
@@ -69,7 +70,6 @@ async function submitAllStudentData() {
     .single();
 
   if (stuErr) {
-    // 雙重防呆：資料庫唯一索引仍可能攔下
     if (stuErr.message && stuErr.message.includes('students_name_key')) {
       alert('角色名稱已被申請，請換一個！');
       return;
@@ -79,7 +79,7 @@ async function submitAllStudentData() {
   }
   const student_id = stuData.student_id;
 
-  // 5. notes
+  // ---------- 2. notes ----------
   await client.from('student_notes').delete().eq('student_id', student_id);
   const notes = (formData.notes || []).map((n, i) => ({
     student_id,
@@ -95,7 +95,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // 6. 原創技能（如有）
+  // ---------- 3. 原創技能 skill_effects（如有） ----------
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
@@ -118,7 +118,37 @@ async function submitAllStudentData() {
     }
   }
 
-  // 7. 技能主表
+  // ---------- 4. 處理被動技能觸發條件 passive_trigger ----------
+  for (let i = 0; i < formData.skills.length; i++) {
+    let skill = formData.skills[i];
+    let passive_trigger_id = null;
+    if (skill.is_passive && skill.passive_trigger_condition && skill.passive_trigger_condition.trim()) {
+      // 編輯
+      if (skill.passive_trigger_id) {
+        let { error: pErr } = await client
+          .from('passive_trigger')
+          .update({ condition: skill.passive_trigger_condition })
+          .eq('trigger_id', skill.passive_trigger_id);
+        if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
+        passive_trigger_id = skill.passive_trigger_id;
+      } else {
+        // 新增
+        let { data: pData, error: pErr } = await client
+          .from('passive_trigger')
+          .insert([{ condition: skill.passive_trigger_condition }])
+          .select()
+          .single();
+        if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
+        passive_trigger_id = pData.trigger_id;
+        skill.passive_trigger_id = passive_trigger_id; // 寫回防重複
+      }
+    } else {
+      passive_trigger_id = null;
+    }
+    skill._passive_trigger_id_to_save = passive_trigger_id;
+  }
+
+  // ---------- 5. 技能 student_skills ----------
   await client.from('student_skills').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
@@ -131,8 +161,6 @@ async function submitAllStudentData() {
       final_cd: typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null,
       is_passive: !!skill.is_passive,
       passive_trigger_limit: skill.passive_trigger_limit || null,
-      passive_trigger_condition: skill.passive_trigger_condition || null,
-      passive_trigger_code: null,
       linked_movement_id: skill.use_movement ? skill.move_ids : null,
       max_targets: skill.max_targets,
       target_faction: skill.target_faction,
@@ -142,6 +170,7 @@ async function submitAllStudentData() {
       }),
       custom_skill_uuid: skill.custom_skill_uuid || null,
       range: skill.range || null,
+      passive_trigger_id: skill._passive_trigger_id_to_save || null
     };
     let { data: skillData, error: skillErr } = await client.from('student_skills').insert([skillInsert]).select().single();
     if (skillErr || !skillData) {
@@ -151,7 +180,7 @@ async function submitAllStudentData() {
     skill._skill_id = skillData.id;
   }
 
-  // 8. 技能效果/負作用連結表
+  // ---------- 6. 技能效果/負作用連結表 ----------
   await client.from('student_skill_effect_links').delete().eq('student_id', student_id);
   await client.from('student_skill_debuff_links').delete().eq('student_id', student_id);
   for (let i = 0; i < formData.skills.length; i++) {
@@ -174,7 +203,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // 9. 新增審核狀態
+  // ---------- 7. 新增審核狀態 student_reviews ----------
   await client.from('student_reviews').delete().eq('student_id', student_id);
   await client.from('student_reviews').insert([{
     reviewer_id: null,
@@ -187,4 +216,3 @@ async function submitAllStudentData() {
 
   alert('資料儲存成功！');
 }
-
