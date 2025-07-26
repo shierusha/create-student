@@ -1,4 +1,17 @@
 //BATA 測試用JS
+function fillDebuffDetailToSkills(skills, debuffList) {
+  if (!skills) return;
+  skills.forEach(skill => {
+    if (Array.isArray(skill.debuffs)) {
+      skill.debuffs = skill.debuffs.map(d => {
+        const full = debuffList.find(item => item.debuff_id === d.debuff_id);
+        return { ...d, ...full };
+      });
+    }
+  });
+}
+
+
 function resetSkillEffectsAndMovement(skill) {
   skill.effect_ids = [];
   skill.effect_scores = [];
