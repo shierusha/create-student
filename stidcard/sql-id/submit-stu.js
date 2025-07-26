@@ -187,17 +187,16 @@ async function submitAllStudentData() {
     let skill = formData.skills[i];
     if (Array.isArray(skill.effect_ids) && skill.effect_ids.length > 0) {
       let rows = skill.effect_ids.map(eid => ({
-        student_id,
-        skill_id: skill._skill_id,
-        effect_id: eid
+  skill_id: skill._skill_id,
+  effect_id: eid
       }));
       await client.from('student_skill_effect_links').insert(rows);
     }
     if (Array.isArray(skill.debuffs) && skill.debuffs.length > 0) {
       let rows = skill.debuffs.map(d => ({
-        student_id,
         skill_id: skill._skill_id,
         debuff_id: d.debuff_id
+        applied_to: d.applied_to || 'self'
       }));
       await client.from('student_skill_debuff_links').insert(rows);
     }
