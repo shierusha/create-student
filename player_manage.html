@@ -156,10 +156,9 @@
   }
 
   // 學生證連結（你可以改成你的學生證網址規則）
-  function openStudentCard(student_id) {
-    // 假設學生證網址為 student_card.html?sid=xxxx
-    window.open(`https://shierusha.github.io/school-battle/students/st-idcard.html?sid=${student_id}`, "_blank");
-  }
+function openStudentCard(student_id) {
+  window.open(`https://shierusha.github.io/create-student/stidcard/shierusha-stu?stu=${student_id}`, "_blank");
+}
 
   // ========== 公開設定 Modal ==========
   let currentStuId = null, notesCache = [];
