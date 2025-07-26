@@ -38,29 +38,33 @@ async function submitAllStudentData() {
   else if (isOriginal || isPassive) stuType = "special";
 
   let studentsInsert = {
-    student_id: formData.student_id || undefined,
-    player_id,
-    name: formData.name,
-    nickname: formData.nickname,
-    alignment: formData.alignment,
-    gender: formData.gender,
-    age: formData.age,
-    height: formData.height,
-    weight: formData.weight,
-    race: formData.race,
-    personality: formData.personality,
-    background: formData.background,
-    likes: formData.likes,
-    hate: formData.hate,
-    element: Array.isArray(formData.element) && formData.element.length > 0 ? formData.element : null,
-    weakness_id: formData.weakness_id || null,
-    preferred_role: formData.preferred_role,
-    starting_position: formData.starting_position || null,
-    occupation_type: Array.isArray(formData.occupation_type) && formData.occupation_type.length > 0 ? formData.occupation_type : null,
-    total_skill_score: totalSkillScore,
-    student_type: stuType,
-    student_code: null
-  };
+  player_id,
+  name: formData.name,
+  nickname: formData.nickname,
+  alignment: formData.alignment,
+  gender: formData.gender,
+  age: formData.age,
+  height: formData.height,
+  weight: formData.weight,
+  race: formData.race,
+  personality: formData.personality,
+  background: formData.background,
+  likes: formData.likes,
+  hate: formData.hate,
+  element: Array.isArray(formData.element) && formData.element.length > 0 ? formData.element : null,
+  weakness_id: formData.weakness_id || null,
+  preferred_role: formData.preferred_role,
+  starting_position: formData.starting_position || null,
+  occupation_type: Array.isArray(formData.occupation_type) && formData.occupation_type.length > 0 ? formData.occupation_type : null,
+  total_skill_score: totalSkillScore,
+  student_type: stuType,
+  student_code: null
+};
+// 這裡才加上 student_id，只有編輯時才會有
+if (formData.student_id) {
+  studentsInsert.student_id = formData.student_id;
+}
+
 
   // ---------- 1. upsert 學生 ----------
   let { data: stuData, error: stuErr } = await client
