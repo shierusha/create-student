@@ -914,7 +914,6 @@ if (skillsArr && skillsArr.length) {
     // 把 passive_trigger 的 condition 拉回到 skill.passive_trigger_condition，這樣前端不用動
     skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
   }
-  formData.skills = skillsArr;
     fillDebuffDetailToSkills(skillsArr, window.skillDebuffList);
   formData.skills = skillsArr;
 } else {
