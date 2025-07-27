@@ -1658,7 +1658,7 @@ if (formStep8) {
     // 真正送出資料
     try {
       await submitAllStudentData();
-      alert("驗證通過，角色已送出！");
+      alert("技能驗證通過！");
     } catch (err) {
       alert("送出失敗：" + (err.message || err));
     }
