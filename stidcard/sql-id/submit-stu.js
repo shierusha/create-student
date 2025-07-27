@@ -246,7 +246,7 @@ for (let i = 0; i < formData.skills.length; i++) {
     status: null,
     review_notes: null,
     submitted_at: new Date().toISOString()
-    // reviewed_at: null   // 你的 schema 沒這一欄，不能傳
   }]);
+  window.location.href = 'https://shierusha.github.io/create-student/player_manage';
 
 }
