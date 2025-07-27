@@ -206,17 +206,29 @@ function renderSkillsPage(skillsArr) {
     window._lastOccupationType !== currOcc
   ) {
     // 發現有換 → 重置技能資料
-    formData.skills = [
-      {}, // 技能1
-      {}, // 技能2
-    ];
+   if (
+    window._lastPreferredRole !== currRole ||
+    window._lastOccupationType !== currOcc
+  ) {
+    // 只保留「被動」或「原創」技能，其餘重製
+    if (Array.isArray(formData.skills)) {
+      formData.skills = formData.skills.map(skill => {
+        if (skill && (skill.is_passive || skill.custom_effect_enable)) {
+          return skill; // 完全保留
+        }
+        return {}; // 其他全部歸零
+      });
+    } else {
+      // 沒技能時補空陣列
+      formData.skills = [{}, {}];
+    }
     // 更新暫存
     window._lastPreferredRole = currRole;
     window._lastOccupationType = currOcc;
-    // 強制再跑一次(保證清空後正確進入)
     setTimeout(() => renderSkillsPage(formData.skills), 0);
     return;
   }
+
 
   let occupationCount = Array.isArray(formData.occupation_type) ? formData.occupation_type.length : 0;
   let starNum = 3, isProblem = false;
