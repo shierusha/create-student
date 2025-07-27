@@ -151,39 +151,63 @@ if (formData.student_id) {
     }
     skill._passive_trigger_id_to_save = passive_trigger_id;
   }
+// ---------- 5. 技能 student_skills ----------
 
-  // ---------- 5. 技能 student_skills ----------
-  await client.from('student_skills').delete().eq('student_id', student_id);
-  for (let i = 0; i < formData.skills.length; i++) {
-    let skill = formData.skills[i];
-    const cd = typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null;
-    let skillInsert = {
-      student_id,
-      skill_slot: i + 1,
-      skill_name: skill.skill_name,
-      description: skill.description,
-      final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
-      final_cd: (cd === "X" || cd === "" || cd == null) ? null : Number(cd),
-      is_passive: !!skill.is_passive,
-      passive_trigger_limit: skill.passive_trigger_limit || null,
-      linked_movement_id: skill.use_movement ? skill.move_ids : null,
-      max_targets: skill.max_targets,
-      target_faction: skill.target_faction,
-      require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
-        let eff = window.skillEffectsList.find(e => e.effect_id === eid);
-        return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
-      }),
-      custom_skill_uuid: skill.custom_skill_uuid || null,
-      range: skill.range || null,
-      passive_trigger_id: skill._passive_trigger_id_to_save || null
-    };
-    let { data: skillData, error: skillErr } = await client.from('student_skills').insert([skillInsert]).select().single();
-    if (skillErr || !skillData) {
-      alert(`技能${i + 1}寫入失敗：` + (skillErr?.message || ''));
-      return;
+// 1. 先查出所有舊的技能
+const { data: oldSkills } = await client.from('student_skills')
+  .select('id, custom_skill_uuid, passive_trigger_id')
+  .eq('student_id', student_id);
+
+if (oldSkills && oldSkills.length) {
+  for (let s of oldSkills) {
+    // 砍 custom_skill_uuid 對應的原創技能（如果有）
+    if (s.custom_skill_uuid) {
+      await client.from('skill_effects').delete().eq('effect_id', s.custom_skill_uuid);
     }
-    skill._skill_id = skillData.id;
+    // 砍 passive_trigger_id 對應的被動條件（如果有）
+    if (s.passive_trigger_id) {
+      await client.from('passive_trigger').delete().eq('trigger_id', s.passive_trigger_id);
+    }
+    // 砍技能效果/負作用連結
+    await client.from('student_skill_effect_links').delete().eq('skill_id', s.id);
+    await client.from('student_skill_debuff_links').delete().eq('skill_id', s.id);
   }
+}
+
+// 2. 再刪掉技能本體
+await client.from('student_skills').delete().eq('student_id', student_id);
+
+// 3. 重新寫入新技能（這就是你原本的 for 迴圈）
+for (let i = 0; i < formData.skills.length; i++) {
+  let skill = formData.skills[i];
+  const cd = typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null;
+  let skillInsert = {
+    student_id,
+    skill_slot: i + 1,
+    skill_name: skill.skill_name,
+    description: skill.description,
+    final_score: typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(skill) : 0,
+    final_cd: (cd === "X" || cd === "" || cd == null) ? null : Number(cd),
+    is_passive: !!skill.is_passive,
+    passive_trigger_limit: skill.passive_trigger_limit || null,
+    linked_movement_id: skill.use_movement ? skill.move_ids : null,
+    max_targets: skill.max_targets,
+    target_faction: skill.target_faction,
+    require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
+      let eff = window.skillEffectsList.find(e => e.effect_id === eid);
+      return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
+    }),
+    custom_skill_uuid: skill.custom_skill_uuid || null,
+    range: skill.range || null,
+    passive_trigger_id: skill._passive_trigger_id_to_save || null
+  };
+  let { data: skillData, error: skillErr } = await client.from('student_skills').insert([skillInsert]).select().single();
+  if (skillErr || !skillData) {
+    alert(`技能${i + 1}寫入失敗：` + (skillErr?.message || ''));
+    return;
+  }
+  skill._skill_id = skillData.id;
+}
 
   // ---------- 6. 技能效果/負作用連結表 ----------
   // 改：先查所有 skill_id 再 in 刪除
