@@ -110,27 +110,39 @@ if (formData.student_id) {
   }
 
   // ---------- 3. 原創技能 skill_effects（如有） ----------
-  for (let i = 0; i < formData.skills.length; i++) {
-    let skill = formData.skills[i];
-    if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
-      let { data: effData, error: effErr } = await client.from('skill_effects').insert([{
-        effect_name: formData.name + '的原創技能',
-        description: skill.custom_effect_description,
-        target_faction: skill.target_faction,
-        max_targets: skill.max_targets,
-        effect_type: null,
-        score: 15,
-        cc_score: null,
-        effect_code: '',
-        effect_id_code: ''
-      }]).select().single();
-      if (effErr) {
-        alert('原創技能寫入失敗：' + effErr.message);
-        return;
-      }
-      skill.custom_skill_uuid = effData.effect_id;
+// ---------- 3. 原創技能 skill_effects（如有） ----------
+// 先檢查所有原創技能，給 UUID
+for (let i = 0; i < formData.skills.length; i++) {
+  let skill = formData.skills[i];
+  if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
+    // 先給一組 UUID
+    skill.custom_skill_uuid = crypto.randomUUID();
+  }
+}
+
+// 先插入所有原創技能到 skill_effects
+for (let i = 0; i < formData.skills.length; i++) {
+  let skill = formData.skills[i];
+  if (skill.custom_effect_enable) {
+    // 如果已經存在 custom_skill_uuid，直接 insert 指定 id
+    let { error: effErr } = await client.from('skill_effects').insert([{
+      effect_id: skill.custom_skill_uuid, // 直接指定 UUID
+      effect_name: formData.name + '的原創技能',
+      description: skill.custom_effect_description,
+      target_faction: skill.target_faction,
+      max_targets: skill.max_targets,
+      effect_type: null,
+      score: 15,
+      cc_score: null,
+      effect_code: '',
+      effect_id_code: ''
+    }]);
+    if (effErr) {
+      alert('原創技能寫入失敗：' + effErr.message);
+      return;
     }
   }
+}
 
   // ---------- 4. 處理被動技能觸發條件 passive_trigger ----------
  for (let i = 0; i < formData.skills.length; i++) {
