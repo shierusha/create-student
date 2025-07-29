@@ -336,8 +336,9 @@ function renderSkillsPage(skillsArr) {
     });
 
     // 一開始預設為空
-    targetSelect.value = '';
-    block.appendChild(targetSelect);
+targetSelect.value = skill.target_faction || '';
+block.appendChild(targetSelect);
+
 }
 
 
@@ -963,6 +964,14 @@ function renderSkillEffectBlock(idx, block, targetSelect, maxTargetSelect, range
 function renderMovementSkillsBlock(idx, block, targetSelect, maxTargetSelect, rangeSelect, occArr) {
   block.innerHTML = '';
 
+  // 這裡補保底
+  if (typeof formData.skills[idx].use_movement !== "boolean")
+    formData.skills[idx].use_movement = false;
+  if (typeof formData.skills[idx].move_ids !== "string")
+    formData.skills[idx].move_ids = '';
+  if (typeof formData.skills[idx].move_score !== "number")
+    formData.skills[idx].move_score = 0;
+
   if (formData.skills[idx].is_passive) {
     formData.skills[idx].use_movement = false;
     formData.skills[idx].move_ids = '';
@@ -1099,6 +1108,14 @@ function renderMovementSkillsBlock(idx, block, targetSelect, maxTargetSelect, ra
 // ===============================
 
 function renderCustomSkillEffectBlock(idx, block, targetSelect, maxTargetSelect) {
+   // 這裡補保底
+  if (typeof formData.skills[idx].custom_effect_enable !== "boolean")
+    formData.skills[idx].custom_effect_enable = false;
+  if (typeof formData.skills[idx].custom_effect_score !== "number")
+    formData.skills[idx].custom_effect_score = 0;
+  if (typeof formData.skills[idx].custom_effect_description !== "string")
+    formData.skills[idx].custom_effect_description = '';
+  
   let oldDiv = block.querySelector('.custom-effect-block');
   if (oldDiv) oldDiv.remove();
   if (idx < 1) return;
