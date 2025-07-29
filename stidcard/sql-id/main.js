@@ -857,7 +857,6 @@ function fillDebuffDetailToSkills(skills, debuffList) {
   });
 }
 
-
 // 撈學生資料並回填 formData（完整填回所有步驟）
 async function loadStudentDataToForm(stuId) {
   if (!stuId) return;
@@ -895,31 +894,45 @@ async function loadStudentDataToForm(stuId) {
     formData.notes = [{ content: '', is_public: true }];
   }
 
- // 3. 技能（含效果/debuff/被動條件）
-const { data: skillsArr } = await client
-  .from('student_skills')
-  .select('*, passive_trigger:passive_trigger_id(condition)')
-  .eq('student_id', stuId)
-  .order('skill_slot');
+  // 3. 技能（含效果/debuff/被動條件）
+  const { data: skillsArr } = await client
+    .from('student_skills')
+    .select('*, passive_trigger:passive_trigger_id(condition)')
+    .eq('student_id', stuId)
+    .order('skill_slot');
 
-if (skillsArr && skillsArr.length) {
-  for (let i = 0; i < skillsArr.length; i++) {
-    let skill = skillsArr[i];
-    // 補撈效果 ID & debuff ID
-    const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
-    skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
-    // 補撈 debuffs
-    const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
-    skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
-    // 把 passive_trigger 的 condition 拉回到 skill.passive_trigger_condition，這樣前端不用動
-    skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
-  }
+  if (skillsArr && skillsArr.length) {
+    for (let i = 0; i < skillsArr.length; i++) {
+      let skill = skillsArr[i];
+      // 補撈效果 ID & debuff ID
+      const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
+      skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
+      // 補撈 debuffs
+      const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
+      skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
+      // 把 passive_trigger 的 condition 拉回到 skill.passive_trigger_condition，這樣前端不用動
+      skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
+    }
     fillDebuffDetailToSkills(skillsArr, window.skillDebuffList);
-  formData.skills = skillsArr;
-} else {
-  formData.skills = [{}, {}];
-}
+    formData.skills = skillsArr;
+  } else {
+    formData.skills = [{}, {}];
+  }
 
+  // === 補：圖片抓取（正面/反面）===
+  const { data: images } = await client
+    .from('student_images')
+    .select('image_type, image_url')
+    .eq('student_id', stuId);
+
+  formData.front_url = '';
+  formData.back_url = '';
+  if (images && images.length) {
+    images.forEach(img => {
+      if (img.image_type === 'front') formData.front_url = img.image_url;
+      if (img.image_type === 'back') formData.back_url = img.image_url;
+    });
+  }
 
   // 重新渲染目前頁面
   showStep(currentStep);
@@ -933,4 +946,5 @@ if (skillsArr && skillsArr.length) {
 // URL帶stu自動填表
 const stuId = new URLSearchParams(location.search).get('stu');
 if (stuId) loadStudentDataToForm(stuId);
+
 
