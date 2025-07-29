@@ -16,6 +16,16 @@ async function submitAllStudentData() {
     return;
   }
 
+
+  // === 新增防呆：被動不可搭配移動 ===
+  for (let i = 0; i < (formData.skills || []).length; i++) {
+    const s = formData.skills[i];
+    if (s && s.is_passive && s.use_movement) {
+      alert(`技能${i + 1} 不可同時為「被動技能」並勾選「移動技能」！\n請取消其中一項。`);
+      return;
+    }
+  }
+
   // 檢查名稱唯一
   const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
   if (isDup) {
