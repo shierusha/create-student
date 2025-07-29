@@ -856,43 +856,44 @@ function fillDebuffDetailToSkills(skills, debuffList) {
     }
   });
 }
-
-// 撈學生資料並回填 formData（完整填回所有步驟）
+// 撈學生資料並回填 formData（完整填回所有步驟，技能有補型別）
 async function loadStudentDataToForm(stuId) {
   if (!stuId) return;
+
   // 撈主要 student
   const { data: student, error } = await client.from('students').select('*').eq('student_id', stuId).single();
   if (error || !student) {
     alert('查無此學生！');
     return;
   }
+
   // 1. 基本欄位
-  formData.name = student.name || '';
-  formData.nickname = student.nickname || '';
-  formData.alignment = student.alignment || '';
-  formData.gender = student.gender || '';
-  formData.age = student.age || '';
-  formData.height = student.height || '';
-  formData.weight = student.weight || '';
-  formData.race = student.race || '';
-  formData.personality = student.personality || '';
-  formData.likes = student.likes || '';
-  formData.hate = student.hate || '';
-  formData.background = student.background || '';
-  formData.element = Array.isArray(student.element) ? student.element : (student.element ? [student.element] : []);
-  formData.weakness_id = student.weakness_id || '';
-  formData.preferred_role = student.preferred_role || '';
-  formData.starting_position = student.starting_position || '';
-  formData.occupation_type = Array.isArray(student.occupation_type) ? student.occupation_type : (student.occupation_type ? [student.occupation_type] : []);
-  formData.student_id = stuId;
+  Object.assign(formData, {
+    name: student.name || '',
+    nickname: student.nickname || '',
+    alignment: student.alignment || '',
+    gender: student.gender || '',
+    age: student.age || '',
+    height: student.height || '',
+    weight: student.weight || '',
+    race: student.race || '',
+    personality: student.personality || '',
+    likes: student.likes || '',
+    hate: student.hate || '',
+    background: student.background || '',
+    element: Array.isArray(student.element) ? student.element : (student.element ? [student.element] : []),
+    weakness_id: student.weakness_id || '',
+    preferred_role: student.preferred_role || '',
+    starting_position: student.starting_position || '',
+    occupation_type: Array.isArray(student.occupation_type) ? student.occupation_type : (student.occupation_type ? [student.occupation_type] : []),
+    student_id: stuId
+  });
 
   // 2. notes
   const { data: notesArr } = await client.from('student_notes').select('*').eq('student_id', stuId).order('sort_order');
-  if (notesArr && notesArr.length) {
-    formData.notes = notesArr.map(n => ({ content: n.content, is_public: !!n.is_public }));
-  } else {
-    formData.notes = [{ content: '', is_public: true }];
-  }
+  formData.notes = (notesArr && notesArr.length)
+    ? notesArr.map(n => ({ content: n.content, is_public: !!n.is_public }))
+    : [{ content: '', is_public: true }];
 
   // 3. 技能（含效果/debuff/被動條件）
   const { data: skillsArr } = await client
@@ -901,20 +902,50 @@ async function loadStudentDataToForm(stuId) {
     .eq('student_id', stuId)
     .order('skill_slot');
 
+  let newSkillsArr = [];
   if (skillsArr && skillsArr.length) {
     for (let i = 0; i < skillsArr.length; i++) {
       let skill = skillsArr[i];
-      // 補撈效果 ID & debuff ID
+
+      // 撈效果 ID
       const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
       skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
-      // 補撈 debuffs
+
+      // 撈 debuffs
       const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
       skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
-      // 把 passive_trigger 的 condition 拉回到 skill.passive_trigger_condition，這樣前端不用動
+
+      // 被動條件
       skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
+
+      // ----------- 補齊 JS 用欄位（核心！！） ------------------
+      skill.use_movement = !!skill.use_movement; // Boolean
+      skill.move_ids = skill.move_ids || ''; // String
+      skill.custom_effect_enable = !!skill.custom_effect_enable;
+      skill.custom_effect_description = skill.custom_effect_description || '';
+      skill.custom_effect_score = typeof skill.custom_effect_score === 'number' ? skill.custom_effect_score : 0;
+      skill.effect_scores = Array.isArray(skill.effect_scores) ? skill.effect_scores : [];
+      skill.move_score = typeof skill.move_score === 'number' ? skill.move_score : 0;
+      skill.max_targets = skill.max_targets || 1;
+      skill.range = skill.range || 'same_zone';
+      skill.is_passive = !!skill.is_passive;
+      skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
+
+      // debuffs 進階補齊
+      if (Array.isArray(skill.debuffs)) {
+        skill.debuffs.forEach(d => {
+          // 如果有全域 debuff 資料，可以補其他 key（如 debuff_name 等）
+          if (window.skillDebuffList) {
+            let det = window.skillDebuffList.find(dd => dd.debuff_id === d.debuff_id);
+            if (det) Object.assign(d, det);
+          }
+        });
+      }
+      newSkillsArr.push(skill);
     }
-    fillDebuffDetailToSkills(skillsArr, window.skillDebuffList);
-    formData.skills = skillsArr;
+    // 保證長度至少2格（技能1/技能2）
+    while (newSkillsArr.length < 2) newSkillsArr.push({});
+    formData.skills = newSkillsArr;
   } else {
     formData.skills = [{}, {}];
   }
@@ -935,10 +966,10 @@ async function loadStudentDataToForm(stuId) {
   }
 
   // 重新渲染目前頁面
-  showStep(currentStep);
-  updateStudentCard();
+  showStep?.(window.currentStep ?? 1);
+  updateStudentCard?.();
   // 技能頁如果已經進入過要手動 render
-  if (typeof initAllSkillListsThenRender === "function" && currentStep === 8) {
+  if (typeof initAllSkillListsThenRender === "function" && window.currentStep === 8) {
     initAllSkillListsThenRender();
   }
 }
