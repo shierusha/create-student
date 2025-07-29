@@ -163,31 +163,31 @@ if (formData.student_id) {
   }
 // ---------- 5. 技能 student_skills ----------
 
-// 1. 查出這個學生所有舊技能（包含原創技能ID與被動ID）
+// 1. 查出所有舊技能
 const { data: oldSkills } = await client.from('student_skills')
   .select('id, custom_skill_uuid, passive_trigger_id')
   .eq('student_id', student_id);
 
-// 2. 逐個舊技能處理：直接清除所有技能連結、原創技能、被動條件
 if (oldSkills && oldSkills.length) {
+  // 2. 先砍所有技能連結表
   for (let s of oldSkills) {
-    // 砍技能-效果連結
     await client.from('student_skill_effect_links').delete().eq('skill_id', s.id);
-    // 砍技能-負面效果連結
     await client.from('student_skill_debuff_links').delete().eq('skill_id', s.id);
-    // 砍被動觸發條件（不檢查有沒有人用，直接砍！）
+  }
+  // 3. 一次砍掉所有技能本體（這樣下面砍被動和原創就不會殘留 reference 了）
+  await client.from('student_skills').delete().eq('student_id', student_id);
+
+  // 4. 再砍 passive_trigger、skill_effects
+  for (let s of oldSkills) {
     if (s.passive_trigger_id) {
       await client.from('passive_trigger').delete().eq('trigger_id', s.passive_trigger_id);
     }
-    // 砍原創技能（不檢查有沒有人用，直接砍！）
     if (s.custom_skill_uuid) {
       await client.from('skill_effects').delete().eq('effect_id', s.custom_skill_uuid);
     }
   }
-
-  // 3. 最後刪除所有技能本體
-  await client.from('student_skills').delete().eq('student_id', student_id);
 }
+
 
 
 // 3. 重新寫入新技能（這就是你原本的 for 迴圈）
