@@ -187,6 +187,7 @@ if (oldSkills && oldSkills.length) {
 // 2. 再刪掉技能本體
 await client.from('student_skills').delete().eq('student_id', student_id);
 
+
 // 3. 重新寫入新技能（這就是你原本的 for 迴圈）
 for (let i = 0; i < formData.skills.length; i++) {
   let skill = formData.skills[i];
