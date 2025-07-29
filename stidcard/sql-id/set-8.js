@@ -975,6 +975,12 @@ function renderMovementSkillsBlock(idx, block, targetSelect, maxTargetSelect, ra
     formData.skills[idx].move_ids = '';
     return;
   }
+
+  // ---- 讀取 ----
+  if (formData.skills[idx].move_ids) {
+    formData.skills[idx].use_movement = true;
+  }
+  
   if (!window.movementSkillsList) {
     let loading = document.createElement('div');
     loading.innerText = '移動技能載入中...';
