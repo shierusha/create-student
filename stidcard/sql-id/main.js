@@ -974,8 +974,20 @@ async function loadStudentDataToForm(stuId) {
       skill.is_passive = !!skill.is_passive;
       skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
 
-      // 被動條件
-      skill.passive_trigger_condition = skill.passive_trigger_condition || '';
+      
+ // ============ 這段處理 passive_trigger_condition ============
+  if (skill.passive_trigger_id) {
+    // 查 passive_trigger 拿 condition
+    const { data: trigger } = await client
+      .from('passive_trigger')
+      .select('condition')
+      .eq('trigger_id', skill.passive_trigger_id)
+      .single();
+    skill.passive_trigger_condition = trigger ? trigger.condition : '';
+  } else {
+    skill.passive_trigger_condition = '';
+  }
+
 
       // 最終塞進去
       newSkillsArr.push(skill);
