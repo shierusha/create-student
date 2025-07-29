@@ -856,7 +856,7 @@ function fillDebuffDetailToSkills(skills, debuffList) {
     }
   });
 }
-// 撈學生資料並回填 formData（完整填回所有步驟，技能有補型別）
+// 撈學生資料並回填 formData（完整填回所有步驟，技能全部補全）
 async function loadStudentDataToForm(stuId) {
   if (!stuId) return;
 
@@ -867,7 +867,7 @@ async function loadStudentDataToForm(stuId) {
     return;
   }
 
-  // 1. 基本欄位
+  // 1. 基本欄位（全補）
   Object.assign(formData, {
     name: student.name || '',
     nickname: student.nickname || '',
@@ -895,7 +895,7 @@ async function loadStudentDataToForm(stuId) {
     ? notesArr.map(n => ({ content: n.content, is_public: !!n.is_public }))
     : [{ content: '', is_public: true }];
 
-  // 3. 技能（含效果/debuff/被動條件）
+  // 3. 技能（全補，包含移動技能、原創技能等）
   const { data: skillsArr } = await client
     .from('student_skills')
     .select('*, passive_trigger:passive_trigger_id(condition)')
@@ -915,12 +915,9 @@ async function loadStudentDataToForm(stuId) {
       const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
       skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
 
-      // 被動條件
-      skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
-
-      // ----------- 補齊 JS 用欄位（核心！！） ------------------
-      skill.use_movement = !!skill.use_movement; // Boolean
-      skill.move_ids = skill.move_ids || ''; // String
+      // ========== JS用欄位補齊 ==========
+      skill.use_movement = !!skill.use_movement;
+      skill.move_ids = skill.move_ids || '';
       skill.custom_effect_enable = !!skill.custom_effect_enable;
       skill.custom_effect_description = skill.custom_effect_description || '';
       skill.custom_effect_score = typeof skill.custom_effect_score === 'number' ? skill.custom_effect_score : 0;
@@ -931,19 +928,20 @@ async function loadStudentDataToForm(stuId) {
       skill.is_passive = !!skill.is_passive;
       skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
 
-      // debuffs 進階補齊
-      if (Array.isArray(skill.debuffs)) {
+      // 被動條件補上
+      skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
+
+      // 補 debuffs 細節（如果全域有）
+      if (Array.isArray(skill.debuffs) && window.skillDebuffList) {
         skill.debuffs.forEach(d => {
-          // 如果有全域 debuff 資料，可以補其他 key（如 debuff_name 等）
-          if (window.skillDebuffList) {
-            let det = window.skillDebuffList.find(dd => dd.debuff_id === d.debuff_id);
-            if (det) Object.assign(d, det);
-          }
+          let det = window.skillDebuffList.find(dd => dd.debuff_id === d.debuff_id);
+          if (det) Object.assign(d, det);
         });
       }
+
       newSkillsArr.push(skill);
     }
-    // 保證長度至少2格（技能1/技能2）
+    // 至少2格
     while (newSkillsArr.length < 2) newSkillsArr.push({});
     formData.skills = newSkillsArr;
   } else {
@@ -966,9 +964,8 @@ async function loadStudentDataToForm(stuId) {
   }
 
   // 重新渲染目前頁面
-  showStep?.(window.currentStep ?? 1);
-  updateStudentCard?.();
-  // 技能頁如果已經進入過要手動 render
+  if (typeof showStep === "function") showStep(window.currentStep ?? 1);
+  if (typeof updateStudentCard === "function") updateStudentCard();
   if (typeof initAllSkillListsThenRender === "function" && window.currentStep === 8) {
     initAllSkillListsThenRender();
   }
@@ -977,5 +974,6 @@ async function loadStudentDataToForm(stuId) {
 // URL帶stu自動填表
 const stuId = new URLSearchParams(location.search).get('stu');
 if (stuId) loadStudentDataToForm(stuId);
+
 
 
