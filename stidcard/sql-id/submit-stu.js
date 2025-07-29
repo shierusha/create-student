@@ -258,6 +258,9 @@ for (let i = 0; i < formData.skills.length; i++) {
     review_notes: null,
     submitted_at: new Date().toISOString()
   }]);
+
+  alert("技能驗證通過！角色送出成功!");
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
+
 
 }
