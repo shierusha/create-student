@@ -904,32 +904,44 @@ async function loadStudentDataToForm(stuId) {
 
   let newSkillsArr = [];
   if (skillsArr && skillsArr.length) {
-    for (let i = 0; i < skillsArr.length; i++) {
-      let skill = skillsArr[i];
+   for (let i = 0; i < skillsArr.length; i++) {
+  let skill = skillsArr[i];
 
-      // 撈效果 ID
-      const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
-      skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
+  // 撈效果 ID
+  const { data: effLinks } = await client.from('student_skill_effect_links').select('effect_id').eq('skill_id', skill.id);
+  skill.effect_ids = effLinks ? effLinks.map(e => e.effect_id) : [];
 
-      // 撈 debuffs
-      const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
-      skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
+  // ========== 這裡自動計算分數 ==========
+  skill.effect_scores = [];
+  if (Array.isArray(skill.effect_ids) && window.skillEffectsList) {
+    skill.effect_ids.forEach(eid => {
+      let eff = window.skillEffectsList.find(e => e.effect_id === eid);
+      if (eff && typeof eff.score === 'number') skill.effect_scores.push(eff.score);
+    });
+  }
 
-      // ========== JS用欄位補齊 ==========
-      skill.use_movement = !!skill.use_movement;
-      skill.move_ids = skill.move_ids || '';
-      skill.custom_effect_enable = !!skill.custom_effect_enable;
-      skill.custom_effect_description = skill.custom_effect_description || '';
-      skill.custom_effect_score = typeof skill.custom_effect_score === 'number' ? skill.custom_effect_score : 0;
-      skill.effect_scores = Array.isArray(skill.effect_scores) ? skill.effect_scores : [];
-      skill.move_score = typeof skill.move_score === 'number' ? skill.move_score : 0;
-      skill.max_targets = skill.max_targets || 1;
-      skill.range = skill.range || 'same_zone';
-      skill.is_passive = !!skill.is_passive;
-      skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
+  // 移動技能
+  skill.use_movement = !!skill.use_movement || !!skill.move_ids;
+  skill.move_score = 0;
+  if (skill.use_movement && window.movementSkillsList) {
+    let occCount = Array.isArray(formData.occupation_type) ? formData.occupation_type.length : 0;
+    skill.move_score = (occCount === 1) ? 20 : 15;
+  }
 
-      // 被動條件補上
-      skill.passive_trigger_condition = skill.passive_trigger?.condition || '';
+  // 原創技能
+  skill.custom_effect_enable = !!skill.custom_effect_enable || !!skill.custom_skill_uuid;
+  skill.custom_effect_score = skill.custom_effect_enable ? 15 : 0;
+  // 內容自動補
+  if (skill.custom_skill_uuid && window.skillEffectsList) {
+    let eff = window.skillEffectsList.find(e => e.effect_id === skill.custom_skill_uuid);
+    if (eff && eff.description && !skill.custom_effect_description) {
+      skill.custom_effect_description = eff.description;
+    }
+  }
+
+  // 撈 debuffs
+  const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
+  skill.debuffs = debLinks ? debLinks.map(d => ({ debuff_id: d.debuff_id })) : [];
 
       // 補 debuffs 細節（如果全域有）
       if (Array.isArray(skill.debuffs) && window.skillDebuffList) {
