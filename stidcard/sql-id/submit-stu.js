@@ -133,34 +133,24 @@ if (formData.student_id) {
   }
 
   // ---------- 4. 處理被動技能觸發條件 passive_trigger ----------
-  for (let i = 0; i < formData.skills.length; i++) {
-    let skill = formData.skills[i];
-    let passive_trigger_id = null;
-    if (skill.is_passive && skill.passive_trigger_condition && skill.passive_trigger_condition.trim()) {
-      // 編輯
-      if (skill.passive_trigger_id) {
-        let { error: pErr } = await client
-          .from('passive_trigger')
-          .update({ condition: skill.passive_trigger_condition })
-          .eq('trigger_id', skill.passive_trigger_id);
-        if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
-        passive_trigger_id = skill.passive_trigger_id;
-      } else {
-        // 新增
-        let { data: pData, error: pErr } = await client
-          .from('passive_trigger')
-          .insert([{ condition: skill.passive_trigger_condition }])
-          .select()
-          .single();
-        if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
-        passive_trigger_id = pData.trigger_id;
-        skill.passive_trigger_id = passive_trigger_id; // 寫回防重複
-      }
-    } else {
-      passive_trigger_id = null;
-    }
-    skill._passive_trigger_id_to_save = passive_trigger_id;
+ for (let i = 0; i < formData.skills.length; i++) {
+  let skill = formData.skills[i];
+  let passive_trigger_id = null;
+  if (skill.is_passive && skill.passive_trigger_condition && skill.passive_trigger_condition.trim()) {
+    // 永遠都 insert 新的 passive_trigger
+    let { data: pData, error: pErr } = await client
+      .from('passive_trigger')
+      .insert([{ condition: skill.passive_trigger_condition }])
+      .select()
+      .single();
+    if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
+    passive_trigger_id = pData.trigger_id;
+    skill.passive_trigger_id = passive_trigger_id;
+  } else {
+    passive_trigger_id = null;
   }
+  skill._passive_trigger_id_to_save = passive_trigger_id;
+}
 // ---------- 5. 技能 student_skills ----------
 
 // 1. 查出所有舊技能
