@@ -336,7 +336,8 @@ function renderSkillsPage(skillsArr) {
     });
 
     // 一開始預設為空
-    targetSelect.value = '';
+
+targetSelect.value = skill.target_faction || '';
     block.appendChild(targetSelect);
 }
 
