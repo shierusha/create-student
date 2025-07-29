@@ -1110,18 +1110,17 @@ function renderCustomSkillEffectBlock(idx, block, targetSelect, maxTargetSelect)
   if (oldDiv) oldDiv.remove();
   if (idx < 1) return;
 
-  if (typeof formData.skills[idx].custom_effect_enable !== "boolean")
-    formData.skills[idx].custom_effect_enable = false;
-  if (typeof formData.skills[idx].custom_effect_score !== "number")
-    formData.skills[idx].custom_effect_score = 0;
-
-  let effectDiv = document.createElement('div');
-  effectDiv.className = 'custom-effect-block';
-  effectDiv.style.marginTop = '1.2em';
-
-  let row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.alignItems = 'center';
+  // === 這一段就是你要補的 ===
+  if (formData.skills[idx].custom_skill_uuid) {
+    formData.skills[idx].custom_effect_enable = true;
+    if (!formData.skills[idx].custom_effect_description) {
+      let effect = (window.skillEffectsList || []).find(e => e.effect_id === formData.skills[idx].custom_skill_uuid);
+      if (effect && effect.description) {
+        formData.skills[idx].custom_effect_description = effect.description;
+      }
+    }
+  }
+  // ==========================
 
   let customChk = document.createElement('input');
   customChk.type = 'checkbox';
