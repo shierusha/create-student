@@ -163,47 +163,31 @@ if (formData.student_id) {
   }
 // ---------- 5. 技能 student_skills ----------
 
-// 1. 先查出所有舊的技能
+// 1. 查出這個學生所有舊技能（包含原創技能ID與被動ID）
 const { data: oldSkills } = await client.from('student_skills')
   .select('id, custom_skill_uuid, passive_trigger_id')
   .eq('student_id', student_id);
 
+// 2. 逐個舊技能處理：直接清除所有技能連結、原創技能、被動條件
 if (oldSkills && oldSkills.length) {
   for (let s of oldSkills) {
-    // 1. 先刪技能效果/負作用連結（連到這個技能的）
+    // 砍技能-效果連結
     await client.from('student_skill_effect_links').delete().eq('skill_id', s.id);
+    // 砍技能-負面效果連結
     await client.from('student_skill_debuff_links').delete().eq('skill_id', s.id);
-
-    // 2. 如果有 custom_skill_uuid，先砍所有連結到這個 effect_id 的資料
-    if (s.custom_skill_uuid) {
-      await client.from('student_skill_effect_links').delete().eq('effect_id', s.custom_skill_uuid);
-      // 注意！如果 student_skills 其他地方還有用到這個 custom_skill_uuid，也要一併考慮
-    }
-    // 3. 如果有被動 trigger_id，刪掉觸發條件
+    // 砍被動觸發條件（不檢查有沒有人用，直接砍！）
     if (s.passive_trigger_id) {
       await client.from('passive_trigger').delete().eq('trigger_id', s.passive_trigger_id);
     }
-  }
-}
-
-// 4. 再把所有舊的技能本體一起刪掉
-await client.from('student_skills').delete().eq('student_id', student_id);
-
-// 5. 最後再刪原創技能的本體 skill_effects（要避免砍到還在用的）
-for (let s of oldSkills) {
-  if (s.custom_skill_uuid) {
-    // 檢查這個 custom_skill_uuid 是否還有其他 student_skills 用到
-    const { count } = await client.from('student_skills')
-      .select('id', { count: 'exact', head: true })
-      .eq('custom_skill_uuid', s.custom_skill_uuid);
-
-    if (count === 0) {
-      // 沒有其他技能用了，安全刪除
+    // 砍原創技能（不檢查有沒有人用，直接砍！）
+    if (s.custom_skill_uuid) {
       await client.from('skill_effects').delete().eq('effect_id', s.custom_skill_uuid);
     }
   }
-}
 
+  // 3. 最後刪除所有技能本體
+  await client.from('student_skills').delete().eq('student_id', student_id);
+}
 
 
 // 3. 重新寫入新技能（這就是你原本的 for 迴圈）
