@@ -210,7 +210,7 @@ for (let i = 0; i < formData.skills.length; i++) {
       let eff = window.skillEffectsList.find(e => e.effect_id === eid);
       return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
     }),
-    custom_skill_uuid: skill.custom_skill_uuid || null,
+custom_skill_uuid: skill.custom_effect_enable ? skill.custom_skill_uuid : null,
     range: skill.range || null,
     passive_trigger_id: skill._passive_trigger_id_to_save || null
   };
