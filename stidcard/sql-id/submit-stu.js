@@ -163,22 +163,22 @@ for (let i = 0; i < formData.skills.length; i++) {
   skill._passive_trigger_id_to_save = passive_trigger_id;
 }
 // ---------- 5. 技能 student_skills ----------
-
-// 1. 查出所有舊技能
+// 1. 查出舊技能
 const { data: oldSkills } = await client.from('student_skills')
   .select('id, custom_skill_uuid, passive_trigger_id')
   .eq('student_id', student_id);
 
+// 2. 刪除所有技能連結表（避免 reference）
 if (oldSkills && oldSkills.length) {
-  // 2. 先砍所有技能連結表
   for (let s of oldSkills) {
     await client.from('student_skill_effect_links').delete().eq('skill_id', s.id);
     await client.from('student_skill_debuff_links').delete().eq('skill_id', s.id);
   }
-  // 3. 一次砍掉所有技能本體（這樣下面砍被動和原創就不會殘留 reference 了）
+
+  // 3. 砍掉所有 student_skills
   await client.from('student_skills').delete().eq('student_id', student_id);
 
-  // 4. 再砍 passive_trigger、skill_effects
+  // 4. 砍掉對應的 passive_trigger、skill_effects
   for (let s of oldSkills) {
     if (s.passive_trigger_id) {
       await client.from('passive_trigger').delete().eq('trigger_id', s.passive_trigger_id);
