@@ -116,8 +116,14 @@ for (let i = 0; i < formData.skills.length; i++) {
     skill.custom_skill_uuid = crypto.randomUUID();
   }
   if (skill.custom_effect_enable && skill.custom_skill_uuid) {
-    // 先砍再插
-    await client.from('skill_effects').delete().eq('effect_id', skill.custom_skill_uuid);
+    // 1. 先砍舊的
+    console.log("刪除 UUID", skill.custom_skill_uuid);
+    let { error: delErr } = await client.from('skill_effects').delete().eq('effect_id', skill.custom_skill_uuid);
+    if (delErr) {
+      alert('skill_effects 刪除失敗：' + delErr.message);
+      return;
+    }
+    // 2. 再插入新的
     let { error: effErr } = await client.from('skill_effects').insert([{
       effect_id: skill.custom_skill_uuid,
       effect_name: formData.name + '的原創技能',
