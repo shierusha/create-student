@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <title>謝爾夏｜角色管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CropperJS CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css"/>
+<!-- CropperJS JS -->
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+
+
+  
   <style>
     body { font-family: 'Noto Sans TC', sans-serif; background: #f4f7fa; margin: 0; padding: 2rem; }
     .container { max-width: 900px; margin: auto; background: white; padding: 2rem; border-radius: 1.3rem; box-shadow: 0 2px 16px #0001; }
@@ -76,6 +83,33 @@
       </div>
     </div>
   </div>
+
+
+
+
+
+<!-- Modal 內容 -->
+<div class="modal-bg" id="upload-modal-bg" style="display:none;">
+  <div class="modal">
+    <button class="close-btn" onclick="closeUploadModal()">×</button>
+    <h3>上傳照片</h3>
+    <div style="text-align:center;">
+      <img id="cropper-img" src="" alt="預覽" style="max-width:100%;max-height:350px;">
+    </div>
+    <form id="upload-form">
+      <input type="file" id="upload-file" accept="image/*" required>
+      <div id="upload-msg" style="color:#1d4076;min-height:1em;margin-bottom:1em;"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn">上傳</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+  
 <script>
   // ====== Supabase 設定 ======
   const client = window.supabase.createClient(
@@ -131,6 +165,8 @@
           <td>
             <button class="btn btn-link" onclick="openStudentCard('${stu.student_id}')">學生證</button>
             <button class="btn btn-edit" onclick="openNotesModal('${stu.student_id}')">公開設定</button>
+            <button class="btn" onclick="openUploadModal('${stu.student_id}')">上傳照片</button>
+
           </td>
         </tr>
       `;
@@ -233,6 +269,104 @@ function openStudentCard(student_id) {
   window.goBack = goBack;
 
   init();
+
+
+let cropper = null;
+let uploadStuId = null;
+
+// 打開 modal，設定目前 student id
+function openUploadModal(student_id) {
+  uploadStuId = student_id;
+  document.getElementById('upload-modal-bg').style.display = 'flex';
+  document.getElementById('upload-form').reset();
+  document.getElementById('cropper-img').src = '';
+  if (cropper) { cropper.destroy(); cropper = null; }
+  setUploadMsg('');
+}
+
+function closeUploadModal() {
+  document.getElementById('upload-modal-bg').style.display = 'none';
+  uploadStuId = null;
+  if (cropper) { cropper.destroy(); cropper = null; }
+}
+
+function setUploadMsg(msg) {
+  document.getElementById('upload-msg').textContent = msg || '';
+}
+
+// 1. 處理使用者選擇檔案
+document.getElementById('upload-file').onchange = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const img = document.getElementById('cropper-img');
+    img.src = evt.target.result;
+
+    if (cropper) cropper.destroy();
+
+    // 2. 初始化 Cropper
+    cropper = new Cropper(img, {
+      aspectRatio: 8 / 9, // 這就是你要的長寬比
+      viewMode: 1,
+      background: false,
+      movable: true,
+      zoomable: true,
+      rotatable: true,
+      cropBoxResizable: true
+    });
+  }
+  reader.readAsDataURL(file);
+}
+
+// 3. 上傳表單送出
+document.getElementById('upload-form').onsubmit = async function(e) {
+  e.preventDefault();
+  setUploadMsg('上傳中...');
+  if (!cropper || !uploadStuId) { setUploadMsg('請選擇圖片'); return; }
+
+  // 取得裁切後的圖片（你要的寬高，這裡範例 400x450）
+  cropper.getCroppedCanvas({ width: 400, height: 450 }).toBlob(async function(blob) {
+    // 組成 storage 檔名
+    const ext = 'png';
+    const filePath = `student-images/${uploadStuId}/front.${ext}`;
+
+    // 移除舊檔案（同名檔案會直接覆蓋，這步可省略）
+    await client.storage.from('public').remove([filePath]);
+
+    // 上傳 storage
+    const { error: uploadErr } = await client.storage
+      .from('public')
+      .upload(filePath, blob, { upsert: true });
+
+    if (uploadErr) { setUploadMsg('圖片上傳失敗'); return; }
+
+    // 拿 publicUrl
+    const { data: { publicUrl } } = client.storage.from('public').getPublicUrl(filePath);
+
+    // 刪除舊資料表資料
+    await client.from('student_images')
+      .delete()
+      .eq('student_id', uploadStuId)
+      .eq('image_type', 'front');
+
+    // 新增資料表
+    const { error: insertErr } = await client.from('student_images').insert([
+      {
+        student_id: uploadStuId,
+        image_type: 'front',
+        image_url: publicUrl,
+        uploaded_by: player.player_id
+      }
+    ]);
+    if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
+
+    setUploadMsg('上傳完成！');
+    setTimeout(closeUploadModal, 1200);
+  }, 'image/png');
+}
+
 </script>
 
 </body>
