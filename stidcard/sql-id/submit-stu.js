@@ -109,24 +109,17 @@ if (formData.student_id) {
     }
   }
 
-  // ---------- 3. 原創技能 skill_effects（如有） ----------
-// ---------- 3. 原創技能 skill_effects（如有） ----------
-// 先檢查所有原創技能，給 UUID
+// 3. 原創技能 skill_effects（如有）--- 先砍再寫
 for (let i = 0; i < formData.skills.length; i++) {
   let skill = formData.skills[i];
   if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
-    // 先給一組 UUID
     skill.custom_skill_uuid = crypto.randomUUID();
   }
-}
-
-// 先插入所有原創技能到 skill_effects
-for (let i = 0; i < formData.skills.length; i++) {
-  let skill = formData.skills[i];
-  if (skill.custom_effect_enable) {
-    // 如果已經存在 custom_skill_uuid，直接 insert 指定 id
+  if (skill.custom_effect_enable && skill.custom_skill_uuid) {
+    // 先砍再插
+    await client.from('skill_effects').delete().eq('effect_id', skill.custom_skill_uuid);
     let { error: effErr } = await client.from('skill_effects').insert([{
-      effect_id: skill.custom_skill_uuid, // 直接指定 UUID
+      effect_id: skill.custom_skill_uuid,
       effect_name: formData.name + '的原創技能',
       description: skill.custom_effect_description,
       target_faction: skill.target_faction,
