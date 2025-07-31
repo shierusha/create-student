@@ -500,15 +500,19 @@ function renderStudentList() {
     let card = document.createElement('div');
     card.className = "student-card" + (align ? ` card-${align}` : "");
 
-    let avatarUrl = imgMap[stu.student_id] || "https://fakeimg.pl/300x300?text=No+Photo";
-    let avatarDiv = document.createElement('div');
-    avatarDiv.className = 'avatar-frame';
-    let avatarImg = document.createElement('img');
-    avatarImg.className = 'avatar-img';
-    getAvatarFromUrl(avatarUrl, src=>{
-      avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
-    });
-    avatarDiv.appendChild(avatarImg);
+  // 卡片渲染裡
+let avatarUrl = imgMap[stu.student_id]
+    ? (imgMap[stu.student_id] + "?v=" + Date.now())
+    : "https://fakeimg.pl/300x300?text=No+Photo";
+let avatarDiv = document.createElement('div');
+avatarDiv.className = 'avatar-frame';
+let avatarImg = document.createElement('img');
+avatarImg.className = 'avatar-img';
+getAvatarFromUrl(avatarUrl, src=>{
+  avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
+});
+avatarDiv.appendChild(avatarImg);
+
 
     // 卡片主資訊
     let infoDiv = document.createElement('div');
