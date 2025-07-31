@@ -1,34 +1,42 @@
-async function submitAllStudentData() {
-  const submitBtn = document.getElementById('submit-8');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = '送出中...';
-  }
+// 角色名稱重複檢查
+async function checkStudentNameDuplicate(name, student_id = null) {
+  let query = client.from('students').select('student_id').eq('name', name);
+  if (student_id) query = query.neq('student_id', student_id);
+  let { data } = await query;
+  return data && data.length > 0;
+}
 
+// 主送出
+async function submitAllStudentData() {
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
-  if (!player_id) {
-    alert('請先登入！');
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-    return;
-  }
+  if (!player_id) { alert('請先登入！'); return; }
 
   // 防呆：被動不可搭配移動
   for (let i = 0; i < (formData.skills || []).length; i++) {
     const s = formData.skills[i];
     if (s && s.is_passive && s.use_movement) {
       alert(`技能${i + 1} 不可同時為「被動技能」並勾選「移動技能」！\n請取消其中一項。`);
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
       return;
     }
   }
 
   // 名稱唯一
   const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
-  if (isDup) {
-    alert('角色名稱已被申請，請換一個！');
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-    return;
-  }
+  if (isDup) { alert('角色名稱已被申請，請換一個！'); return; }
+
+  // 計算總分與分類
+  let totalSkillScore = (formData.skills || [])
+    .map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0))
+    .reduce((a, b) => a + b, 0);
+  let occNum = (formData.occupation_type || []).length;
+  let expectScore = occNum === 1 ? 8 : occNum === 2 ? 7 : 3;
+  let isOriginal = formData.skills.some(s => s.custom_effect_enable);
+  let isPassive = formData.skills.some(s => s.is_passive);
+  let isScoreWrong = totalSkillScore !== expectScore;
+  let isMultiJob = occNum > 2;
+  let stuType = "normal";
+  if (isMultiJob || isScoreWrong) stuType = "problem";
+  else if (isOriginal || isPassive) stuType = "special";
 
   // 組學生資料
   let studentsInsert = {
@@ -50,19 +58,8 @@ async function submitAllStudentData() {
     preferred_role: formData.preferred_role,
     starting_position: formData.starting_position || null,
     occupation_type: Array.isArray(formData.occupation_type) && formData.occupation_type.length > 0 ? formData.occupation_type : null,
-    total_skill_score: (formData.skills || []).map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0)).reduce((a, b) => a + b, 0),
-    student_type: (() => {
-      let occNum = (formData.occupation_type || []).length;
-      let expectScore = occNum === 1 ? 8 : occNum === 2 ? 7 : 3;
-      let totalSkillScore = (formData.skills || []).map(s => (typeof calcSingleSkillStar === "function" ? calcSingleSkillStar(s) : 0)).reduce((a, b) => a + b, 0);
-      let isOriginal = formData.skills.some(s => s.custom_effect_enable);
-      let isPassive = formData.skills.some(s => s.is_passive);
-      let isScoreWrong = totalSkillScore !== expectScore;
-      let isMultiJob = occNum > 2;
-      if (isMultiJob || isScoreWrong) return "problem";
-      else if (isOriginal || isPassive) return "special";
-      return "normal";
-    })(),
+    total_skill_score: totalSkillScore,
+    student_type: stuType,
     student_code: null
   };
   if (formData.student_id) studentsInsert.student_id = formData.student_id;
@@ -75,13 +72,9 @@ async function submitAllStudentData() {
     .single();
   if (stuErr) {
     if (stuErr.message && stuErr.message.includes('students_name_key')) {
-      alert('角色名稱已被申請，請換一個！');
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-      return;
+      alert('角色名稱已被申請，請換一個！'); return;
     }
-    alert('角色基本資料寫入失敗：' + (stuErr?.message || ''));
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-    return;
+    alert('角色基本資料寫入失敗：' + (stuErr?.message || '')); return;
   }
   const student_id = stuData.student_id;
 
@@ -95,28 +88,24 @@ async function submitAllStudentData() {
   }));
   if (notes.length > 0) {
     let { error: noteErr } = await client.from('student_notes').insert(notes);
-    if (noteErr) {
-      alert('角色設定寫入失敗：' + noteErr.message);
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-      return;
-    }
+    if (noteErr) { alert('角色設定寫入失敗：' + noteErr.message); return; }
   }
 
-  // 3.1. 查出舊技能
+  // ⭐️ 3.1. 查出舊技能，收集要砍掉的 custom_skill_uuid & passive_trigger_id
   const { data: oldSkills } = await client.from('student_skills')
     .select('id, custom_skill_uuid, passive_trigger_id')
     .eq('student_id', student_id);
 
-  // 3.2. 砍所有技能效果/負作用連結表
+  // ⭐️ 3.2. 砍所有技能效果/負作用連結表
   if (oldSkills && oldSkills.length) {
     for (let s of oldSkills) {
       await client.from('student_skill_effect_links').delete().eq('skill_id', s.id);
       await client.from('student_skill_debuff_links').delete().eq('skill_id', s.id);
     }
-    // 3.3. 砍所有 student_skills
+    // ⭐️ 3.3. 砍所有 student_skills（主表要先砍，才能砍 FK 物件）
     await client.from('student_skills').delete().eq('student_id', student_id);
 
-    // 3.4. 砍 passive_trigger / skill_effects
+    // ⭐️ 3.4. 砍 passive_trigger / skill_effects（只砍本角色用過的）
     for (let s of oldSkills) {
       if (s.passive_trigger_id)
         await client.from('passive_trigger').delete().eq('trigger_id', s.passive_trigger_id);
@@ -125,7 +114,7 @@ async function submitAllStudentData() {
     }
   }
 
-  // 4. 處理原創技能（先產生 UUID）
+  // ⭐️ 4. 處理原創技能（新資料：先產生 UUID，之後要插入 skill_effects 用）
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     if (skill.custom_effect_enable && !skill.custom_skill_uuid) {
@@ -133,21 +122,18 @@ async function submitAllStudentData() {
     }
   }
 
-  // 5. 處理被動觸發條件
+  // ⭐️ 5. 處理被動觸發條件（新資料，先建立被動技能條件，再記錄 id）
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     let passive_trigger_id = null;
     if (skill.is_passive && skill.passive_trigger_condition && skill.passive_trigger_condition.trim()) {
+      // 永遠都 insert 新的 passive_trigger
       let { data: pData, error: pErr } = await client
         .from('passive_trigger')
         .insert([{ condition: skill.passive_trigger_condition }])
         .select()
         .single();
-      if (pErr) {
-        alert('被動技能觸發條件寫入失敗：' + pErr.message);
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-        return;
-      }
+      if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
       passive_trigger_id = pData.trigger_id;
       skill.passive_trigger_id = passive_trigger_id;
     } else {
@@ -156,7 +142,7 @@ async function submitAllStudentData() {
     skill._passive_trigger_id_to_save = passive_trigger_id;
   }
 
-  // 6. 寫 skill_effects（原創技能）
+  // ⭐️ 6. 寫 skill_effects（原創技能，這時舊的已經砍掉，可以直接 insert）
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     if (skill.custom_effect_enable && skill.custom_skill_uuid) {
@@ -172,15 +158,11 @@ async function submitAllStudentData() {
         effect_code: '',
         effect_id_code: ''
       }]);
-      if (effErr) {
-        alert('原創技能寫入失敗：' + effErr.message);
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-        return;
-      }
+      if (effErr) { alert('原創技能寫入失敗：' + effErr.message); return; }
     }
   }
 
-  // 7. 寫入 student_skills
+  // ⭐️ 7. 寫入 student_skills（這時所有 FK id 都已經拿到）
   for (let i = 0; i < formData.skills.length; i++) {
     let skill = formData.skills[i];
     const cd = typeof getSkillFinalCD === "function" ? getSkillFinalCD(skill, i) : null;
@@ -206,14 +188,12 @@ async function submitAllStudentData() {
     };
     let { data: skillData, error: skillErr } = await client.from('student_skills').insert([skillInsert]).select().single();
     if (skillErr || !skillData) {
-      alert(`技能${i + 1}寫入失敗：` + (skillErr?.message || ''));
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出'; }
-      return;
+      alert(`技能${i + 1}寫入失敗：` + (skillErr?.message || '')); return;
     }
     skill._skill_id = skillData.id;
   }
 
-  // 8. 技能效果/負作用連結表
+  // ⭐️ 8. 技能效果/負作用連結表（新技能建立後才可以寫連結）
   const { data: skills } = await client.from('student_skills').select('id').eq('student_id', student_id);
   const skillIds = skills.map(s => s.id);
 
@@ -251,6 +231,5 @@ async function submitAllStudentData() {
   }]);
 
   alert("啊! 有一隻貓把申請單叼走了!!");
-  // 送出成功就不恢復按鈕了，因為頁面跳轉
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
 }
