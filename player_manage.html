@@ -194,21 +194,13 @@ let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, us
 
 async function init() {
   setMsg('載入中...');
-  //let { data: userData } = await client.auth.getUser();
-  //if (!userData.user) { location.href = 'login.html'; return; }
-  //user = userData.user;
- // let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
-  //if (pErr || !players) { location.href = 'login.html'; return; }
- // player = players;
-  // 測試用：預設登入這個玩家
-player = {
-  player_id: '32d2c681-43f4-4f24-8014-44cdbe80411d',
-  username: '管理員',
-  role: 'admin'
-};
+  let { data: userData } = await client.auth.getUser();
+  if (!userData.user) { location.href = 'login.html'; return; }
+  user = userData.user;
+ let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
+  if (pErr || !players) { location.href = 'login.html'; return; }
+  player = players;
 
-userRole = player.role;
-//測試用 以上刪除
   userRole = players.role || "player";
 
   // 角色基本資料（含student_code:座號）
