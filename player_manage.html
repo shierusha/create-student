@@ -6,63 +6,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  body { font-family: 'Noto Sans TC', sans-serif; background: #f4f7fa; margin: 0; padding: 2rem; }
-.container { max-width: 900px; margin: auto; background: white; padding: 2rem; border-radius: 1.3rem; box-shadow: 0 2px 16px #0001; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: #f4f7fa;
+  margin: 0;
+  padding: 2rem;
+}
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 1.3rem;
+  box-shadow: 0 2px 16px #0001;
+}
 h2 { text-align: center; margin-bottom: 1.3rem; }
 .msg { min-height: 1.5em; margin-bottom: 0.8em; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
 th, td { border-bottom: 1px solid #eef2fa; padding: 0.44em 0.63em; text-align: left; }
 th { background: #f4f7fa; font-size: 1em;}
-.btn { background: #1767a0; color: #fff; border: none; border-radius: 0.5em; padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em;}
-.btn-edit { background: #21694b;}
-.btn-link { background: #346689;}
+.btn {
+  background: #1767a0;
+  color: #fff;
+  border: none;
+  border-radius: 0.5em;
+  padding: 0.3em 0.8em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 0.2em;
+}
+.btn-edit { background: #21694b; }
+.btn-link { background: #346689; }
+
 .modal-bg {
-  display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
-  background:rgba(0,0,0,0.22); z-index: 1001;
-  justify-content:center; align-items: center;
+  display: none;
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.22);
+  z-index: 1001;
+  justify-content: center;
+  align-items: center;
   overflow-y: auto;
 }
 .modal-bg[style*="flex"], .modal-bg[style*="display: flex"] { display: flex !important;}
+
 .modal {
-  max-height: 95vh;         /* 彈窗最多只佔視窗95%高 */
-  overflow-y: auto;         /* 超出時能滑動 */
+  position: relative;
+  background: #fff;
+  border-radius: 1em;
+  max-width: 95vw;
+  min-width: 260px;
+  max-height: 95vh;
+  overflow-y: auto;
   box-sizing: border-box;
-  background: #fff; border-radius: 1em; max-width: 85%; min-width: 25%; padding: 2em 1.5em;
-  box-shadow: 0 4px 24px #0004; position: relative; 
+  padding: 2em 1.5em;
+  box-shadow: 0 4px 24px #0004;
 }
-.modal h3 { margin-top: 0; margin-bottom: 1em;}
-.modal .note-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7em;}
-.modal .note-content { flex: 1; margin-right: 1em;  white-space: pre-line;  word-break: break-all;}
+.modal h3 { margin-top: 0; margin-bottom: 1em; }
+.modal .note-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7em; }
+.modal .note-content { flex: 1; margin-right: 1em; white-space: pre-line; word-break: break-all; }
 .modal input[type="checkbox"] { transform: scale(1.2); }
-.modal .close-btn { position: absolute; top: 0.6em; right: 1em; background: none; border:none; font-size:1.6em; color:#999; cursor:pointer;}
-.modal .modal-actions { margin-top: 1.3em; text-align: right;}
-.modal .btn {margin:0;}
-@media (max-width: 650px) {
-  .container {padding: 1em;}
-  .modal {padding: 1.2em;}
-  #canvas-wrap {width:99vw;}
+.modal .close-btn {
+  position: absolute;
+  top: 0.6em;
+  right: 1em;
+  background: none;
+  border: none;
+  font-size: 1.6em;
+  color: #999;
+  cursor: pointer;
+  z-index: 1001;
 }
+.modal .close-btn:hover { color:#e2583e; }
+.modal .modal-actions { margin-top: 1.3em; text-align: right; }
+.modal .btn { margin: 0; }
+
 #canvas-wrap {
-  position:relative;
-  width:400px; height:450px;
-  margin:auto; touch-action:none;
+  position: relative;
+  width: min(90vw, 400px);
+  height: min(calc(90vw * 9 / 8), 450px);
+  max-width: 400px;
+  max-height: 450px;
+  aspect-ratio: 8 / 9;
+  margin: auto;
+  touch-action: none;
+  background: transparent;
+}
+#edit-canvas, #redbox-frame {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 #edit-canvas {
-  background:#ddd;
-  display:block;
-  border-radius:0.7em;
-  width:400px; height:450px;
+  background: #ddd;
+  border-radius: 0.7em;
 }
 #redbox-frame {
-  position:absolute;
-  left:0; top:0;
-  width:400px; height:450px;
-  pointer-events:none;
-  z-index:10;
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
 }
-#upload-msg { color:#1d4076; min-height:1em; margin-top:0.8em;}
-.hint { font-size:0.95em;color:#888;margin-top:0.7em;}
+#upload-msg { color: #1d4076; min-height: 1em; margin-top: 0.8em; }
+.hint { font-size: 0.95em; color: #888; margin-top: 0.7em; }
+
+@media (max-width: 650px) {
+  .container { padding: 1em; }
+  .modal { padding: 1.2em; min-width: 0; max-width: 99vw; }
+  #canvas-wrap {
+    width: min(99vw, 400px);
+    height: min(calc(99vw * 9 / 8), 450px);
+    max-width: 400px;
+    max-height: 450px;
+  }
+}
 
 </style>
 </head>
