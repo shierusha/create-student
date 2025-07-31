@@ -4,50 +4,63 @@
   <meta charset="UTF-8">
   <title>謝爾夏｜角色管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- CropperJS CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css"/>
-<!-- CropperJS JS -->
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
-
-
-  
-  <style>
-    body { font-family: 'Noto Sans TC', sans-serif; background: #f4f7fa; margin: 0; padding: 2rem; }
-    .container { max-width: 900px; margin: auto; background: white; padding: 2rem; border-radius: 1.3rem; box-shadow: 0 2px 16px #0001; }
-    h2 { text-align: center; margin-bottom: 1.3rem; }
-    .msg { min-height: 1.5em; margin-bottom: 0.8em; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
-    th, td { border-bottom: 1px solid #eef2fa; padding: 0.44em 0.63em; text-align: left; }
-    th { background: #f4f7fa; font-size: 1em;}
-    .btn { background: #1767a0; color: #fff; border: none; border-radius: 0.5em; padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em;}
-    .btn-edit { background: #21694b;}
-    .btn-link { background: #346689;}
-    /* Dialog */
-    .modal-bg {
-      display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
-      background:rgba(0,0,0,0.22); z-index: 1001;
-      justify-content:center; align-items: center;
-    }
-    .modal {
-      background: #fff; border-radius: 1em; max-width: 85%; min-width: 25%; padding: 2em 1.5em;
-      box-shadow: 0 4px 24px #0004; position: relative; 
-    }
-    .modal h3 { margin-top: 0; margin-bottom: 1em;}
-    .modal .note-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7em;}
-    .modal .note-content { flex: 1; margin-right: 1em;  white-space: pre-line;  /* 讓 \n 換行 */
-  word-break: break-all;  /* 長字也會自動換行 */}
-    .modal input[type="checkbox"] { transform: scale(1.2); }
-    .modal .close-btn { position: absolute; top: 0.6em; right: 1em; background: none; border:none; font-size:1.6em; color:#999; cursor:pointer;}
-    .modal .modal-actions { margin-top: 1.3em; text-align: right;}
-    .modal .btn {margin:0;}
-
-    @media (max-width: 650px) {
-      .container {padding: 1em;}
-      .modal {padding: 1.2em;}
-    }
-  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { font-family: 'Noto Sans TC', sans-serif; background: #f4f7fa; margin: 0; padding: 2rem; }
+.container { max-width: 900px; margin: auto; background: white; padding: 2rem; border-radius: 1.3rem; box-shadow: 0 2px 16px #0001; }
+h2 { text-align: center; margin-bottom: 1.3rem; }
+.msg { min-height: 1.5em; margin-bottom: 0.8em; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+th, td { border-bottom: 1px solid #eef2fa; padding: 0.44em 0.63em; text-align: left; }
+th { background: #f4f7fa; font-size: 1em;}
+.btn { background: #1767a0; color: #fff; border: none; border-radius: 0.5em; padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em;}
+.btn-edit { background: #21694b;}
+.btn-link { background: #346689;}
+.modal-bg {
+  display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
+  background:rgba(0,0,0,0.22); z-index: 1001;
+  justify-content:center; align-items: center;
+}
+.modal-bg[style*="flex"], .modal-bg[style*="display: flex"] { display: flex !important;}
+.modal {
+  background: #fff; border-radius: 1em; max-width: 85%; min-width: 25%; padding: 2em 1.5em;
+  box-shadow: 0 4px 24px #0004; position: relative; 
+}
+.modal h3 { margin-top: 0; margin-bottom: 1em;}
+.modal .note-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7em;}
+.modal .note-content { flex: 1; margin-right: 1em;  white-space: pre-line;  word-break: break-all;}
+.modal input[type="checkbox"] { transform: scale(1.2); }
+.modal .close-btn { position: absolute; top: 0.6em; right: 1em; background: none; border:none; font-size:1.6em; color:#999; cursor:pointer;}
+.modal .modal-actions { margin-top: 1.3em; text-align: right;}
+.modal .btn {margin:0;}
+@media (max-width: 650px) {
+  .container {padding: 1em;}
+  .modal {padding: 1.2em;}
+  #canvas-wrap {width:99vw;}
+}
+#canvas-wrap {
+  position:relative;
+  width:400px; height:450px;
+  margin:auto; touch-action:none;
+}
+#edit-canvas {
+  background:#ddd;
+  display:block;
+  border-radius:0.7em;
+  width:400px; height:450px;
+}
+#redbox-frame {
+  position:absolute;
+  left:0; top:0;
+  width:400px; height:450px;
+  pointer-events:none;
+  z-index:10;
+}
+#upload-msg { color:#1d4076; min-height:1em; margin-top:0.8em;}
+.hint { font-size:0.95em;color:#888;margin-top:0.7em;}
+
+</style>
 </head>
 <body>
   <div class="container">
@@ -64,15 +77,15 @@
             <th>操作</th>
           </tr>
         </thead>
-        <tbody id="data-tbody">
-        </tbody>
+        <tbody id="data-tbody"></tbody>
       </table>
     </div>
     <div style="text-align: right;">
-<button class="btn" id="back-btn" onclick="goBack()">返回</button>
+      <button class="btn" id="back-btn" onclick="goBack()">返回</button>
     </div>
   </div>
-  <!-- Modal Dialog -->
+
+  <!-- 公開設定Modal -->
   <div class="modal-bg" id="modal-bg">
     <div class="modal" id="modal">
       <button class="close-btn" onclick="closeModal()">×</button>
@@ -84,42 +97,201 @@
     </div>
   </div>
 
-
-
-
-
-<!-- Modal 內容 -->
-<div class="modal-bg" id="upload-modal-bg" style="display:none;">
-  <div class="modal">
-    <button class="close-btn" onclick="closeUploadModal()">×</button>
-    <h3>上傳照片</h3>
-    <div style="text-align:center;">
-      <img id="cropper-img" src="" alt="預覽" style="max-width:100%;max-height:350px;">
-    </div>
-    <form id="upload-form">
-      <input type="file" id="upload-file" accept="image/*" required>
-      <div id="upload-msg" style="color:#1d4076;min-height:1em;margin-bottom:1em;"></div>
-      <div class="modal-actions">
-        <button type="submit" class="btn">上傳</button>
+  <!-- 上傳正面照 Modal -->
+  <div class="modal-bg" id="upload-modal-bg" style="display:none;">
+    <div class="modal">
+      <button class="close-btn" onclick="closeUploadModal()">×</button>
+      <h3 style="text-align:center;">上傳照片</h3>
+      <div id="canvas-wrap">
+        <canvas id="edit-canvas" width="400" height="450"></canvas>
+        <img src="https://shierusha.github.io/create-student/imgs/export-0.png" 
+             id="redbox-frame" alt="紅框定位圖">
       </div>
-    </form>
+      <input type="file" id="upload-file" accept="image/*"><br>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="submitCanvasImage()">儲存上傳</button>
+      </div>
+      <div id="upload-msg"></div>
+      <div class="hint">可用手指縮放、旋轉、移動照片對好臉再上傳</div>
+    </div>
   </div>
-</div>
+  <script>
 
-
-
-
-  
-<script>
-  // ====== Supabase 設定 ======
+    // ========== Supabase 設定 ==========
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
 );
-
 let user = null, player = null, myStudents = [], reviewMap = {}, userRole = "player";
-let cropper = null, uploadStuId = null;
+let uploadStuId = null;
 
+// ========== Canvas 功能 ==========
+let img = null;
+let imgX = 200, imgY = 225, scale = 1, rotation = 0;
+let dragging = false, lastX, lastY;
+let pinchStart = null, pinchInit = {};
+const canvas = document.getElementById('edit-canvas');
+const ctx = canvas.getContext('2d');
+function setUploadMsg(msg) {
+  document.getElementById('upload-msg').textContent = msg || '';
+}
+function drawCanvas() {
+  ctx.clearRect(0,0,400,450);
+  if (!img) return;
+  ctx.save();
+  ctx.translate(imgX, imgY);
+  ctx.rotate(rotation);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -img.width/2, -img.height/2);
+  ctx.restore();
+}
+document.getElementById('upload-file').onchange = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    img = new Image();
+    img.onload = function() {
+      imgX = 200; imgY = 225; scale = Math.max(400/img.width, 450/img.height); rotation = 0;
+      drawCanvas();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+// 滑鼠拖拉
+canvas.onmousedown = function(e){
+  if(!img) return;
+  dragging = true;
+  lastX = e.offsetX;
+  lastY = e.offsetY;
+};
+canvas.onmouseup = canvas.onmouseleave = ()=>dragging=false;
+canvas.onmousemove = function(e){
+  if(!dragging) return;
+  imgX += e.offsetX - lastX;
+  imgY += e.offsetY - lastY;
+  lastX = e.offsetX; lastY = e.offsetY;
+  drawCanvas();
+};
+// 滾輪縮放
+canvas.onwheel = function(e){
+  if(!img) return;
+  e.preventDefault();
+  let factor = (e.deltaY < 0) ? 1.04 : 0.96;
+  scale *= factor;
+  drawCanvas();
+};
+// 鍵盤旋轉
+window.onkeydown = function(e){
+  if(!img) return;
+  if(e.key==='a') {rotation -= Math.PI/60; drawCanvas();}
+  if(e.key==='d') {rotation += Math.PI/60; drawCanvas();}
+};
+// 手機觸控
+canvas.addEventListener('touchstart', function(e){
+  if(!img) return;
+  if(e.touches.length===1) {
+    dragging = true;
+    let rect = canvas.getBoundingClientRect();
+    lastX = e.touches[0].clientX - rect.left;
+    lastY = e.touches[0].clientY - rect.top;
+  }
+  if(e.touches.length===2) {
+    pinchStart = [
+      {x:e.touches[0].clientX, y:e.touches[0].clientY},
+      {x:e.touches[1].clientX, y:e.touches[1].clientY}
+    ];
+    pinchInit = {scale, rotation, imgX, imgY};
+  }
+}, {passive:false});
+canvas.addEventListener('touchend', function(e){
+  dragging = false; pinchStart=null;
+}, {passive:false});
+canvas.addEventListener('touchmove', function(e){
+  if(!img) return;
+  e.preventDefault();
+  let rect = canvas.getBoundingClientRect();
+  if(e.touches.length===1 && dragging) {
+    let x = e.touches[0].clientX - rect.left;
+    let y = e.touches[0].clientY - rect.top;
+    imgX += x - lastX;
+    imgY += y - lastY;
+    lastX = x; lastY = y;
+    drawCanvas();
+  }
+  if(e.touches.length===2 && pinchStart) {
+    let now = [
+      {x:e.touches[0].clientX, y:e.touches[0].clientY},
+      {x:e.touches[1].clientX, y:e.touches[1].clientY}
+    ];
+    let dist0 = Math.hypot(
+      pinchStart[0].x-pinchStart[1].x,
+      pinchStart[0].y-pinchStart[1].y);
+    let distN = Math.hypot(
+      now[0].x-now[1].x,
+      now[0].y-now[1].y);
+    scale = pinchInit.scale * (distN/dist0);
+    let angle0 = Math.atan2(
+      pinchStart[1].y-pinchStart[0].y,
+      pinchStart[1].x-pinchStart[0].x);
+    let angleN = Math.atan2(
+      now[1].y-now[0].y,
+      now[1].x-now[0].x);
+    rotation = pinchInit.rotation + (angleN-angle0);
+    let center0 = {
+      x: (pinchStart[0].x+pinchStart[1].x)/2,
+      y: (pinchStart[0].y+pinchStart[1].y)/2
+    };
+    let centerN = {
+      x: (now[0].x+now[1].x)/2,
+      y: (now[0].y+now[1].y)/2
+    };
+    imgX = pinchInit.imgX + (centerN.x-center0.x);
+    imgY = pinchInit.imgY + (centerN.y-center0.y);
+    drawCanvas();
+  }
+}, {passive:false});
+
+function openUploadModal(student_id) {
+  uploadStuId = student_id;
+  document.getElementById('upload-modal-bg').style.display = 'flex';
+  document.getElementById('upload-file').value = '';
+  img = null;
+  drawCanvas();
+  setUploadMsg('');
+}
+function closeUploadModal() {
+  document.getElementById('upload-modal-bg').style.display = 'none';
+  uploadStuId = null;
+  img = null;
+}
+function submitCanvasImage(){
+  if(!img || !uploadStuId) { setUploadMsg('請先選擇圖片'); return; }
+  setUploadMsg('上傳中...');
+  canvas.toBlob(async function(blob) {
+    const ext = 'png';
+    const filePath = `student-images/${uploadStuId}/front.${ext}`;
+    await client.storage.from('student-img').remove([filePath]);
+    const { error: uploadErr } = await client.storage.from('student-img').upload(filePath, blob, { upsert: true });
+    if (uploadErr) { setUploadMsg('圖片上傳失敗'); return; }
+    const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
+    await client.from('student_images').delete().eq('student_id', uploadStuId).eq('image_type', 'front');
+    const { error: insertErr } = await client.from('student_images').insert([
+      {
+        student_id: uploadStuId,
+        image_type: 'front',
+        image_url: publicUrl,
+        uploaded_by: player.player_id
+      }
+    ]);
+    if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
+    setUploadMsg('上傳完成！');
+    setTimeout(() => { closeUploadModal(); renderTable(); }, 1300);
+  }, 'image/png');
+}
+
+// =================== 你原本的管理邏輯 ===================
 async function init() {
   setMsg('載入中...');
   let { data: userData } = await client.auth.getUser();
@@ -141,7 +313,6 @@ async function init() {
   renderTable();
   setMsg('');
 }
-
 function renderTable() {
   const tbody = document.getElementById('data-tbody');
   tbody.innerHTML = '';
@@ -162,7 +333,6 @@ function renderTable() {
     `;
   });
 }
-
 function getGender(g) {
   if (g === "M") return "男";
   if (g === "F") return "女";
@@ -245,6 +415,7 @@ function goBack() {
     location.href = 'player.html';
   }
 }
+
 window.openStudentCard = openStudentCard;
 window.openNotesModal = openNotesModal;
 window.closeModal = closeModal;
@@ -252,108 +423,8 @@ window.toggleNotePublic = toggleNotePublic;
 window.saveNotes = saveNotes;
 window.goBack = goBack;
 
-// ====== 上傳正面照流程 ======
-function setUploadMsg(msg) {
-  document.getElementById('upload-msg').textContent = msg || '';
-}
-
-// 打開 modal，預覽現有正面照
-async function openUploadModal(student_id) {
-  uploadStuId = student_id;
-  document.getElementById('upload-modal-bg').style.display = 'flex';
-  document.getElementById('upload-form').reset();
-  setUploadMsg('');
-  document.getElementById('cropper-img').src = '';
-  if (cropper) { cropper.destroy(); cropper = null; }
-
-  // 預覽舊照片（如有）
-  let { data: img } = await client.from('student_images')
-    .select('image_url')
-    .eq('student_id', student_id)
-    .eq('image_type', 'front')
-    .limit(1)
-    .maybeSingle();
-  if (img && img.image_url) {
-    document.getElementById('cropper-img').src = img.image_url;
-  }
-}
-
-function closeUploadModal() {
-  document.getElementById('upload-modal-bg').style.display = 'none';
-  uploadStuId = null;
-  if (cropper) { cropper.destroy(); cropper = null; }
-}
-
-// 用戶選檔後，啟動 cropper
-document.getElementById('upload-file').onchange = function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const img = document.getElementById('cropper-img');
-    img.src = evt.target.result;
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(img, {
-      aspectRatio: 8 / 9,
-      viewMode: 1,
-      background: false,
-      movable: true,
-      zoomable: true,
-      rotatable: true,
-      cropBoxResizable: true
-    });
-  }
-  reader.readAsDataURL(file);
-}
-
-// 上傳時裁剪並上傳
-document.getElementById('upload-form').onsubmit = async function(e) {
-  e.preventDefault();
-  setUploadMsg('上傳中...');
-  if (!cropper || !uploadStuId) { setUploadMsg('請選擇圖片'); return; }
-
-  cropper.getCroppedCanvas({ width: 400, height: 450 }).toBlob(async function(blob) {
-    const ext = 'png';
-    const filePath = `student-images/${uploadStuId}/front.${ext}`;
-
-    // 刪舊檔
-    await client.storage.from('student-img').remove([filePath]);
-    // 上傳新檔（覆蓋）
-    const { error: uploadErr } = await client.storage
-      .from('student-img')
-      .upload(filePath, blob, { upsert: true });
-    if (uploadErr) { setUploadMsg('圖片上傳失敗'); return; }
-
-    // 取得 publicUrl
-    const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
-
-    // 刪除舊資料表
-    await client.from('student_images')
-      .delete()
-      .eq('student_id', uploadStuId)
-      .eq('image_type', 'front');
-
-    // 新增 student_images 資料
-    const { error: insertErr } = await client.from('student_images').insert([
-      {
-        student_id: uploadStuId,
-        image_type: 'front',
-        image_url: publicUrl,
-        uploaded_by: player.player_id
-      }
-    ]);
-    if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
-
-    setUploadMsg('上傳完成！');
-    setTimeout(() => { closeUploadModal(); renderTable(); }, 1200);
-  }, 'image/png');
-}
-
-
-
 init();
 
-</script>
-
+  </script>
 </body>
 </html>
