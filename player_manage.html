@@ -278,7 +278,10 @@ function submitCanvasImage(){
     const filePath = `student-images/${uploadStuId}/front.${ext}`;
     await client.storage.from('student-img').remove([filePath]);
     const { error: uploadErr } = await client.storage.from('student-img').upload(filePath, blob, { upsert: true });
-    if (uploadErr) { setUploadMsg('圖片上傳失敗'); return; }
+    if (uploadErr) { 
+      console.log('uploadErr', uploadErr); 
+      setUploadMsg('圖片上傳失敗');
+      return; }
     const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
     await client.from('student_images').delete().eq('student_id', uploadStuId).eq('image_type', 'front');
     const { error: insertErr } = await client.from('student_images').insert([
