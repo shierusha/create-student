@@ -490,29 +490,49 @@ async function init() {
 function renderStudentList() {
   const listWrap = document.getElementById('student-list');
   listWrap.innerHTML = '';
-  let studentsWithCode = myStudents.filter(s => s.student_code).sort((a,b)=>(+a.student_code)-(+b.student_code));
-  let studentsNoCode = myStudents.filter(s => !s.student_code);
-  let all = [...studentsNoCode, ...studentsWithCode];
 
+  // 1. 未過審(非PASS) + 已過審(PASS) 分組
+  let unpassed = myStudents.filter(s => {
+    let status = reviewMap[s.student_id] || "";
+    return status !== "PASS";
+  });
+  let passed = myStudents.filter(s => {
+    let status = reviewMap[s.student_id] || "";
+    return status === "PASS";
+  });
+
+  // 2. 各自座號排序（沒座號的最前面）
+  function sortByCode(a, b) {
+    if (!a.student_code && !b.student_code) return 0;
+    if (!a.student_code) return -1;
+    if (!b.student_code) return 1;
+    return (+a.student_code) - (+b.student_code);
+  }
+  unpassed.sort(sortByCode);
+  passed.sort(sortByCode);
+
+  // 3. 合併陣列，未過審在上
+  let all = [...unpassed, ...passed];
+
+  // ↓ 這裡以下維持你的原始渲染邏輯
   all.forEach(stu => {
     let status = reviewMap[stu.student_id] || "";
     let align = stu.alignment==="white" ? "w" : (stu.alignment==="black" ? "b" : "");
     let card = document.createElement('div');
     card.className = "student-card" + (align ? ` card-${align}` : "");
 
-  // 卡片渲染裡
-let avatarUrl = imgMap[stu.student_id]
-    ? (imgMap[stu.student_id] + "?v=" + Date.now())
-    : "https://fakeimg.pl/300x300?text=No+Photo";
-let avatarDiv = document.createElement('div');
-avatarDiv.className = 'avatar-frame';
-let avatarImg = document.createElement('img');
-avatarImg.className = 'avatar-img';
-getAvatarFromUrl(avatarUrl, src=>{
-  avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
-});
-avatarDiv.appendChild(avatarImg);
-
+    // 卡片渲染裡
+    let avatarUrl = imgMap[stu.student_id]
+      ? (imgMap[stu.student_id] + "?v=" + Date.now())
+      : "https://fakeimg.pl/300x300?text=No+Photo";
+    let avatarDiv = document.createElement('div');
+    avatarDiv.className = 'avatar-frame';
+    let avatarImg = document.createElement('img');
+    avatarImg.className = 'avatar-img';
+    getAvatarFromUrl(avatarUrl, src=>{
+      avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
+    });
+    avatarDiv.appendChild(avatarImg);
 
     // 卡片主資訊
     let infoDiv = document.createElement('div');
