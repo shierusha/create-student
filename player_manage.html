@@ -230,6 +230,7 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
       </div>
       <input type="file" id="upload-file" accept="image/*"><br>
       <div class="modal-actions">
+        <button type="button" class="btn" onclick="toggleMirror()">鏡射</button>
         <button type="button" class="btn" onclick="submitCanvasImage()">儲存上傳</button>
       </div>
       <div id="upload-msg"></div>
@@ -253,6 +254,26 @@ const TEST_STUDENT_IDS = [
 ];
 
 let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, userRole = "player";
+
+
+//鏡射
+let mirrored = false; // 預設不鏡射
+
+function drawCanvas() {
+  ctx.clearRect(0,0,400,450);
+  if (!img) return;
+  ctx.save();
+  ctx.translate(imgX, imgY);
+  ctx.rotate(rotation);
+  ctx.scale(mirrored ? -scale : scale, scale);
+  ctx.drawImage(img, -img.width/2, -img.height/2);
+  ctx.restore();
+}
+function toggleMirror() {
+  mirrored = !mirrored;
+  drawCanvas();
+}
+window.toggleMirror = toggleMirror;
 
 // canvas / modal 相關
 let uploadStuId = null;
