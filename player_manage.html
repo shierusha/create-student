@@ -5,8 +5,8 @@
   <title>謝爾夏｜角色管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,700&display=swap" rel="stylesheet">
+  <style>
 body {
   font-family: 'Noto Sans TC', sans-serif;
   background: #f4f7fa;
@@ -21,33 +21,53 @@ body {
   border-radius: 1.3rem;
   box-shadow: 0 2px 16px #0001;
 }
-h2 { text-align: center; margin-bottom: 1.3rem; }
 .msg { min-height: 1.5em; margin-bottom: 0.8em; }
 
-/* ---- 卡片區 ---- */
+/* ---- 卡片排版：每行2張，手機1張 ---- */
 .student-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2.3rem 1.3rem;
   margin-top: 1.5em;
 }
+
+/* ---- 卡片本體與切一半橫排 ---- */
 .student-card {
   border-radius: 1.1em;
   padding: 1.5em 1.3em 1.2em 1.3em;
   box-shadow: 0 2px 10px #0002;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   min-width: 0;
   transition: box-shadow .18s;
+  background: #eef4f5;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-.card-w { background: #eef4f5; }
 .card-b { background: #212937; }
-.card-b .student-name {
-  color: #fff;
+.card-b .student-name { color: #fff; }
+
+/* 切一半橫排 */
+.card-row {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+.card-left, .card-right {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.card-left {
+  border-right: 1px solid rgba(220,220,220,0.18);
+  padding-right: 1em;
+}
+.card-right {
+  padding-left: 1em;
 }
 
-
+/* ---- 頭像與資訊 ---- */
 .avatar-frame {
   width: 110px; height: 110px;
   border-radius: 1em;
@@ -74,9 +94,9 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
   letter-spacing: .04em;
 }
 
+/* ---- 按鈕群 ---- */
 .card-btn-group {
-  width: 80%;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -103,13 +123,16 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 .btn-link { background: #346689; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ------------ 響應式 (手機) ------------ */
-@media (max-width: 700px) {
-  .student-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ---- 響應式 ---- */
+@media (max-width: 900px) {
   .container { padding: 1em; }
+  .student-list { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .student-list { grid-template-columns: 1fr; }
   .student-card { padding: 1.2em 0.7em 1em 0.7em; }
+  .card-row { flex-direction: column; }
+  .card-left, .card-right { padding: 0; border: none; }
 }
 
 /* ----------- Modal 相關 ----------- */
@@ -191,21 +214,17 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 }
 .close-btn:hover { color:#e2583e; }
 .hint { font-size: 0.95em; color: #888; margin-top: 0.7em; }
-
-</style>
+  </style>
 </head>
 <body>
- 
-   <div class="container">
-  <h2>角色一覽表</h2>
-  <span class="msg" id="msg"></span>
-  <div id="unpassed-list" class="student-list"></div>
-  <div id="passed-list" class="student-list"></div>
-  <div style="text-align: right; margin-top:1.2em;">
-    <button class="btn" id="back-btn" onclick="goBack()">返回</button>
+  <div class="container">
+    <span class="msg" id="msg"></span>
+    <div id="unpassed-list" class="student-list"></div>
+    <div id="passed-list" class="student-list"></div>
+    <div style="text-align: right; margin-top:1.2em;">
+      <button class="btn" id="back-btn" onclick="goBack()">返回</button>
+    </div>
   </div>
-</div>
-
   <!-- 上傳正面照 Modal -->
   <div class="modal-bg" id="upload-modal-bg" style="display:none;">
     <div class="modal">
@@ -505,7 +524,7 @@ function renderStudentList() {
   renderGroup(passed, document.getElementById('passed-list'));
 }
 
-// group 渲染函數（你原來的渲染內容搬進來）
+// group 渲染函數（已切一半橫排！）
 function renderGroup(arr, wrap) {
   wrap.innerHTML = '';
   arr.forEach(stu => {
@@ -575,13 +594,27 @@ function renderGroup(arr, wrap) {
     devBtn.disabled = true;
     btnGroup.appendChild(devBtn);
 
-    card.appendChild(avatarDiv);
-    card.appendChild(infoDiv);
-    card.appendChild(btnGroup);
+    // ==== 橫切一半 ====
+    let cardRow = document.createElement('div');
+    cardRow.className = 'card-row';
+
+    let cardLeft = document.createElement('div');
+    cardLeft.className = 'card-left';
+    cardLeft.appendChild(avatarDiv);
+    cardLeft.appendChild(infoDiv);
+
+    let cardRight = document.createElement('div');
+    cardRight.className = 'card-right';
+    cardRight.appendChild(btnGroup);
+
+    cardRow.appendChild(cardLeft);
+    cardRow.appendChild(cardRight);
+    card.appendChild(cardRow);
+    // ================
+
     wrap.appendChild(card);
   });
 }
-
 
 // 其他共用
 function openStudentCard(student_id) {
@@ -598,8 +631,6 @@ window.openStudentCard = openStudentCard;
 window.goBack = goBack;
 
 init();
-
-
   </script>
 </body>
 </html>
