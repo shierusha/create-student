@@ -203,6 +203,189 @@ async function init() {
 
   userRole = players.role || "player";
 
+//補充上傳照片
+// --- 這些請複製到你的 2.0 <script> 最前面，client 定義後面 --- 
+let uploadStuId = null;
+
+// canvas & 變數
+let img = null;
+let imgX = 200, imgY = 225, scale = 1, rotation = 0;
+let dragging = false, lastX, lastY;
+let pinchStart = null, pinchInit = {};
+const canvas = document.getElementById('edit-canvas');
+const ctx = canvas.getContext('2d');
+
+function setUploadMsg(msg) {
+  document.getElementById('upload-msg').textContent = msg || '';
+}
+function drawCanvas() {
+  ctx.clearRect(0,0,400,450);
+  if (!img) return;
+  ctx.save();
+  ctx.translate(imgX, imgY);
+  ctx.rotate(rotation);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -img.width/2, -img.height/2);
+  ctx.restore();
+}
+document.getElementById('upload-file').onchange = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    img = new Image();
+    img.onload = function() {
+      imgX = 200; imgY = 225; scale = Math.max(400/img.width, 450/img.height); rotation = 0;
+      drawCanvas();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+// 滑鼠拖拉
+canvas.onmousedown = function(e){
+  if(!img) return;
+  dragging = true;
+  lastX = e.offsetX;
+  lastY = e.offsetY;
+};
+canvas.onmouseup = canvas.onmouseleave = ()=>dragging=false;
+canvas.onmousemove = function(e){
+  if(!dragging) return;
+  imgX += e.offsetX - lastX;
+  imgY += e.offsetY - lastY;
+  lastX = e.offsetX; lastY = e.offsetY;
+  drawCanvas();
+};
+// 滾輪縮放
+canvas.onwheel = function(e){
+  if(!img) return;
+  e.preventDefault();
+  let factor = (e.deltaY < 0) ? 1.04 : 0.96;
+  scale *= factor;
+  drawCanvas();
+};
+// 鍵盤旋轉
+window.onkeydown = function(e){
+  if(!img) return;
+  if(e.key==='a') {rotation -= Math.PI/60; drawCanvas();}
+  if(e.key==='d') {rotation += Math.PI/60; drawCanvas();}
+};
+// 手機觸控
+canvas.addEventListener('touchstart', function(e){
+  if(!img) return;
+  if(e.touches.length===1) {
+    dragging = true;
+    let rect = canvas.getBoundingClientRect();
+    lastX = e.touches[0].clientX - rect.left;
+    lastY = e.touches[0].clientY - rect.top;
+  }
+  if(e.touches.length===2) {
+    pinchStart = [
+      {x:e.touches[0].clientX, y:e.touches[0].clientY},
+      {x:e.touches[1].clientX, y:e.touches[1].clientY}
+    ];
+    pinchInit = {scale, rotation, imgX, imgY};
+  }
+}, {passive:false});
+canvas.addEventListener('touchend', function(e){
+  dragging = false; pinchStart=null;
+}, {passive:false});
+canvas.addEventListener('touchmove', function(e){
+  if(!img) return;
+  e.preventDefault();
+  let rect = canvas.getBoundingClientRect();
+  if(e.touches.length===1 && dragging) {
+    let x = e.touches[0].clientX - rect.left;
+    let y = e.touches[0].clientY - rect.top;
+    imgX += x - lastX;
+    imgY += y - lastY;
+    lastX = x; lastY = y;
+    drawCanvas();
+  }
+  if(e.touches.length===2 && pinchStart) {
+    let now = [
+      {x:e.touches[0].clientX, y:e.touches[0].clientY},
+      {x:e.touches[1].clientX, y:e.touches[1].clientY}
+    ];
+    let dist0 = Math.hypot(
+      pinchStart[0].x-pinchStart[1].x,
+      pinchStart[0].y-pinchStart[1].y);
+    let distN = Math.hypot(
+      now[0].x-now[1].x,
+      now[0].y-now[1].y);
+    scale = pinchInit.scale * (distN/dist0);
+    let angle0 = Math.atan2(
+      pinchStart[1].y-pinchStart[0].y,
+      pinchStart[1].x-pinchStart[0].x);
+    let angleN = Math.atan2(
+      now[1].y-now[0].y,
+      now[1].x-now[0].x);
+    rotation = pinchInit.rotation + (angleN-angle0);
+    let center0 = {
+      x: (pinchStart[0].x+pinchStart[1].x)/2,
+      y: (pinchStart[0].y+pinchStart[1].y)/2
+    };
+    let centerN = {
+      x: (now[0].x+now[1].x)/2,
+      y: (now[0].y+now[1].y)/2
+    };
+    imgX = pinchInit.imgX + (centerN.x-center0.x);
+    imgY = pinchInit.imgY + (centerN.y-center0.y);
+    drawCanvas();
+  }
+}, {passive:false});
+
+// modal 開關
+function openUploadModal(student_id) {
+  uploadStuId = student_id;
+  document.getElementById('upload-modal-bg').style.display = 'flex';
+  document.getElementById('upload-file').value = '';
+  img = null;
+  drawCanvas();
+  setUploadMsg('');
+}
+function closeUploadModal() {
+  document.getElementById('upload-modal-bg').style.display = 'none';
+  uploadStuId = null;
+  img = null;
+}
+
+// 圖片儲存
+function submitCanvasImage(){
+  if(!img || !uploadStuId) { setUploadMsg('請先選擇圖片'); return; }
+  setUploadMsg('上傳中...');
+  canvas.toBlob(async function(blob) {
+    const ext = 'png';
+    const filePath = `student-images/${uploadStuId}/front.${ext}`;
+    await client.storage.from('student-img').remove([filePath]);
+    const { error: uploadErr } = await client.storage.from('student-img').upload(filePath, blob, { upsert: true });
+    if (uploadErr) { 
+      console.log('uploadErr', uploadErr); 
+      setUploadMsg('圖片上傳失敗');
+      return; }
+    const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
+    await client.from('student_images').delete().eq('student_id', uploadStuId).eq('image_type', 'front');
+    const { error: insertErr } = await client.from('student_images').insert([
+      {
+        student_id: uploadStuId,
+        image_type: 'front',
+        image_url: publicUrl,
+        uploaded_by: player.player_id
+      }
+    ]);
+    if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
+    setUploadMsg('上傳完成！');
+    setTimeout(() => { closeUploadModal(); renderStudentList(); }, 1300);
+  }, 'image/png');
+}
+
+// 最後 window 綁定
+window.openUploadModal = openUploadModal;
+window.closeUploadModal = closeUploadModal;
+window.submitCanvasImage = submitCanvasImage;
+
+
   // 角色基本資料（含student_code:座號）
   let { data: students, error: sErr } = await client.from('students')
     .select('student_id,name,student_code,alignment')
