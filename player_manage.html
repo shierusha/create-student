@@ -441,9 +441,9 @@ async function init() {
   player = players;
   userRole = players.role || "player";
 
-  let { data: students, error: sErr } = await client.from('students')
-    .select('student_id,name,student_code,alignment')
-    .eq('player_id', player.player_id);
+let { data: students, error: sErr } = await client.from('students')
+  .select('student_id,name,nickname,student_code,alignment')
+  .eq('player_id', player.player_id);
   if (sErr) { setMsg('角色載入失敗'); return; }
   myStudents = students || [];
 
@@ -485,7 +485,7 @@ function renderStudentList() {
     let infoDiv = document.createElement('div');
     infoDiv.className = 'student-info';
     infoDiv.innerHTML = `
-      <div class="student-name">${stu.student_code?`NO.${stu.student_code} `:""}${stu.name}</div>
+  <div class="student-name">${stu.student_code ? `NO.${stu.student_code} ` : ""}${stu.nickname || stu.name}</div>
     `;
 
     // 操作按鈕群
