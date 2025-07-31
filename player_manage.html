@@ -21,9 +21,13 @@ th { background: #f4f7fa; font-size: 1em;}
   display: none; position: fixed; left:0; top:0; width:100vw; height:100vh;
   background:rgba(0,0,0,0.22); z-index: 1001;
   justify-content:center; align-items: center;
+  overflow-y: auto;
 }
 .modal-bg[style*="flex"], .modal-bg[style*="display: flex"] { display: flex !important;}
 .modal {
+  max-height: 95vh;         /* 彈窗最多只佔視窗95%高 */
+  overflow-y: auto;         /* 超出時能滑動 */
+  box-sizing: border-box;
   background: #fff; border-radius: 1em; max-width: 85%; min-width: 25%; padding: 2em 1.5em;
   box-shadow: 0 4px 24px #0004; position: relative; 
 }
