@@ -239,7 +239,7 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
   </div>
   <script>
 
-  // ========== Supabase 設定 ==========
+// ========== Supabase 設定 ==========
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
@@ -255,32 +255,13 @@ const TEST_STUDENT_IDS = [
 
 let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, userRole = "player";
 
-
-//鏡射
-let mirrored = false; // 預設不鏡射
-
-function drawCanvas() {
-  ctx.clearRect(0,0,400,450);
-  if (!img) return;
-  ctx.save();
-  ctx.translate(imgX, imgY);
-  ctx.rotate(rotation);
-  ctx.scale(mirrored ? -scale : scale, scale);
-  ctx.drawImage(img, -img.width/2, -img.height/2);
-  ctx.restore();
-}
-function toggleMirror() {
-  mirrored = !mirrored;
-  drawCanvas();
-}
-window.toggleMirror = toggleMirror;
-
-// canvas / modal 相關
+// ========== Canvas 與 Modal 相關 ==========
 let uploadStuId = null;
 let img = null;
 let imgX = 200, imgY = 225, scale = 1, rotation = 0;
 let dragging = false, lastX, lastY;
 let pinchStart = null, pinchInit = {};
+let mirrored = false; // 預設不鏡射
 const canvas = document.getElementById('edit-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -318,17 +299,24 @@ function getAvatarFromUrl(url, callback) {
   img.src = url;
 }
 
-// canvas控制
+// ========== drawCanvas 只出現這一份 ==========
 function drawCanvas() {
   ctx.clearRect(0,0,400,450);
   if (!img) return;
   ctx.save();
   ctx.translate(imgX, imgY);
   ctx.rotate(rotation);
-  ctx.scale(scale, scale);
+  ctx.scale(mirrored ? -scale : scale, scale);
   ctx.drawImage(img, -img.width/2, -img.height/2);
   ctx.restore();
 }
+function toggleMirror() {
+  mirrored = !mirrored;
+  drawCanvas();
+}
+window.toggleMirror = toggleMirror;
+
+// ========== Canvas事件 ==========
 document.getElementById('upload-file').onchange = function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -336,7 +324,7 @@ document.getElementById('upload-file').onchange = function(e) {
   reader.onload = function(evt) {
     img = new Image();
     img.onload = function() {
-      imgX = 200; imgY = 225; scale = Math.max(400/img.width, 450/img.height); rotation = 0;
+      imgX = 200; imgY = 225; scale = Math.max(400/img.width, 450/img.height); rotation = 0; mirrored = false;
       drawCanvas();
     };
     img.src = evt.target.result;
@@ -438,6 +426,7 @@ function openUploadModal(student_id) {
   document.getElementById('upload-modal-bg').style.display = 'flex';
   document.getElementById('upload-file').value = '';
   img = null;
+  mirrored = false;
   drawCanvas();
   setUploadMsg('');
 }
@@ -446,6 +435,8 @@ function closeUploadModal() {
   uploadStuId = null;
   img = null;
 }
+
+// 儲存canvas
 async function submitCanvasImage(){
   if(!img || !uploadStuId) { setUploadMsg('請先選擇圖片'); return; }
   setUploadMsg('上傳中...');
@@ -470,7 +461,6 @@ async function submitCanvasImage(){
     ]);
     if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
     setUploadMsg('上傳完成！');
-    // 先 reload 圖片、再 render（保證頭像新）
     setTimeout(async () => {
       closeUploadModal();
       await reloadImages();
@@ -493,9 +483,9 @@ async function init() {
   player = players;
   userRole = players.role || "player";
 
-let { data: students, error: sErr } = await client.from('students')
-  .select('student_id,name,nickname,student_code,alignment')
-  .eq('player_id', player.player_id);
+  let { data: students, error: sErr } = await client.from('students')
+    .select('student_id,name,nickname,student_code,alignment')
+    .eq('player_id', player.player_id);
   if (sErr) { setMsg('角色載入失敗'); return; }
   myStudents = students || [];
 
@@ -509,7 +499,7 @@ let { data: students, error: sErr } = await client.from('students')
   setMsg('');
 }
 
-// 卡片渲染（根據需求重寫）
+// ========== 卡片渲染 ==========
 function renderStudentList() {
   const listWrap = document.getElementById('student-list');
   listWrap.innerHTML = '';
@@ -537,7 +527,7 @@ function renderStudentList() {
     let infoDiv = document.createElement('div');
     infoDiv.className = 'student-info';
     infoDiv.innerHTML = `
-  <div class="student-name">${stu.student_code ? `NO.${stu.student_code} ` : ""}${stu.nickname || stu.name}</div>
+      <div class="student-name">${stu.student_code ? `NO.${stu.student_code} ` : ""}${stu.nickname || stu.name}</div>
     `;
 
     // 操作按鈕群
@@ -611,7 +601,6 @@ window.openStudentCard = openStudentCard;
 window.goBack = goBack;
 
 init();
-
 
   </script>
 </body>
