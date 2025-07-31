@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
+  body {
   font-family: 'Noto Sans TC', sans-serif;
   background: #f4f7fa;
   margin: 0;
@@ -23,9 +23,11 @@ body {
 }
 h2 { text-align: center; margin-bottom: 1.3rem; }
 .msg { min-height: 1.5em; margin-bottom: 0.8em; }
+
+/* ---- 卡片區 ---- */
 .student-list {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 2.3rem 1.3rem;
   margin-top: 1.5em;
 }
@@ -38,13 +40,8 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
   align-items: center;
   min-width: 0;
 }
-.card-w {
- background: #f9fbfe;
-}
-  
-.card-b {
- background: #27364f;
-}
+.card-w { background: #f9fbfe; }
+.card-b { background: #27364f; }
 .avatar-frame {
   width: 110px; height: 110px;
   border-radius: 1em;
@@ -64,7 +61,7 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 .student-name {
   font-size: 1.15em;
   font-weight: bold;
-  min-height: 2.7em; /* 預留兩行 */
+  min-height: 2.7em;
   line-height: 1.2em;
   margin-bottom: 0.4em;
   word-break: break-all;
@@ -103,22 +100,16 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 .btn-edit { background: #21694b; }
 .btn-link { background: #346689; }
 
-@media (min-width: 650px) {
+/* ------------ 響應式 (手機) ------------ */
+@media (max-width: 600px) {
   .student-list {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-@media (min-width: 950px) {
-  .student-list {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 650px) {
   .container { padding: 1em; }
   .student-card { padding: 1.2em 0.7em 1em 0.7em; }
 }
 
+/* ----------- Modal 相關 ----------- */
 .modal-bg {
   display: none;
   position: fixed;
@@ -127,21 +118,55 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
   z-index: 1001;
   justify-content: center;
   align-items: center;
-  overflow-y: auto;
 }
 .modal-bg[style*="flex"], .modal-bg[style*="display: flex"] { display: flex !important; }
 .modal {
   position: relative;
   background: #fff;
   border-radius: 1em;
-  max-width: 95vw;
-  min-width: 260px;
-  max-height: 95vh;
-  overflow-y: auto;
+  max-width: 97vw;
+  min-width: 240px;
+  width: 420px;
   box-sizing: border-box;
   padding: 2em 1.5em;
   box-shadow: 0 4px 24px #0004;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+/* 自動縮放 canvas 區塊 */
+#canvas-wrap {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 8 / 9;
+  margin: auto;
+  background: transparent;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#edit-canvas, #redbox-frame {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 400px;
+  max-height: 450px;
+  display: block;
+}
+@media (max-width: 500px) {
+  .modal {
+    width: 99vw;
+    padding: 1em 0.2em;
+    min-width: 0;
+    max-width: 99vw;
+  }
+  #canvas-wrap {
+    max-width: 99vw;
+    aspect-ratio: 8 / 9;
+  }
+}
+
 .close-btn {
   position: absolute; top: 0.6em; right: 1em;
   background: none; border: none; font-size: 1.6em; color: #999; cursor: pointer; z-index: 1001;
@@ -149,7 +174,6 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 .close-btn:hover { color:#e2583e; }
 .hint { font-size: 0.95em; color: #888; margin-top: 0.7em; }
 
-  
 </style>
 </head>
 <body>
