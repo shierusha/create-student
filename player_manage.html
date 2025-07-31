@@ -196,14 +196,15 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
 </head>
 <body>
  
-    <div class="container">
-    <h2>角色一覽表</h2>
-    <span class="msg" id="msg"></span>
-    <div id="student-list" class="student-list"></div>
-    <div style="text-align: right; margin-top:1.2em;">
-      <button class="btn" id="back-btn" onclick="goBack()">返回</button>
-    </div>
+   <div class="container">
+  <h2>角色一覽表</h2>
+  <span class="msg" id="msg"></span>
+  <div id="unpassed-list" class="student-list"></div>
+  <div id="passed-list" class="student-list"></div>
+  <div style="text-align: right; margin-top:1.2em;">
+    <button class="btn" id="back-btn" onclick="goBack()">返回</button>
   </div>
+</div>
 
   <!-- 上傳正面照 Modal -->
   <div class="modal-bg" id="upload-modal-bg" style="display:none;">
@@ -486,20 +487,10 @@ async function init() {
 
 // ========== 卡片渲染 ==========
 function renderStudentList() {
-  const listWrap = document.getElementById('student-list');
-  listWrap.innerHTML = '';
-
   // 1. 未過審(非PASS) + 已過審(PASS) 分組
-  let unpassed = myStudents.filter(s => {
-    let status = reviewMap[s.student_id] || "";
-    return status !== "PASS";
-  });
-  let passed = myStudents.filter(s => {
-    let status = reviewMap[s.student_id] || "";
-    return status === "PASS";
-  });
+  let unpassed = myStudents.filter(s => (reviewMap[s.student_id] || "") !== "PASS");
+  let passed = myStudents.filter(s => (reviewMap[s.student_id] || "") === "PASS");
 
-  // 2. 各自座號排序（沒座號的最前面）
   function sortByCode(a, b) {
     if (!a.student_code && !b.student_code) return 0;
     if (!a.student_code) return -1;
@@ -509,10 +500,15 @@ function renderStudentList() {
   unpassed.sort(sortByCode);
   passed.sort(sortByCode);
 
-  // 3. 合併陣列，未過審在上
-  let all = [...unpassed, ...passed];
+  // 分別渲染到不同div
+  renderGroup(unpassed, document.getElementById('unpassed-list'));
+  renderGroup(passed, document.getElementById('passed-list'));
+}
 
-  all.forEach(stu => {
+// group 渲染函數（你原來的渲染內容搬進來）
+function renderGroup(arr, wrap) {
+  wrap.innerHTML = '';
+  arr.forEach(stu => {
     let status = reviewMap[stu.student_id] || "";
     let align = stu.alignment==="white" ? "w" : (stu.alignment==="black" ? "b" : "");
     let card = document.createElement('div');
@@ -582,9 +578,10 @@ function renderStudentList() {
     card.appendChild(avatarDiv);
     card.appendChild(infoDiv);
     card.appendChild(btnGroup);
-    listWrap.appendChild(card);
+    wrap.appendChild(card);
   });
 }
+
 
 // 其他共用
 function openStudentCard(student_id) {
