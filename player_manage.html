@@ -225,7 +225,6 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
     </div>
   </div>
   <script>
-
 // ========== Supabase 設定 ==========
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
@@ -286,7 +285,7 @@ function getAvatarFromUrl(url, callback) {
   img.src = url;
 }
 
-// ========== drawCanvas 只出現這一份 ==========
+// ========== drawCanvas ==========
 function drawCanvas() {
   ctx.clearRect(0,0,400,450);
   if (!img) return;
@@ -433,7 +432,6 @@ async function submitCanvasImage(){
     await client.storage.from('student-img').remove([filePath]);
     const { error: uploadErr } = await client.storage.from('student-img').upload(filePath, blob, { upsert: true });
     if (uploadErr) { 
-      console.log('uploadErr', uploadErr); 
       setUploadMsg('圖片上傳失敗');
       return; }
     const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
@@ -514,14 +512,12 @@ function renderStudentList() {
   // 3. 合併陣列，未過審在上
   let all = [...unpassed, ...passed];
 
-  // ↓ 這裡以下維持你的原始渲染邏輯
   all.forEach(stu => {
     let status = reviewMap[stu.student_id] || "";
     let align = stu.alignment==="white" ? "w" : (stu.alignment==="black" ? "b" : "");
     let card = document.createElement('div');
     card.className = "student-card" + (align ? ` card-${align}` : "");
 
-    // 卡片渲染裡
     let avatarUrl = imgMap[stu.student_id]
       ? (imgMap[stu.student_id] + "?v=" + Date.now())
       : "https://fakeimg.pl/300x300?text=No+Photo";
@@ -534,18 +530,15 @@ function renderStudentList() {
     });
     avatarDiv.appendChild(avatarImg);
 
-    // 卡片主資訊
     let infoDiv = document.createElement('div');
     infoDiv.className = 'student-info';
     infoDiv.innerHTML = `
       <div class="student-name">${stu.student_code ? `NO.${stu.student_code} ` : ""}${stu.nickname || stu.name}</div>
     `;
 
-    // 操作按鈕群
     let btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
 
-    // 測試學生證
     if (TEST_STUDENT_IDS.includes(stu.student_id)) {
       let btnTest = document.createElement('button');
       btnTest.className = 'btn btn-link';
@@ -553,7 +546,6 @@ function renderStudentList() {
       btnTest.onclick = ()=>window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`,'_blank');
       btnGroup.appendChild(btnTest);
     }
-    // 學生證
     if (status==="PASS" && stu.student_code) {
       let btnCert = document.createElement('button');
       btnCert.className = 'btn btn-link';
@@ -561,7 +553,6 @@ function renderStudentList() {
       btnCert.onclick = ()=>window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`,'_blank');
       btnGroup.appendChild(btnCert);
     }
-    // 補充設定（只有PASS才有）
     if (status==="PASS") {
       let btnExtra = document.createElement('button');
       btnExtra.className = 'btn btn-link';
@@ -569,7 +560,6 @@ function renderStudentList() {
       btnExtra.onclick = ()=>window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
       btnGroup.appendChild(btnExtra);
     }
-    // 修改/上傳照片（BAD or 無狀態才顯示）
     if (status==="BAD" || !status) {
       let btnEdit = document.createElement('button');
       btnEdit.className = 'btn btn-edit';
@@ -583,7 +573,6 @@ function renderStudentList() {
       btnPhoto.onclick = ()=>openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
     }
-    // 攜帶物
     let devBtn = document.createElement('button');
     devBtn.className = 'btn btn-link';
     devBtn.innerText = '攜帶物(開發中)';
@@ -612,6 +601,7 @@ window.openStudentCard = openStudentCard;
 window.goBack = goBack;
 
 init();
+
 
   </script>
 </body>
