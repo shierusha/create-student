@@ -1,3 +1,6 @@
+let lastSubmitTime = 0;
+const submitCooldown = 60 * 1000; // 60秒
+
 // 角色名稱重複檢查
 async function checkStudentNameDuplicate(name, student_id = null) {
   let query = client.from('students').select('student_id').eq('name', name);
@@ -8,6 +11,10 @@ async function checkStudentNameDuplicate(name, student_id = null) {
 
 // 主送出
 async function submitAllStudentData() {
+  const now = Date.now();
+if (now - lastSubmitTime < submitCooldown) return;
+lastSubmitTime = now;
+
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
   if (!player_id) { alert('請先登入！'); return; }
 
@@ -16,13 +23,16 @@ async function submitAllStudentData() {
     const s = formData.skills[i];
     if (s && s.is_passive && s.use_movement) {
       alert(`技能${i + 1} 不可同時為「被動技能」並勾選「移動技能」！\n請取消其中一項。`);
+        lastSubmitTime = 0;
       return;
     }
   }
 
   // 名稱唯一
   const isDup = await checkStudentNameDuplicate(formData.name, formData.student_id);
-  if (isDup) { alert('角色名稱已被申請，請換一個！'); return; }
+  if (isDup) { alert('角色名稱已被申請，請換一個！');
+      lastSubmitTime = 0;
+  return; }
 
   // 計算總分與分類
   let totalSkillScore = (formData.skills || [])
