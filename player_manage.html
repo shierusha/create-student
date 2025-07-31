@@ -183,7 +183,7 @@ h2 { text-align: center; margin-bottom: 1.3rem; }
   </div>
   <script>
 
-      // ========== Supabase 設定 ==========
+  // ========== Supabase 設定 ==========
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
@@ -199,22 +199,8 @@ const TEST_STUDENT_IDS = [
 
 let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, userRole = "player";
 
-async function init() {
-  setMsg('載入中...');
-  let { data: userData } = await client.auth.getUser();
-  if (!userData.user) { location.href = 'login.html'; return; }
-  user = userData.user;
- let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
-  if (pErr || !players) { location.href = 'login.html'; return; }
-  player = players;
-
-  userRole = players.role || "player";
-
-//補充上傳照片
-// --- 這些請複製到你的 2.0 <script> 最前面，client 定義後面 --- 
+// canvas / modal 相關
 let uploadStuId = null;
-
-// canvas & 變數
 let img = null;
 let imgX = 200, imgY = 225, scale = 1, rotation = 0;
 let dragging = false, lastX, lastY;
@@ -222,9 +208,41 @@ let pinchStart = null, pinchInit = {};
 const canvas = document.getElementById('edit-canvas');
 const ctx = canvas.getContext('2d');
 
+function setMsg(msg) {
+  document.getElementById('msg').textContent = msg || '';
+}
 function setUploadMsg(msg) {
   document.getElementById('upload-msg').textContent = msg || '';
 }
+
+// 取得最新學生照片map
+async function reloadImages() {
+  let { data: imgs } = await client.from('student_images')
+    .select('student_id,image_url')
+    .eq('image_type', 'front');
+  imgMap = {};
+  (imgs||[]).forEach(im=>{ imgMap[im.student_id]=im.image_url; });
+}
+
+// avatar 預覽裁切（左上角）
+function getAvatarFromUrl(url, callback) {
+  let avatarCanvas = document.createElement('canvas');
+  avatarCanvas.width = avatarCanvas.height = 300;
+  let ctx = avatarCanvas.getContext('2d');
+  let img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function() {
+    ctx.clearRect(0,0,300,300);
+    ctx.drawImage(img, 0, 0, 300, 300, 0, 0, 300, 300);
+    callback(avatarCanvas.toDataURL('image/png'));
+  };
+  img.onerror = function() {
+    callback(""); // fallback 頭像
+  }
+  img.src = url;
+}
+
+// canvas控制
 function drawCanvas() {
   ctx.clearRect(0,0,400,450);
   if (!img) return;
@@ -249,7 +267,6 @@ document.getElementById('upload-file').onchange = function(e) {
   };
   reader.readAsDataURL(file);
 };
-// 滑鼠拖拉
 canvas.onmousedown = function(e){
   if(!img) return;
   dragging = true;
@@ -264,7 +281,6 @@ canvas.onmousemove = function(e){
   lastX = e.offsetX; lastY = e.offsetY;
   drawCanvas();
 };
-// 滾輪縮放
 canvas.onwheel = function(e){
   if(!img) return;
   e.preventDefault();
@@ -272,13 +288,11 @@ canvas.onwheel = function(e){
   scale *= factor;
   drawCanvas();
 };
-// 鍵盤旋轉
 window.onkeydown = function(e){
   if(!img) return;
   if(e.key==='a') {rotation -= Math.PI/60; drawCanvas();}
   if(e.key==='d') {rotation += Math.PI/60; drawCanvas();}
 };
-// 手機觸控
 canvas.addEventListener('touchstart', function(e){
   if(!img) return;
   if(e.touches.length===1) {
@@ -343,7 +357,6 @@ canvas.addEventListener('touchmove', function(e){
   }
 }, {passive:false});
 
-// modal 開關
 function openUploadModal(student_id) {
   uploadStuId = student_id;
   document.getElementById('upload-modal-bg').style.display = 'flex';
@@ -357,9 +370,7 @@ function closeUploadModal() {
   uploadStuId = null;
   img = null;
 }
-
-// 圖片儲存
-function submitCanvasImage(){
+async function submitCanvasImage(){
   if(!img || !uploadStuId) { setUploadMsg('請先選擇圖片'); return; }
   setUploadMsg('上傳中...');
   canvas.toBlob(async function(blob) {
@@ -383,111 +394,89 @@ function submitCanvasImage(){
     ]);
     if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
     setUploadMsg('上傳完成！');
-    setTimeout(() => { closeUploadModal(); renderStudentList(); }, 1300);
+    // 先 reload 圖片、再 render（保證頭像新）
+    setTimeout(async () => {
+      closeUploadModal();
+      await reloadImages();
+      renderStudentList();
+    }, 1000);
   }, 'image/png');
 }
-
-// 最後 window 綁定
 window.openUploadModal = openUploadModal;
 window.closeUploadModal = closeUploadModal;
 window.submitCanvasImage = submitCanvasImage;
 
+// ========== 主邏輯 ==========
+async function init() {
+  setMsg('載入中...');
+  let { data: userData } = await client.auth.getUser();
+  if (!userData.user) { location.href = 'login.html'; return; }
+  user = userData.user;
+  let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
+  if (pErr || !players) { location.href = 'login.html'; return; }
+  player = players;
+  userRole = players.role || "player";
 
-  // 角色基本資料（含student_code:座號）
   let { data: students, error: sErr } = await client.from('students')
     .select('student_id,name,student_code,alignment')
     .eq('player_id', player.player_id);
-
   if (sErr) { setMsg('角色載入失敗'); return; }
   myStudents = students || [];
 
-  // 狀態
   let { data: reviews } = await client.from('student_reviews')
     .select('student_id,status');
   reviewMap = {};
   (reviews||[]).forEach(r=>{ reviewMap[r.student_id]=r.status; });
 
-  // 正面照（只要最新一張）
-  let { data: imgs } = await client.from('student_images')
-    .select('student_id,image_url')
-    .eq('image_type', 'front');
-  imgMap = {};
-  (imgs||[]).forEach(im=>{ imgMap[im.student_id]=im.image_url; });
-
+  await reloadImages();
   renderStudentList();
   setMsg('');
 }
 
-function setMsg(msg) {
-  document.getElementById('msg').textContent = msg || '';
-}
-
-// 300x300 avatar 預覽canvas (只裁左上角)
-function getAvatarFromUrl(url, callback) {
-  let avatarCanvas = document.createElement('canvas');
-  avatarCanvas.width = avatarCanvas.height = 300;
-  let ctx = avatarCanvas.getContext('2d');
-  let img = new Image();
-  img.crossOrigin = "anonymous";
-  img.onload = function() {
-    // 注意：如果原圖不夠大會有空白
-    ctx.clearRect(0,0,300,300);
-    ctx.drawImage(img, 0, 0, 300, 300, 0, 0, 300, 300);
-    callback(avatarCanvas.toDataURL('image/png'));
-  };
-  img.onerror = function() {
-    callback(""); // fallback 頭像
-  }
-  img.src = url;
-}
-
-// 主渲染
+// 卡片渲染（根據需求重寫）
 function renderStudentList() {
   const listWrap = document.getElementById('student-list');
   listWrap.innerHTML = '';
   let studentsWithCode = myStudents.filter(s => s.student_code).sort((a,b)=>(+a.student_code)-(+b.student_code));
   let studentsNoCode = myStudents.filter(s => !s.student_code);
-
-  // 合併排列，無座號排最上方
   let all = [...studentsNoCode, ...studentsWithCode];
 
   all.forEach(stu => {
-    let card = document.createElement('div');
-    card.className = "student-card";
     let status = reviewMap[stu.student_id] || "";
+    let align = stu.alignment==="white" ? "w" : (stu.alignment==="black" ? "b" : "");
+    let card = document.createElement('div');
+    card.className = "student-card" + (align ? ` card-${align}` : "");
+
     let avatarUrl = imgMap[stu.student_id] || "https://fakeimg.pl/300x300?text=No+Photo";
-    
-    // 加頭像
     let avatarDiv = document.createElement('div');
     avatarDiv.className = 'avatar-frame';
     let avatarImg = document.createElement('img');
     avatarImg.className = 'avatar-img';
-    // 動態裁頭像
     getAvatarFromUrl(avatarUrl, src=>{
       avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
     });
     avatarDiv.appendChild(avatarImg);
 
-    // 名稱與陣營
+    // 卡片主資訊
     let infoDiv = document.createElement('div');
     infoDiv.className = 'student-info';
     infoDiv.innerHTML = `
       <div class="student-name">${stu.student_code?`NO.${stu.student_code} `:""}${stu.name}</div>
-      <div class="student-align">${getAlignment(stu.alignment)}</div>
     `;
 
-    // 操作按鈕
+    // 操作按鈕群
     let btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
-    // 【學生證(測試生專用)】
+
+    // 測試學生證
     if (TEST_STUDENT_IDS.includes(stu.student_id)) {
       let btnTest = document.createElement('button');
       btnTest.className = 'btn btn-link';
-      btnTest.innerText = '學生證(測試生)';
+      btnTest.innerText = '角色卡';
       btnTest.onclick = ()=>window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`,'_blank');
       btnGroup.appendChild(btnTest);
     }
-    // 【學生證】(PASS)
+    // 學生證
     if (status==="PASS" && stu.student_code) {
       let btnCert = document.createElement('button');
       btnCert.className = 'btn btn-link';
@@ -495,7 +484,15 @@ function renderStudentList() {
       btnCert.onclick = ()=>window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`,'_blank');
       btnGroup.appendChild(btnCert);
     }
-    // 【修改】(BAD or NULL)
+    // 補充設定（只有PASS才有）
+    if (status==="PASS") {
+      let btnExtra = document.createElement('button');
+      btnExtra.className = 'btn btn-link';
+      btnExtra.innerText = '申請補充設定';
+      btnExtra.onclick = ()=>window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
+      btnGroup.appendChild(btnExtra);
+    }
+    // 修改/上傳照片（BAD or 無狀態才顯示）
     if (status==="BAD" || !status) {
       let btnEdit = document.createElement('button');
       btnEdit.className = 'btn btn-edit';
@@ -503,21 +500,19 @@ function renderStudentList() {
       btnEdit.onclick = ()=>openStudentCard(stu.student_id);
       btnGroup.appendChild(btnEdit);
 
-      // 【上傳照片】
       let btnPhoto = document.createElement('button');
       btnPhoto.className = 'btn';
       btnPhoto.innerText = '上傳照片';
       btnPhoto.onclick = ()=>openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
     }
-    // 攜帶物預留
+    // 攜帶物
     let devBtn = document.createElement('button');
     devBtn.className = 'btn btn-link';
     devBtn.innerText = '攜帶物(開發中)';
     devBtn.disabled = true;
     btnGroup.appendChild(devBtn);
 
-    // 組合
     card.appendChild(avatarDiv);
     card.appendChild(infoDiv);
     card.appendChild(btnGroup);
@@ -528,11 +523,6 @@ function renderStudentList() {
 // 其他共用
 function openStudentCard(student_id) {
   window.open(`https://shierusha.github.io/create-student/stidcard/shierusha-stu?stu=${student_id}`, "_blank");
-}
-function getAlignment(a) {
-  if (a === "white") return "白";
-  if (a === "black") return "黑";
-  return a || "-";
 }
 function goBack() {
   if (userRole === "admin") {
