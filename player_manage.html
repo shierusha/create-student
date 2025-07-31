@@ -552,14 +552,14 @@ function renderStudentList() {
       btnEdit.innerText = '修改';
       btnEdit.onclick = ()=>openStudentCard(stu.student_id);
       btnGroup.appendChild(btnEdit);
-
+    }
+    // 攜帶物/上傳照片
       let btnPhoto = document.createElement('button');
       btnPhoto.className = 'btn';
       btnPhoto.innerText = '上傳照片';
       btnPhoto.onclick = ()=>openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
-    }
-    // 攜帶物
+    
     let devBtn = document.createElement('button');
     devBtn.className = 'btn btn-link';
     devBtn.innerText = '攜帶物(開發中)';
