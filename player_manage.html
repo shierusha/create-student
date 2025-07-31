@@ -298,7 +298,7 @@ function submitCanvasImage(){
   }, 'image/png');
 }
 
-// =================== 你原本的管理邏輯 ===================
+// =================== 你本的管理邏輯 ===================
 async function init() {
   setMsg('載入中...');
   let { data: userData } = await client.auth.getUser();
@@ -334,7 +334,7 @@ function renderTable() {
         <td>
           <button class="btn btn-link" onclick="openStudentCard('${stu.student_id}')">學生證</button>
           <button class="btn btn-edit" onclick="openNotesModal('${stu.student_id}')">公開設定</button>
-          <button class="btn" onclick="openUploadModal('${stu.student_id}')">上傳正面照</button>
+          <button class="btn" onclick="openUploadModal('${stu.student_id}')">上傳證件照</button>
         </td>
       </tr>
     `;
