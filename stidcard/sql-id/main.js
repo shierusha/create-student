@@ -447,7 +447,7 @@ document.getElementById('btn-step-5').onclick = function () {
     alert('請勿寫空白設定！');
     return;
   }
-  alert('【警告!  人格/多從人格、起始性格、起始能力送出後不可更動】');
+  alert('【警告!  人格/多重人格、起始性格、起始能力送出後不可更動】');
 
   showStep(6);
 };
