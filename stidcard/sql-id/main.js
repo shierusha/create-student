@@ -187,6 +187,7 @@ function showStep(step) {
     renderStep6Dropdowns();
     updateElementUI(); // 單/多選切換
     syncElementValueToUI();
+
     document.getElementById('weakness_id').value = formData.weakness_id || '';
     document.getElementById('preferred_role').value = formData.preferred_role || '';
     document.getElementById('starting_position').value = formData.starting_position || '';
@@ -263,16 +264,32 @@ function renderStep6Dropdowns() {
   }
 
   // === 屬性弱點選單（獨立一份，不會重複「無」）
+async function renderWeaknessDropdown() {
+  const { data: weaknessArr, error } = await client.from('element_weakness').select('weakness_id,element,description');
+  if (error) {
+    alert('載入屬性弱點選單失敗');
+    return;
+  }
   const weakSelect = document.getElementById('weakness_id');
   weakSelect.innerHTML = '<option value="">無（沒有屬性弱點）</option>';
   window.weaknessDict = {};
-  weakSelectList.forEach(item => {
+  weaknessArr.forEach(item => {
     let opt = document.createElement('option');
-    opt.value = item.value;
-    opt.text = item.text;
+    opt.value = item.weakness_id; // value 是 UUID
+    opt.text = (
+      item.element === 'fire' ? '火' :
+      item.element === 'water' ? '水' :
+      item.element === 'ice' ? '冰' :
+      item.element === 'wind' ? '風' :
+      item.element === 'earth' ? '土' :
+      item.element === 'thunder' ? '雷' :
+      item.element === 'dark' ? '暗' :
+      item.element === 'light' ? '光' : item.element
+    ) + (item.description ? ` - ${item.description}` : '');
     weakSelect.appendChild(opt);
-    window.weaknessDict[item.value] = { element: item.value };
+    window.weaknessDict[item.weakness_id] = item;
   });
+}
 
   // === 定位選單 ===
   const roleList = [
