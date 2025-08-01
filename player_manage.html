@@ -482,10 +482,10 @@ window.submitCanvasImage = submitCanvasImage;
 async function init() {
   setMsg('載入中...');
   let { data: userData } = await client.auth.getUser();
-  if (!userData.user) { location.href = 'login.html'; return; }
+  if (!userData.user) { location.href = 'https://shierusha.github.io/login/login'; return; }
   user = userData.user;
   let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
-  if (pErr || !players) { location.href = 'login.html'; return; }
+  if (pErr || !players) { location.href = 'https://shierusha.github.io/login/login'; return; }
   player = players;
   userRole = players.role || "player";
 
