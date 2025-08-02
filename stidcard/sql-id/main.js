@@ -447,7 +447,8 @@ document.getElementById('btn-step-5').onclick = function () {
     alert('請勿寫空白設定！');
     return;
   }
-  alert('【警告!  人格/多重人格、起始性格、起始能力送出後不可更動】');
+  alert('【警告! 人格/多重人格、起始性格、起始能力送出後不可更動】');
+  alert('【注意! 沒有寫在設定/裏設定 的項目 請勿於對戲區中演示】');
 
   showStep(6);
 };
