@@ -955,20 +955,18 @@ async function loadStudentDataToForm(stuId) {
       skill.is_passive = !!skill.is_passive;
       skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
 
-      
- // ============ 這段處理 passive_trigger_condition ============
-  if (skill.passive_trigger_id) {
-    // 查 passive_trigger 拿 condition
-    const { data: trigger } = await client
-      .from('passive_trigger')
-      .select('condition')
-      .eq('trigger_id', skill.passive_trigger_id)
-      .single();
-    skill.passive_trigger_condition = trigger ? trigger.condition : '';
-  } else {
-    skill.passive_trigger_condition = '';
-  }
-
+      // ============ 這段處理 passive_trigger_condition ============
+      if (skill.passive_trigger_id) {
+        // 查 passive_trigger 拿 condition
+        const { data: trigger } = await client
+          .from('passive_trigger')
+          .select('condition')
+          .eq('trigger_id', skill.passive_trigger_id)
+          .single();
+        skill.passive_trigger_condition = trigger ? trigger.condition : '';
+      } else {
+        skill.passive_trigger_condition = '';
+      }
 
       // 最終塞進去
       newSkillsArr.push(skill);
@@ -979,16 +977,21 @@ async function loadStudentDataToForm(stuId) {
     formData.skills = [{}, {}];
   }
 
-// === 補：圖片抓取（只抓 front）===
+  // === 補：圖片抓取（抓 front 和 back）===
+ // === 只抓正面，正反都一樣 ===
 const { data: images } = await client
   .from('student_images')
   .select('image_type, image_url')
   .eq('student_id', stuId);
 
 formData.front_url = '';
+formData.back_url = '';
 if (images && images.length) {
-  let img = images.find(img => img.image_type === 'front');
-  if (img) formData.front_url = img.image_url;
+  let imgFront = images.find(img => img.image_type === 'front');
+  if (imgFront) {
+    formData.front_url = imgFront.image_url;
+    formData.back_url = imgFront.image_url;
+  }
 }
 
 
