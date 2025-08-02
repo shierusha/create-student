@@ -19,37 +19,33 @@ lastSubmitTime = now;
   if (!player_id) { alert('請先登入！'); return; }
 
 
-// 0. 非法請求檢查
-if (formData && formData.student_id) {
-  let { data: reviewRows, error: reviewErr } = await client
-    .from('student_reviews')
-    .select('status')
-    .eq('student_id', formData.student_id)
-    .maybeSingle();
+ // 0. 非法請求檢查
+  if (formData && formData.student_id) {
+    let { data: reviewRows, error: reviewErr } = await client
+      .from('student_reviews')
+      .select('status')
+      .eq('student_id', formData.student_id)
+      .maybeSingle();
 
-  if (reviewErr) {
-    alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
-    lastSubmitTime = 0;
-    return;
-  }
-
+    if (reviewErr) {
+      alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
+      lastSubmitTime = 0;
+      return;
+    }
   if (reviewRows && (reviewRows.status === 'PASS' || reviewRows.status === 'ERROR')) {
-    alert('非法請求！該角色已經通過審核，請勿重複送出！');
-    // 只在 status = PASS 時更新成 ERROR
-    if (reviewRows.status === 'PASS') {
+      alert('非法請求！該角色已經通過審核，請勿重複送出！');
+      // 改 review status
       await client.from('student_reviews')
         .update({ status: 'ERROR' })
         .eq('student_id', formData.student_id);
+      // 改 students student_code
+      await client.from('students')
+        .update({ student_code: null })
+        .eq('student_id', formData.student_id);
+      lastSubmitTime = 0;
+      return;
     }
-    await client.from('students')
-      .update({ student_code: null })
-      .eq('student_id', formData.student_id);
-
-    lastSubmitTime = 0;
-    window.location.href = 'https://shierusha.github.io/create-student/player_manage';
-    return;
   }
-}
 
   // 防呆：被動不可搭配移動
   for (let i = 0; i < (formData.skills || []).length; i++) {
