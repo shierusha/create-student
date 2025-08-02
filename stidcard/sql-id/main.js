@@ -993,6 +993,33 @@ if (images && images.length) {
     formData.back_url = imgFront.image_url;
   }
 }
+const { data: images } = await client
+  .from('student_images')
+  .select('image_type, image_url')
+  .eq('student_id', stuId);
+
+formData.front_url = '';
+formData.back_url = '';
+if (images && images.length) {
+  let imgFront = images.find(img => img.image_type === 'front');
+  if (imgFront) {
+    formData.front_url = imgFront.image_url;
+    formData.back_url = imgFront.image_url;
+  }
+}
+
+// ---- 這裡直接加 ----
+if (formData.front_url) {
+  document.querySelectorAll('.front-img').forEach(img => {
+    img.src = formData.front_url;
+  });
+}
+if (formData.back_url) {
+  document.querySelectorAll('.back-img').forEach(img => {
+    img.src = formData.back_url;
+  });
+}
+
 
 
   // **（補）強制分數欄回填，如果你的 student 有 total_skill_score 欄位就直接同步到畫面**
