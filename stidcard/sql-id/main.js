@@ -993,20 +993,7 @@ if (images && images.length) {
     formData.back_url = imgFront.image_url;
   }
 }
-const { data: images } = await client
-  .from('student_images')
-  .select('image_type, image_url')
-  .eq('student_id', stuId);
 
-formData.front_url = '';
-formData.back_url = '';
-if (images && images.length) {
-  let imgFront = images.find(img => img.image_type === 'front');
-  if (imgFront) {
-    formData.front_url = imgFront.image_url;
-    formData.back_url = imgFront.image_url;
-  }
-}
 
 // ---- 這裡直接加 ----
 if (formData.front_url) {
