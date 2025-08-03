@@ -977,13 +977,7 @@ async function loadStudentDataToForm(stuId) {
   }
 
   // === 補：圖片抓取（抓 front 和 back）===
- // ==== 加在檔案最前面或這段前面：====
-function bustCache(url) {
-  if (!url) return '';
-  return url + (url.includes('?') ? '&v=' : '?v=') + Date.now();
-}
-
-// === 只抓正面，正反都一樣 ===
+ // === 只抓正面，正反都一樣 ===
 const { data: images } = await client
   .from('student_images')
   .select('image_type, image_url')
@@ -998,19 +992,6 @@ if (images && images.length) {
     formData.back_url = imgFront.image_url;
   }
 }
-
-// === 這裡設圖片時加 cache-busting ===
-if (formData.front_url) {
-  document.querySelectorAll('.front-img').forEach(img => {
-    img.src = bustCache(formData.front_url);
-  });
-}
-if (formData.back_url) {
-  document.querySelectorAll('.back-img').forEach(img => {
-    img.src = bustCache(formData.back_url);
-  });
-}
-
 
 
 // ---- 這裡直接加 ----
