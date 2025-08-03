@@ -491,22 +491,35 @@ function renderNotesRows() {
     label.appendChild(document.createTextNode('顯示'));
     row.appendChild(label);
 
-    const ta = document.createElement('textarea');
-    ta.className = 'note-content';
-    ta.value = note.content;
-    ta.rows = 2;
-    ta.placeholder = '請輸入角色設定／裏設定';
-    ta.style.flex = '1';
-    ta.style.resize = 'none';
-    ta.style.overflow = 'hidden';
-    ta.style.margin= '5px';
-    ta.style.width = '65%';
+// 在 renderNotesRows 裡
+const ta = document.createElement('textarea');
+ta.className = 'note-content';
+ta.value = note.content;
+ta.rows = 2;
+ta.placeholder = '請輸入角色設定／裏設定';
+ta.style.flex = '1';
+ta.style.resize = 'none';
+ta.style.overflow = 'hidden';
+ta.style.margin= '5px';
+ta.style.width = '65%';
+
+// 這一段馬上設高度
+ta.style.height = 'auto';
+ta.style.height = ta.scrollHeight + 'px';
+setTimeout(() => {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}, 0);
+
+
+    
     ta.addEventListener('input', function() {
       note.content = this.value;
       this.style.height = 'auto';
       this.style.height = this.scrollHeight + 'px';
       syncStudentNoteCard();
     });
+    
     ta.style.height = 'auto';
     ta.style.height = ta.scrollHeight + 'px';
     row.appendChild(ta);
