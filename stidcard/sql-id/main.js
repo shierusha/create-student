@@ -841,6 +841,12 @@ function fillDebuffDetailToSkills(skills, debuffList) {
 // ===========================================
 // 撈學生資料並回填 formData
 // ===========================================
+// ==== 加在檔案最前面或這段前面：====
+function bustCache(url) {
+  if (!url) return '';
+  return url + (url.includes('?') ? '&v=' : '?v=') + Date.now();
+}
+
 
 async function loadStudentDataToForm(stuId) {
   if (!stuId) return;
@@ -977,11 +983,6 @@ async function loadStudentDataToForm(stuId) {
   }
 
   // === 補：圖片抓取（抓 front 和 back）===
-// ==== 加在檔案最前面或這段前面：====
-function bustCache(url) {
-  if (!url) return '';
-  return url + (url.includes('?') ? '&v=' : '?v=') + Date.now();
-}
 
 // === 只抓正面，正反都一樣 ===
 const { data: images } = await client
