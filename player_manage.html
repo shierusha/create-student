@@ -601,14 +601,18 @@ function renderGroup(arr, wrap) {
 
     let btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
-
-   if (TEST_STUDENT_IDS.includes(stu.student_id)) {
+    
+if (
+  TEST_STUDENT_IDS.includes(stu.student_id) ||
+  stu.player_id === SPECIAL_PLAYER_ID
+) {
   let btnTest = document.createElement('button');
   btnTest.className = 'btn btn-link';
   btnTest.innerText = '角色卡';
   btnTest.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
   btnGroup.appendChild(btnTest);
 }
+
 
     if (status === "PASS" && stu.student_code) {
       let btnCert = document.createElement('button');
