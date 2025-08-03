@@ -641,11 +641,14 @@ if (
       btnPhoto.onclick = () => openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
     }
-    let devBtn = document.createElement('button');
-    devBtn.className = 'btn btn-link';
-    devBtn.innerText = '攜帶物(開發中)';
-    devBtn.disabled = true;
-    btnGroup.appendChild(devBtn);
+// 攜帶物按鈕（不是白名單才顯示）
+if (!TEST_STUDENT_IDS.includes(stu.student_id)) {
+  let devBtn = document.createElement('button');
+  devBtn.className = 'btn btn-link';
+  devBtn.innerText = '攜帶物(開發中)';
+  devBtn.disabled = true;
+  btnGroup.appendChild(devBtn);
+}
 
     // ==== 橫切一半 ====
     let cardRow = document.createElement('div');
