@@ -497,7 +497,7 @@ function renderNotesRows() {
     ta.rows = 2;
     ta.placeholder = '請輸入角色設定／裏設定';
     ta.style.flex = '1';
-    ta.overflow = hidden;
+ta.style.overflow = 'hidden';
     ta.style.margin= '5px';
     ta.style.width = '65%';
     ta.addEventListener('input', function() {
