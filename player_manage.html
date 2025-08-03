@@ -286,6 +286,9 @@ const TEST_STUDENT_IDS = [
   '845dd04d-ff39-43a8-ad84-e8f714a8b454',
   'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'
 ];
+//特速玩家ID
+const SPECIAL_PLAYER_ID = '32d2c681-43f4-4f24-8014-44cdbe80411d';
+
 
 let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, userRole = "player";
 
@@ -516,9 +519,10 @@ async function init() {
   player = players;
   userRole = players.role || "player";
 
-  let { data: students, error: sErr } = await client.from('students')
-    .select('student_id,name,nickname,student_code,alignment')
-    .eq('player_id', player.player_id);
+let { data: students, error: sErr } = await client.from('students')
+  .select('student_id,name,nickname,student_code,alignment,player_id')
+  .eq('player_id', player.player_id);
+
   if (sErr) { setMsg('角色載入失敗'); return; }
   myStudents = students || [];
 
@@ -598,13 +602,14 @@ function renderGroup(arr, wrap) {
     let btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
 
-    if (TEST_STUDENT_IDS.includes(stu.student_id)) {
-      let btnTest = document.createElement('button');
-      btnTest.className = 'btn btn-link';
-      btnTest.innerText = '角色卡';
-      btnTest.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
-      btnGroup.appendChild(btnTest);
-    }
+   if (TEST_STUDENT_IDS.includes(stu.student_id)) {
+  let btnTest = document.createElement('button');
+  btnTest.className = 'btn btn-link';
+  btnTest.innerText = '角色卡';
+  btnTest.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
+  btnGroup.appendChild(btnTest);
+}
+
     if (status === "PASS" && stu.student_code) {
       let btnCert = document.createElement('button');
       btnCert.className = 'btn btn-link';
