@@ -497,7 +497,7 @@ function renderNotesRows() {
     ta.rows = 2;
     ta.placeholder = '請輸入角色設定／裏設定';
     ta.style.flex = '1';
-    ta.overflow: hidden;
+    ta.overflow = hidden;
     ta.style.margin= '5px';
     ta.style.width = '65%';
     ta.addEventListener('input', function() {
@@ -977,7 +977,13 @@ async function loadStudentDataToForm(stuId) {
   }
 
   // === 補：圖片抓取（抓 front 和 back）===
- // === 只抓正面，正反都一樣 ===
+// ==== 加在檔案最前面或這段前面：====
+function bustCache(url) {
+  if (!url) return '';
+  return url + (url.includes('?') ? '&v=' : '?v=') + Date.now();
+}
+
+// === 只抓正面，正反都一樣 ===
 const { data: images } = await client
   .from('student_images')
   .select('image_type, image_url')
@@ -993,19 +999,17 @@ if (images && images.length) {
   }
 }
 
-
-// ---- 這裡直接加 ----
+// === 這裡設圖片時加 cache-busting ===
 if (formData.front_url) {
   document.querySelectorAll('.front-img').forEach(img => {
-    img.src = formData.front_url;
+    img.src = bustCache(formData.front_url);
   });
 }
 if (formData.back_url) {
   document.querySelectorAll('.back-img').forEach(img => {
-    img.src = formData.back_url;
+    img.src = bustCache(formData.back_url);
   });
 }
-
 
 
   // **（補）強制分數欄回填，如果你的 student 有 total_skill_score 欄位就直接同步到畫面**
