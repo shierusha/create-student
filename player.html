@@ -25,9 +25,13 @@
 
   // 設定特例可多創角的 player_id
 const EXEMPT_PLAYER_IDS = [
-  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', // 你的測試帳1
-  'yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', // 測試帳2
-  'zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz'  // 測試帳3
+  '126bda27-405c-45a3-8f54-1e819fe44c8c', // 測試用長貓貓
+  '47c190ba-ac90-42b0-a2a5-402ae7975223', // 梨兒
+  '94cea572-5f6c-42b2-9c7b-b7015c0b8e6a', // 碎兒
+  'aa03ee8f-9150-41d7-a196-c6e177469c3b', // 101101010兒
+  'e8cf92ac-69f4-4d36-bc74-821c9fec2ab8', // 精靈兒
+  'd57d87ac-3892-4794-b3e4-243088672b5c', // 夢兒
+  '7a4ce2d2-9329-4192-a886-7b15111d21e8'  // 咕兒
 ];
 
 // 檢查玩家登入＋角色上限
@@ -60,8 +64,7 @@ async function checkPlayer() {
     .eq('player_id', data.player_id);
 
   // 決定角色上限
-  //let limit = EXEMPT_PLAYER_IDS.includes(data.player_id) ? 5 : 4;
-  let limit = EXEMPT_PLAYER_IDS.includes(data.player_id) ? 1 : 1;
+  let limit = EXEMPT_PLAYER_IDS.includes(data.player_id) ? 5 : 4;
   let createBtn = document.querySelector('button[onclick*="create-student"]') || document.querySelector('button[onclick*="創角"]');
   if (count >= limit) {
     createBtn.disabled = true;
