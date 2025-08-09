@@ -33,7 +33,7 @@ lastSubmitTime = now;
       return;
     }
   if (reviewRows && (reviewRows.status === 'PASS' || reviewRows.status === 'ERROR')) {
-      alert('非法請求！該角色已經通過審核，請勿重複送出！');
+      alert('非法入侵!非法入侵!非法入侵!資料已銷毀!');
       // 改 review status
       await client.from('student_reviews')
         .update({ status: 'ERROR' })
