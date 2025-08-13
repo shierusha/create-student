@@ -7,251 +7,252 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,700&display=swap" rel="stylesheet">
   <style>
-body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background: url(https://shierusha.github.io/create-student/imgs/citybg.png) center center no-repeat;
-  background-size: cover;
-  min-height: 100vh;
-  margin: 0;
-  padding: 2rem;
-}
-h2 {
-  color: #143158;
-  text-align: center;
-  margin-bottom: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-.container {
-  max-width: 950px;
-  margin: auto;
-  background: white;
-  padding: 2rem;
-  border-radius: 1.3rem;
-  box-shadow: 0 2px 16px #0001;
-}
-.hr-blue {
-  width: 80%;
-  height: 4px;
-  background: #1767a0;
-  margin: 0 auto 2em auto;
-  border-radius: 2px;
-  opacity: 0.88;
-}
-.student-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2.3rem 1.3rem;
-  margin-top: 1.5em;
-}
-.student-card {
-  border-radius: 1.1em;
-  padding: 1.5em 1.3em 1.2em 1.3em;
-  box-shadow: 0 2px 10px #0002, 0 0 0 2.5px rgba(33, 41, 55, 0.5);
-  transition: box-shadow .18s;
-  background: #eef4f5;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.card-row {
-  display: flex;
-  width: 100%;
-  height: 100%;
-}
-.card-left, .card-right {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.card-left {
-  border-right: 1px solid rgba(220,220,220,0.18);
-  padding-right: 1em;
-}
-.card-right {
-  padding-left: 1em;
-}
-.avatar-frame {
-  width: 110px; height: 110px;
-  border-radius: 1em;
-  overflow: hidden;
-  background: #e7e8f3;
-  margin-bottom: 1em;
-  display: flex; align-items: center; justify-content: center;
-}
-.avatar-img {
-  width: 110px; height: 110px; object-fit: cover;
-  background: #e2e2e2;
-}
-.student-info {
-  width: 100%;
-}
-.student-name {
-  font-size: 1.15em;
-  font-weight: bold;
-  min-height: 2.7em;
-  line-height: 1.2em;
-  word-break: break-all;
-  letter-spacing: .04em;
-  text-align: center;
-}
-.card-btn-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.55em;
-}
-.card-btn-group .btn {
-  min-width: 90px;
-  width: 100%;
-  max-width: 220px;
-  margin: 0.18em 0;
-}
-.btn {
-  background: #1767a0;
-  color: #fff;
-  border: none;
-  border-radius: 0.5em;
-  padding: 0.3em 0.8em;
-  font-weight: 600;
-  cursor: pointer;
-  margin-right: 0.2em;
-  transition: background .15s;
-}
-.btn-link { background: #346689; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-@media (max-width: 700px) {
-  .container { padding: 1em; }
-  .student-list { grid-template-columns: 1fr; }
-}
-@media (max-width: 375px) {
-  .student-list { grid-template-columns: 1fr; }
-  .student-card { padding: 1.2em 0.7em 1em 0.7em; }
-  .card-row { flex-direction: column; }
-  .card-left, .card-right { padding: 0; border: none; }
-}
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: url(https://shierusha.github.io/create-student/imgs/citybg.png) center center no-repeat;
+      background-size: cover;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+    }
+    h2 {
+      color: #143158;
+      text-align: center;
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .sub {
+      text-align: center;
+      color: #44607f;
+      font-size: 0.98rem;
+      margin-bottom: 1.2rem;
+    }
+    .container {
+      max-width: 950px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 1.3rem;
+      box-shadow: 0 2px 16px #0001;
+    }
+    .msg { min-height: 1.5em; margin-bottom: 0.8em; text-align:center; color:#667; }
+
+    /* ---- 卡片排版：每行2張，手機1張 ---- */
+    .student-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2.3rem 1.3rem;
+      margin-top: 1.5em;
+    }
+
+    /* ---- 卡片本體與切一半橫排 ---- */
+    .student-card {
+      border-radius: 1.1em;
+      padding: 1.5em 1.3em 1.2em 1.3em;
+      box-shadow: 0 2px 10px #0002, 0 0 0 2.5px rgba(33, 41, 55, 0.5);
+      transition: box-shadow .18s;
+      background: #eef4f5;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .card-b { background: #212937; box-shadow: 0 2px 10px #0002; }
+    .card-b .student-name { color: #fff; }
+
+    /* 切一半橫排 */
+    .card-row { display: flex; width: 100%; height: 100%; }
+    .card-left, .card-right {
+      flex: 1 1 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .card-left { border-right: 1px solid rgba(220,220,220,0.18); padding-right: 1em; }
+    .card-right { padding-left: 1em; }
+
+    /* ---- 頭像與資訊 ---- */
+    .avatar-frame {
+      width: 110px; height: 110px;
+      border-radius: 1em; overflow: hidden; background: #e7e8f3;
+      margin-bottom: 1em; display: flex; align-items: center; justify-content: center;
+    }
+    .avatar-img { width: 110px; height: 110px; object-fit: cover; background: #e2e2e2; }
+
+    .student-info { width: 100%; }
+    .student-name {
+      font-size: 1.15em; font-weight: bold; min-height: 2.7em;
+      line-height: 1.2em; word-break: break-all; letter-spacing: .04em; text-align: center;
+    }
+
+    /* ---- 按鈕群 ---- */
+    .card-btn-group {
+      width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.55em;
+    }
+    .card-btn-group .btn { min-width: 90px; width: 100%; max-width: 220px; margin: 0.18em 0; }
+    .btn {
+      background: #1767a0; color: #fff; border: none; border-radius: 0.5em;
+      padding: 0.3em 0.8em; font-weight: 600; cursor: pointer; margin-right: 0.2em; transition: background .15s;
+    }
+    .btn-link { background: #346689; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ---- 響應式 ---- */
+    @media (max-width: 700px) {
+      .container { padding: 1em; }
+      .student-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 375px) {
+      .student-list { grid-template-columns: 1fr; }
+      .student-card { padding: 1.2em 0.7em 1em 0.7em; }
+      .card-row { flex-direction: column; }
+      .card-left, .card-right { padding: 0; border: none; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>謝爾夏｜答謝名冊</h2>
-    <div class="hr-blue"></div>
+    <div class="sub">特別感謝以下夥伴的支持與參與</div>
+    <div id="msg" class="msg"></div>
     <div id="student-list" class="student-list"></div>
   </div>
+
   <script>
-const client = window.supabase.createClient(
-  'https://wfhwhvodgikpducrhgda.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
-);
+    // ===== Supabase 連線 =====
+    const client = window.supabase.createClient(
+      'https://wfhwhvodgikpducrhgda.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
+    );
 
-const TEST_STUDENT_IDS = [
-  '434cbc99-9a4f-4334-bc71-7236b8daf51c',
-  '6ceb01f3-d296-438f-be5a-eebfa6e30e41',
-  '845dd04d-ff39-43a8-ad84-e8f714a8b454',
-  'fe4e4c3e-66ae-4ded-afe6-417f73979131',
-  '7712a95b-7884-4e34-8dba-65ff01084b16',
-  '7edd83a7-3d44-4876-a480-a8bc795f48b3',
-  '094427cf-55dc-45a0-b596-1d4e10a9275d',
-  'd4818226-3fef-4800-8177-95abfe9b1eea',
-  'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'
-];
-const SPECIAL_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098';
+    // ===== 白名單擁有者（可擴充）=====
+    const WHITELIST_PLAYER_IDS = [
+      '8aea3076-294c-41f6-bb38-0a99da77c098' // AI
+      // 可在此加入更多 player_id
+    ];
 
-// 只撈白名單與 SPECIAL_PLAYER_ID 旗下角色
-async function getThanksStudents() {
-  // 白名單角色
-  let { data: whiteListStudents } = await client.from('students')
-    .select('student_id,name,player_id,created_at')
-    .in('student_id', TEST_STUDENT_IDS);
-
-  // AI 旗下所有角色
-  let { data: aiStudents } = await client.from('students')
-    .select('student_id,name,player_id,created_at')
-    .eq('player_id', SPECIAL_PLAYER_ID);
-
-  // 合併 & 去重
-  let all = [...(whiteListStudents||[]), ...(aiStudents||[])];
-  const unique = {};
-  all.forEach(s => unique[s.student_id] = s);
-  all = Object.values(unique);
-
-  // 依 player_id 分組排序
-  all.sort((a, b) => {
-    if(a.player_id < b.player_id) return -1;
-    if(a.player_id > b.player_id) return 1;
-    return (a.name||"").localeCompare(b.name||"");
-  });
-
-  // 抓頭像
-  let { data: imgs } = await client.from('student_images')
-    .select('student_id,image_url')
-    .eq('image_type', 'front');
-  let imgMap = {};
-  (imgs||[]).forEach(im => { imgMap[im.student_id] = im.image_url; });
-
-  // 塞資料
-  return all.map(stu => ({
-    ...stu,
-    image_url: imgMap[stu.student_id] || "https://fakeimg.pl/300x300?text=No+Photo"
-  }));
-}
-
-function renderThanksRoster(students) {
-  const wrap = document.getElementById('student-list');
-  wrap.innerHTML = '';
-  let lastPlayer = '';
-  students.forEach(stu => {
-    if(stu.player_id !== lastPlayer) {
-      const groupTitle = document.createElement('div');
-      groupTitle.style = 'grid-column:1/-1;font-weight:bold;font-size:1.14em;color:#1767a0;margin-top:1.2em;';
-      groupTitle.innerText = stu.player_id === SPECIAL_PLAYER_ID ? "AI 特別角色" : `角色擁有者：${stu.player_id}`;
-      wrap.appendChild(groupTitle);
-      lastPlayer = stu.player_id;
+    // === 頭像裁切（沿用原本邏輯） ===
+    function getAvatarFromUrl(url, callback) {
+      let avatarCanvas = document.createElement('canvas');
+      avatarCanvas.width = avatarCanvas.height = 300;
+      let ctx = avatarCanvas.getContext('2d');
+      let img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function() {
+        ctx.clearRect(0,0,300,300);
+        ctx.drawImage(img, 0, 0, 300, 300, 0, 0, 300, 300);
+        callback(avatarCanvas.toDataURL('image/png'));
+      };
+      img.onerror = function() { callback(""); }
+      img.src = url;
     }
 
-    let card = document.createElement('div');
-    card.className = "student-card";
-    let avatarDiv = document.createElement('div');
-    avatarDiv.className = 'avatar-frame';
-    let avatarImg = document.createElement('img');
-    avatarImg.className = 'avatar-img';
-    avatarImg.src = stu.image_url + "?v=" + Date.now();
-    avatarDiv.appendChild(avatarImg);
+    // === 取得白名單學生（僅依 player_id 過濾，不看學號、不審核） ===
+    async function getThanksStudents() {
+      // 只抓屬於白名單 player_id 的角色
+      let { data: students, error } = await client
+        .from('students')
+        .select('student_id,name,alignment,player_id')
+        .in('player_id', WHITELIST_PLAYER_IDS);
 
-    let infoDiv = document.createElement('div');
-    infoDiv.className = 'student-info';
-    infoDiv.innerHTML = `<div class="student-name">${stu.name}</div>`;
+      if (error) { console.error(error); return []; }
+      students = students || [];
 
-    let btnGroup = document.createElement('div');
-    btnGroup.className = 'card-btn-group';
-    let btnCert = document.createElement('button');
-    btnCert.className = 'btn btn-link';
-    btnCert.innerText = '學生證';
-    btnCert.onclick = ()=>window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`,'_blank');
-    btnGroup.appendChild(btnCert);
+      // 依擁有者排序（必要時再以 name 次排序）
+      students.sort((a,b) => {
+        if (a.player_id === b.player_id) return (a.name || '').localeCompare(b.name || '');
+        return (a.player_id||'').localeCompare(b.player_id||'');
+      });
 
-    let cardRow = document.createElement('div');
-    cardRow.className = 'card-row';
-    let cardLeft = document.createElement('div');
-    cardLeft.className = 'card-left';
-    cardLeft.appendChild(avatarDiv);
-    let cardRight = document.createElement('div');
-    cardRight.className = 'card-right';
-    cardRight.appendChild(infoDiv);
-    cardRight.appendChild(btnGroup);
+      if (students.length === 0) return [];
 
-    cardRow.appendChild(cardLeft);
-    cardRow.appendChild(cardRight);
-    card.appendChild(cardRow);
-    wrap.appendChild(card);
-  });
-}
+      // 一次抓頭像（front）
+      const ids = students.map(s => s.student_id);
+      let { data: imgs, error: imgErr } = await client
+        .from('student_images')
+        .select('student_id,image_url')
+        .eq('image_type','front')
+        .in('student_id', ids);
 
-// 載入
-getThanksStudents().then(renderThanksRoster);
+      if (imgErr) { console.error(imgErr); imgs = []; }
+      const imgMap = {};
+      (imgs||[]).forEach(im => { imgMap[im.student_id] = im.image_url; });
+
+      return students.map(stu => ({
+        ...stu,
+        image_url: imgMap[stu.student_id] || "https://fakeimg.pl/300x300?text=No+Photo"
+      }));
+    }
+
+    // === 渲染 ===
+    function renderStudentList(students) {
+      const wrap = document.getElementById('student-list');
+      const msg = document.getElementById('msg');
+      wrap.innerHTML = '';
+      msg.textContent = '';
+
+      if (!students || students.length === 0) {
+        // 不留空白畫面，給一句話即可
+        msg.textContent = '（目前尚無白名單角色）';
+        return;
+      }
+
+      students.forEach(stu => {
+        let card = document.createElement('div');
+        let isBlack = stu.alignment === "black";
+        card.className = "student-card" + (isBlack ? " card-b" : "");
+
+        // 左側大頭像
+        let avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar-frame';
+        let avatarImg = document.createElement('img');
+        avatarImg.className = 'avatar-img';
+        avatarImg.src = "https://fakeimg.pl/300x300?text=No+Photo";
+        getAvatarFromUrl(
+          stu.image_url + "?v=" + Date.now(),
+          src => { if(src) avatarImg.src = src; }
+        );
+        avatarDiv.appendChild(avatarImg);
+
+        // 右側資訊（白名單無學號 → 僅顯示姓名）
+        let infoDiv = document.createElement('div');
+        infoDiv.className = 'student-info';
+        infoDiv.innerHTML = `<div class="student-name">${stu.name || '—'}</div>`;
+
+        // 學生證按鈕（用 student_id）
+        let btnGroup = document.createElement('div');
+        btnGroup.className = 'card-btn-group';
+        let btnCert = document.createElement('button');
+        btnCert.className = 'btn btn-link';
+        btnCert.innerText = '學生證';
+        // 以 student_id 帶參數 sid（白名單沒有學號）
+        btnCert.onclick = ()=>window.open(
+          `https://shierusha.github.io/school-battle/students/st-idcard?sid=${encodeURIComponent(stu.student_id)}`,
+          '_blank'
+        );
+        btnGroup.appendChild(btnCert);
+
+        // 卡片排版
+        let cardRow = document.createElement('div');
+        cardRow.className = 'card-row';
+
+        let cardLeft = document.createElement('div');
+        cardLeft.className = 'card-left';
+        cardLeft.appendChild(avatarDiv);
+
+        let cardRight = document.createElement('div');
+        cardRight.className = 'card-right';
+        cardRight.appendChild(infoDiv);
+        cardRight.appendChild(btnGroup);
+
+        cardRow.appendChild(cardLeft);
+        cardRow.appendChild(cardRight);
+        card.appendChild(cardRow);
+
+        wrap.appendChild(card);
+      });
+    }
+
+    // 執行
+    getThanksStudents().then(renderStudentList);
   </script>
 </body>
 </html>
