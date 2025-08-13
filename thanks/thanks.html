@@ -35,9 +35,7 @@
     .avatar-img{ width:110px; height:110px; object-fit:cover; background:#e2e2e2; }
 
     .student-info{ width:100%; }
-    .student-code{ font-size:1em; font-weight:700; color:#143158; min-height:1.8em; text-align:center; }
     .student-name{ font-size:1.15em; font-weight:800; line-height:1.2; letter-spacing:.04em; text-align:center; min-height:2.2em; }
-
     .card-btn-group{ width:100%; display:flex; flex-direction:column; align-items:center; gap:.55em; }
     .btn{ background:#1767a0; color:#fff; border:none; border-radius:.5em; padding:.35em .9em; font-weight:700; cursor:pointer; width:100%; max-width:220px; transition:transform .12s; }
     .btn:hover{ transform:translateY(-1px); }
@@ -60,13 +58,11 @@
   </div>
 
   <script>
-    // ====== Supabase 設定 ======
     const client = window.supabase.createClient(
       'https://wfhwhvodgikpducrhgda.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
     );
 
-    // ====== 常數：白名單 + 這位 Admin 的 player_id ======
     const WHITELIST_STUDENT_IDS = [
       '434cbc99-9a4f-4334-bc71-7236b8daf51c', // 偉大的主
       '6ceb01f3-d296-438f-be5a-eebfa6e30e41', // 夢荔枝
@@ -78,9 +74,8 @@
       'd4818226-3fef-4800-8177-95abfe9b1eea', // 小精靈
       'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'  // 現荔枝
     ];
-    const ADMIN_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098'; // ← 你說的那位 admin
+    const ADMIN_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098'; 
 
-    // 工具：把圖片裁成方形（沿用你的做法）
     function getAvatarFromUrl(url, callback) {
       const c = document.createElement('canvas');
       c.width = c.height = 300;
@@ -96,31 +91,27 @@
       img.src = url;
     }
 
-    // 取得「白名單 + 指定 admin 的全部角色」的資料（僅取有學號）
     async function getThanksStudents() {
-      // 1) 白名單
+      // 白名單
       const { data: whiteStudents } = await client
         .from('students')
-        .select('student_id,name,student_code,alignment,player_id')
-        .in('student_id', WHITELIST_STUDENT_IDS)
-        .not('student_code','is',null);
+        .select('student_id,name,alignment,player_id')
+        .in('student_id', WHITELIST_STUDENT_IDS);
 
-      // 2) 該 admin 的全部學生
+      // 管理者的所有角色
       const { data: adminStudents } = await client
         .from('students')
-        .select('student_id,name,student_code,alignment,player_id')
-        .eq('player_id', ADMIN_PLAYER_ID)
-        .not('student_code','is',null);
+        .select('student_id,name,alignment,player_id')
+        .eq('player_id', ADMIN_PLAYER_ID);
 
-      // 合併 + 去重（以 student_id 為準）
+      // 合併去重
       const map = new Map();
       (whiteStudents || []).forEach(s => map.set(s.student_id, s));
       (adminStudents || []).forEach(s => map.set(s.student_id, s));
       const merged = [...map.values()];
 
-      // 3) 抓頭像
+      // 抓頭像
       const allIds = merged.map(s => s.student_id);
-      if (!allIds.length) return [];
       const { data: imgs } = await client
         .from('student_images')
         .select('student_id,image_url')
@@ -130,29 +121,30 @@
       const imgMap = {};
       (imgs || []).forEach(im => imgMap[im.student_id] = im.image_url);
 
-      // 4) 組資料 + 依學號排序
-      const list = merged.map(stu => ({
+      // 依：白名單順序 → 其他管理者角色
+      const whiteSet = new Set(WHITELIST_STUDENT_IDS);
+      const ordered = [
+        ...WHITELIST_STUDENT_IDS.map(id => map.get(id)).filter(Boolean),
+        ...merged.filter(s => !whiteSet.has(s.student_id))
+      ];
+
+      return ordered.map(stu => ({
         ...stu,
         image_url: imgMap[stu.student_id] || 'https://fakeimg.pl/300x300?text=No+Photo'
       }));
-      list.sort((a,b) => (+a.student_code) - (+b.student_code));
-      return list;
     }
 
     function renderList(students) {
       const wrap = document.getElementById('student-list');
       wrap.innerHTML = '';
-
       students.forEach(stu => {
         const card = document.createElement('div');
         card.className = 'student-card';
-
         const badge = document.createElement('div');
         badge.className = 'badge';
         badge.innerText = '特別感謝';
         card.appendChild(badge);
 
-        // 左：頭像
         const avatarDiv = document.createElement('div');
         avatarDiv.className = 'avatar-frame';
         const avatarImg = document.createElement('img');
@@ -161,13 +153,9 @@
         getAvatarFromUrl(stu.image_url + '?v=' + Date.now(), src => { if (src) avatarImg.src = src; });
         avatarDiv.appendChild(avatarImg);
 
-        // 右：資訊 + 按鈕
         const infoDiv = document.createElement('div');
         infoDiv.className = 'student-info';
-        infoDiv.innerHTML = `
-          <div class="student-code">NO. ${stu.student_code}</div>
-          <div class="student-name">${stu.name}</div>
-        `;
+        infoDiv.innerHTML = `<div class="student-name">${stu.name || '（未命名）'}</div>`;
 
         const btnGroup = document.createElement('div');
         btnGroup.className = 'card-btn-group';
@@ -175,21 +163,26 @@
         btnCert.className = 'btn btn-link';
         btnCert.innerText = '學生證';
         btnCert.onclick = () =>
-          window.open(\`https://shierusha.github.io/school-battle/students/st-idcard?stu=\${stu.student_code}\`, '_blank');
+          window.open(\`https://shierusha.github.io/school-battle/students/st-idcard?stu=\${stu.student_id}\`, '_blank');
         btnGroup.appendChild(btnCert);
 
-        // 佈局
-        const row = document.createElement('div'); row.className = 'card-row';
-        const left = document.createElement('div'); left.className = 'card-left'; left.appendChild(avatarDiv);
-        const right = document.createElement('div'); right.className = 'card-right'; right.appendChild(infoDiv); right.appendChild(btnGroup);
-        row.appendChild(left); row.appendChild(right);
+        const row = document.createElement('div');
+        row.className = 'card-row';
+        const left = document.createElement('div');
+        left.className = 'card-left';
+        left.appendChild(avatarDiv);
+        const right = document.createElement('div');
+        right.className = 'card-right';
+        right.appendChild(infoDiv);
+        right.appendChild(btnGroup);
+        row.appendChild(left);
+        row.appendChild(right);
         card.appendChild(row);
 
         wrap.appendChild(card);
       });
     }
 
-    // 啟動
     getThanksStudents().then(renderList);
   </script>
 </body>
