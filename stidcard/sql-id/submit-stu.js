@@ -167,11 +167,14 @@ lastSubmitTime = now;
     let passive_trigger_id = null;
     if (skill.is_passive && skill.passive_trigger_condition && skill.passive_trigger_condition.trim()) {
       // 永遠都 insert 新的 passive_trigger
-      let { data: pData, error: pErr } = await client
-        .from('passive_trigger')
-        .insert([{ condition: skill.passive_trigger_condition }])
-        .select()
-        .single();
+let { data: pData, error: pErr } = await client
+  .from('passive_trigger')
+  .insert([{
+    condition: skill.passive_trigger_condition,
+    asso_stu: student_id      // ★ 加這個，方便之後刪除過 RLS
+  }])
+  .select()
+  .single();
       if (pErr) { alert('被動技能觸發條件寫入失敗：' + pErr.message); return; }
       passive_trigger_id = pData.trigger_id;
       skill.passive_trigger_id = passive_trigger_id;
