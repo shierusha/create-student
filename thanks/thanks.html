@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>謝爾夏｜答謝名冊（特別感謝）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; margin:0; padding:2rem; background:#f4f7fa; }
+    body { background:url(https://shierusha.github.io/create-student/imgs/citybg.png) center/cover no-repeat; min-height:100vh; }
+    h2 { color:#143158; text-align:center; margin-bottom:.8rem; letter-spacing:1px; }
+    .sub { text-align:center; color:#4c5a6a; margin-bottom:1.2rem; }
+    .container { max-width:950px; margin:auto; background:#fff; padding:2rem; border-radius:1.3rem; box-shadow:0 2px 16px #0001; }
+    .hr-blue{ width:80%; height:4px; background:#1767a0; margin:.6rem auto 1.6rem; border-radius:2px; opacity:.88; }
+
+    .student-list{ display:grid; grid-template-columns:repeat(2,1fr); gap:2.3rem 1.3rem; margin-top:1rem; }
+    .student-card{
+      position:relative; border-radius:1.1em; padding:1.5em 1.3em 1.2em;
+      background:#eef4f5; box-shadow:0 2px 10px #0002, 0 0 0 2.5px rgba(33,41,55,.5);
+    }
+    .badge{
+      position:absolute; top:10px; right:10px;
+      background:linear-gradient(135deg,#f6d365,#fda085);
+      color:#2a1e0b; font-weight:800; font-size:.8rem;
+      padding:.28rem .6rem; border-radius:.6rem; box-shadow:0 2px 6px #0003;
+    }
+
+    .card-row{ display:flex; width:100%; }
+    .card-left, .card-right{ flex:1 1 0; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+    .card-left{ border-right:1px solid rgba(220,220,220,.18); padding-right:1em; }
+    .card-right{ padding-left:1em; }
+
+    .avatar-frame{ width:110px; height:110px; border-radius:1em; overflow:hidden; background:#e7e8f3; margin-bottom:1em; display:flex; align-items:center; justify-content:center; }
+    .avatar-img{ width:110px; height:110px; object-fit:cover; background:#e2e2e2; }
+
+    .student-info{ width:100%; }
+    .student-code{ font-size:1em; font-weight:700; color:#143158; min-height:1.8em; text-align:center; }
+    .student-name{ font-size:1.15em; font-weight:800; line-height:1.2; letter-spacing:.04em; text-align:center; min-height:2.2em; }
+
+    .card-btn-group{ width:100%; display:flex; flex-direction:column; align-items:center; gap:.55em; }
+    .btn{ background:#1767a0; color:#fff; border:none; border-radius:.5em; padding:.35em .9em; font-weight:700; cursor:pointer; width:100%; max-width:220px; transition:transform .12s; }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn-link{ background:#346689; }
+
+    @media (max-width:700px){ .container{ padding:1rem; } .student-list{ grid-template-columns:1fr; } }
+    @media (max-width:375px){
+      .student-card{ padding:1.2em .7em 1em; }
+      .card-row{ flex-direction:column; }
+      .card-left,.card-right{ padding:0; border:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>謝爾夏｜答謝名冊</h2>
+    <div class="sub">特別感謝以下夥伴的支持與參與</div>
+    <div class="hr-blue"></div>
+    <div id="student-list" class="student-list"></div>
+  </div>
+
+  <script>
+    // ====== Supabase 設定 ======
+    const client = window.supabase.createClient(
+      'https://wfhwhvodgikpducrhgda.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
+    );
+
+    // ====== 常數：白名單 + 這位 Admin 的 player_id ======
+    const WHITELIST_STUDENT_IDS = [
+      '434cbc99-9a4f-4334-bc71-7236b8daf51c', // 偉大的主
+      '6ceb01f3-d296-438f-be5a-eebfa6e30e41', // 夢荔枝
+      '845dd04d-ff39-43a8-ad84-e8f714a8b454', // 工具寵
+      'fe4e4c3e-66ae-4ded-afe6-417f73979131', // 美味可口梨
+      '7712a95b-7884-4e34-8dba-65ff01084b16', // 咕咕
+      '7edd83a7-3d44-4876-a480-a8bc795f48b3', // 碎影
+      '094427cf-55dc-45a0-b596-1d4e10a9275d', // 01101101010100101
+      'd4818226-3fef-4800-8177-95abfe9b1eea', // 小精靈
+      'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'  // 現荔枝
+    ];
+    const ADMIN_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098'; // ← 你說的那位 admin
+
+    // 工具：把圖片裁成方形（沿用你的做法）
+    function getAvatarFromUrl(url, callback) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 300;
+      const ctx = c.getContext('2d');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.clearRect(0,0,300,300);
+        ctx.drawImage(img, 0,0,300,300, 0,0,300,300);
+        callback(c.toDataURL('image/png'));
+      };
+      img.onerror = () => callback('');
+      img.src = url;
+    }
+
+    // 取得「白名單 + 指定 admin 的全部角色」的資料（僅取有學號）
+    async function getThanksStudents() {
+      // 1) 白名單
+      const { data: whiteStudents } = await client
+        .from('students')
+        .select('student_id,name,student_code,alignment,player_id')
+        .in('student_id', WHITELIST_STUDENT_IDS)
+        .not('student_code','is',null);
+
+      // 2) 該 admin 的全部學生
+      const { data: adminStudents } = await client
+        .from('students')
+        .select('student_id,name,student_code,alignment,player_id')
+        .eq('player_id', ADMIN_PLAYER_ID)
+        .not('student_code','is',null);
+
+      // 合併 + 去重（以 student_id 為準）
+      const map = new Map();
+      (whiteStudents || []).forEach(s => map.set(s.student_id, s));
+      (adminStudents || []).forEach(s => map.set(s.student_id, s));
+      const merged = [...map.values()];
+
+      // 3) 抓頭像
+      const allIds = merged.map(s => s.student_id);
+      if (!allIds.length) return [];
+      const { data: imgs } = await client
+        .from('student_images')
+        .select('student_id,image_url')
+        .in('student_id', allIds)
+        .eq('image_type', 'front');
+
+      const imgMap = {};
+      (imgs || []).forEach(im => imgMap[im.student_id] = im.image_url);
+
+      // 4) 組資料 + 依學號排序
+      const list = merged.map(stu => ({
+        ...stu,
+        image_url: imgMap[stu.student_id] || 'https://fakeimg.pl/300x300?text=No+Photo'
+      }));
+      list.sort((a,b) => (+a.student_code) - (+b.student_code));
+      return list;
+    }
+
+    function renderList(students) {
+      const wrap = document.getElementById('student-list');
+      wrap.innerHTML = '';
+
+      students.forEach(stu => {
+        const card = document.createElement('div');
+        card.className = 'student-card';
+
+        const badge = document.createElement('div');
+        badge.className = 'badge';
+        badge.innerText = '特別感謝';
+        card.appendChild(badge);
+
+        // 左：頭像
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar-frame';
+        const avatarImg = document.createElement('img');
+        avatarImg.className = 'avatar-img';
+        avatarImg.src = 'https://fakeimg.pl/300x300?text=No+Photo';
+        getAvatarFromUrl(stu.image_url + '?v=' + Date.now(), src => { if (src) avatarImg.src = src; });
+        avatarDiv.appendChild(avatarImg);
+
+        // 右：資訊 + 按鈕
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'student-info';
+        infoDiv.innerHTML = `
+          <div class="student-code">NO. ${stu.student_code}</div>
+          <div class="student-name">${stu.name}</div>
+        `;
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'card-btn-group';
+        const btnCert = document.createElement('button');
+        btnCert.className = 'btn btn-link';
+        btnCert.innerText = '學生證';
+        btnCert.onclick = () =>
+          window.open(\`https://shierusha.github.io/school-battle/students/st-idcard?stu=\${stu.student_code}\`, '_blank');
+        btnGroup.appendChild(btnCert);
+
+        // 佈局
+        const row = document.createElement('div'); row.className = 'card-row';
+        const left = document.createElement('div'); left.className = 'card-left'; left.appendChild(avatarDiv);
+        const right = document.createElement('div'); right.className = 'card-right'; right.appendChild(infoDiv); right.appendChild(btnGroup);
+        row.appendChild(left); row.appendChild(right);
+        card.appendChild(row);
+
+        wrap.appendChild(card);
+      });
+    }
+
+    // 啟動
+    getThanksStudents().then(renderList);
+  </script>
+</body>
+</html>
