@@ -11,7 +11,7 @@
     <div style="display: flex; flex-direction: column; gap: 1.2em; margin: 2em 0;">
       <button onclick="location.href='player_manage'">角色管理</button>
       
-<button id="gacha-btn" onclick="goGacha()">扭蛋</button>
+<button id="go-gacha-btn" style="background: #cd4747;" onclick="goGacha()">前往扭蛋</button>
 
       <button id="create-btn" onclick="location.href='https://shierusha.github.io/create-student/stidcard/shierusha-stu'">創角</button>
   <button onclick="window.open('https://shierusha.github.io/school-battle/students/AllStu', '_blank')">學生名冊</button>
@@ -93,5 +93,35 @@ async function checkPlayer() {
     }
     checkPlayer();
   </script>
+
+<script>
+  const EXCHANGE_URL = 'https://ogzpfrkwnqqaitytncla.supabase.co/functions/v1/exchange-token';
+
+  async function goGacha() {
+    // 1) 取 A 專案 access_token
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.access_token) {
+      alert('請先登入'); return;
+    }
+    // 2) 丟去 B 的 Edge Function 換 B token
+    const resp = await fetch(EXCHANGE_URL, {
+      method: 'POST',
+      headers: {'content-type':'application/json'},
+      body: JSON.stringify({ token: session.access_token })
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data?.token) {
+      console.error(data);
+      alert('交換 Token 失敗'); return;
+    }
+    // 3) 存起來給 gacha 頁使用
+    localStorage.setItem('gacha_b_jwt', data.token);
+    localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
+    localStorage.setItem('gacha_b_user', data.sub);
+
+    // 4) 前往扭蛋頁
+    location.href = 'https://shierusha.github.io/library/gacha';
+  }
+</script>
 </body>
 </html>
