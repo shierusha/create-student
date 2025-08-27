@@ -94,34 +94,52 @@ async function checkPlayer() {
     checkPlayer();
   </script>
 
-<script>
+
+
+
+
+
+
+
+  <script>
   const EXCHANGE_URL = 'https://ogzpfrkwnqqaitytncla.supabase.co/functions/v1/exchange-token';
 
   async function goGacha() {
-    // 1) 取 A 專案 access_token
-    const { data: { session } } = await client.auth.getSession();
-    if (!session?.access_token) {
-      alert('請先登入'); return;
-    }
-    // 2) 丟去 B 的 Edge Function 換 B token
-    const resp = await fetch(EXCHANGE_URL, {
-      method: 'POST',
-      headers: {'content-type':'application/json'},
-      body: JSON.stringify({ token: session.access_token })
-    });
-    const data = await resp.json();
-    if (!resp.ok || !data?.token) {
-      console.error(data);
-      alert('交換 Token 失敗'); return;
-    }
-    // 3) 存起來給 gacha 頁使用
-    localStorage.setItem('gacha_b_jwt', data.token);
-    localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
-    localStorage.setItem('gacha_b_user', data.sub);
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) {
+        alert('請先登入'); return;
+      }
 
-    // 4) 前往扭蛋頁
-    location.href = 'https://shierusha.github.io/library/gacha';
+      const resp = await fetch(EXCHANGE_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: session.access_token })
+      });
+
+      const j = await resp.json().catch(() => ({}));
+      console.log('[exchange-token] status=', resp.status, j);
+
+      if (!resp.ok) {
+        alert(`交換 Token 失敗（${resp.status}）`);
+        return;
+      }
+      if (!j.token) {
+        alert('交換成功但未回 token，請檢查 Edge Function 是否回傳 { token, sub, exp }');
+        return;
+      }
+
+      localStorage.setItem('gacha_b_jwt', j.token);
+      localStorage.setItem('gacha_b_jwt_exp', String(j.exp || 0));
+      localStorage.setItem('gacha_b_user', j.sub);
+
+      location.href = 'https://shierusha.github.io/library/gacha';
+    } catch (err) {
+      console.error(err);
+      alert('網路或程式錯誤，請再試一次');
+    }
   }
 </script>
+
 </body>
 </html>
