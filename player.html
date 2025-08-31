@@ -98,33 +98,35 @@ async function checkPlayer() {
 
 
 
-
 <script>
   const EXCHANGE_URL = 'https://ogzpfrkwnqqaitytncla.supabase.co/functions/v1/exchange-token';
 
   async function goGacha() {
-    // 1) A 專案 - 取得 session/access_token
+    // 1) A 專案 Session
     const { data: { session } } = await client.auth.getSession();
-    if (!session?.access_token) {
-      alert('請先登入'); return;
-    }
+    if (!session?.access_token) { alert('請先登入'); return; }
 
-    // 2) A 專案 - 取得玩家名稱（players.username）
+    // 2) 準備顯示用名稱（只存在 localStorage）
+    //   優先 players.username，否則 email 前綴，再不行用「玩家」
     let username = '玩家';
     try {
-      // 你目前玩家中心已經從 players 用 email 找過了，這裡再查一次最穩
-      const { data: me, error } = await client
+      const { data: me } = await client
         .from('players')
-        .select('username')
+        .select('username, email')
         .eq('email', session.user.email)
         .single();
-      if (!error && me?.username) username = me.username;
-    } catch(_) {}
 
-    // 3) 丟到 B 專案的 Edge Function 換 JWT
+      if (me?.username && me.username.trim()) {
+        username = me.username.trim();
+      } else if (me?.email) {
+        username = String(me.email).split('@')[0] || '玩家';
+      }
+    } catch (_) {}
+
+    // 3) 用 A 的 access_token 向 B 的 exchange-token 換短期 JWT
     const resp = await fetch(EXCHANGE_URL, {
       method: 'POST',
-      headers: {'content-type':'application/json'},
+      headers: { 'content-type':'application/json' },
       body: JSON.stringify({ token: session.access_token })
     });
     const data = await resp.json();
@@ -133,17 +135,17 @@ async function checkPlayer() {
       alert('交換 Token 失敗'); return;
     }
 
-    // 4) 存到 localStorage（扭蛋頁要用的東西）
+    // 4) 只存前端資料（名字存在 localStorage，不寫入 B 資料庫）
     localStorage.setItem('gacha_b_jwt', data.token);
     localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
     localStorage.setItem('gacha_b_user', data.sub || '');
-    localStorage.setItem('gacha_player_name', username);   // <<<<<<<<<< 方案1 核心：把名稱帶過去
+    localStorage.setItem('gacha_player_name', username);  // ★ 只靠這個顯示名字
 
-    // 5) 前往扭蛋頁
+    // 5) 進扭蛋頁
     location.href = 'https://shierusha.github.io/library/gacha';
   }
 
-  // 建議：登出時順便清掉扭蛋用的 key，避免切帳殘留
+  // 登出時也把扭蛋用的暱稱清掉，避免換帳殘留
   async function logout() {
     await client.auth.signOut();
     localStorage.removeItem('gacha_b_jwt');
@@ -153,6 +155,7 @@ async function checkPlayer() {
     location.href = 'https://shierusha.github.io/login/login';
   }
 </script>
+
 
 
 </body>
