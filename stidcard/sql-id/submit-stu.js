@@ -19,33 +19,36 @@ lastSubmitTime = now;
   if (!player_id) { alert('請先登入！'); return; }
 
 
- // 0. 非法請求檢查
-  if (formData && formData.student_id) {
-    let { data: reviewRows, error: reviewErr } = await client
-      .from('student_reviews')
-      .select('status')
-      .eq('student_id', formData.student_id)
-      .maybeSingle();
+// 0. 非法請求檢查（WAIT / PASS 都視為越權，直接改 ERROR 並中止）
+if (formData && formData.student_id) {
+  const { data: reviewRow, error: reviewErr } = await client
+    .from('student_reviews')
+    .select('status')
+    .eq('student_id', formData.student_id)
+    .maybeSingle();
 
-    if (reviewErr) {
-      alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
-      lastSubmitTime = 0;
-      return;
-    }
-  if (reviewRows && (reviewRows.status === 'PASS' || reviewRows.status === 'ERROR')) {
-      alert('非法入侵!非法入侵!非法入侵!資料已銷毀!');
-      // 改 review status
-      await client.from('student_reviews')
-        .update({ status: 'ERROR' })
-        .eq('student_id', formData.student_id);
-      // 改 students student_code
-      await client.from('students')
-        .update({ student_code: null })
-        .eq('student_id', formData.student_id);
-      lastSubmitTime = 0;
-      return;
-    }
+  if (reviewErr) {
+    alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
+    lastSubmitTime = 0;
+    return;
   }
+
+  if (reviewRow && (reviewRow.status === 'WAIT' || reviewRow.status === 'PASS')) {
+    // WAIT/PASS 本來就不該能到這頁，能到就是刻意帶 ID，直接打成 ERROR
+    await client.from('student_reviews')
+      .update({ status: 'ERROR' })
+      .eq('student_id', formData.student_id);
+
+    await client.from('students')
+      .update({ student_code: null })
+      .eq('student_id', formData.student_id);
+
+    alert('非法入侵!非法入侵!非法入侵!資料已銷毀!');
+    lastSubmitTime = 0;
+    return;
+  }
+}
+
 
   // 防呆：被動不可搭配移動
   for (let i = 0; i < (formData.skills || []).length; i++) {
@@ -262,15 +265,25 @@ let { data: pData, error: pErr } = await client
     }
   }
 
-  // 9. 新增審核狀態
-  await client.from('student_reviews').delete().eq('student_id', student_id);
-  await client.from('student_reviews').insert([{
-    reviewer_id: null,
-    student_id,
-    status: null,
-    review_notes: null,
-    submitted_at: new Date().toISOString()
-  }]);
+ // 9. 審核狀態：只有「新建學生」時才補一筆（status = NULL），修改時完全不動審核表
+if (!formData.student_id) {
+  // 只在不存在時插入，status 一律 NULL（空值）
+  const { data: existed } = await client
+    .from('student_reviews')
+    .select('review_id')
+    .eq('student_id', student_id)
+    .maybeSingle();
+
+  if (!existed) {
+    await client.from('student_reviews').insert([{
+      reviewer_id: null,
+      student_id,
+      status: null,               
+      review_notes: null,
+      submitted_at: new Date().toISOString()
+    }]);
+  }
+} 
 
   alert("啊! 有一隻貓把申請單叼走了!!");
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
