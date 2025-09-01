@@ -33,18 +33,26 @@ if (formData && formData.student_id) {
     return;
   }
 
-  if (reviewRow && (reviewRow.status === 'WAIT' || reviewRow.status === 'PASS')) {
-    // WAIT/PASS 本來就不該能到這頁，能到就是刻意帶 ID，直接打成 ERROR
-    await client.from('student_reviews')
-      .update({ status: 'ERROR' })
-      .eq('student_id', formData.student_id);
+  // ★ 這裡把 WAIT / PASS / ERROR 都視為越權（ERROR 再寫一次也是冪等）
+  if (reviewRow && ['WAIT', 'PASS', 'ERROR'].includes(reviewRow.status)) {
+    try {
+      await client
+        .from('student_reviews')
+        .update({ status: 'ERROR' })
+        .eq('student_id', formData.student_id);
 
-    await client.from('students')
-      .update({ student_code: null })
-      .eq('student_id', formData.student_id);
+      await client
+        .from('students')
+        .update({ student_code: null })
+        .eq('student_id', formData.student_id);
+    } catch (e) {
+    }
 
-    alert('非法入侵!非法入侵!非法入侵!資料已銷毀!');
     lastSubmitTime = 0;
+    const go = confirm('非法入侵!非法入侵!非法入侵! 資料已銷毀！');
+    if (go) {
+      window.location.href = 'https://shierusha.github.io/login/login';
+    }
     return;
   }
 }
