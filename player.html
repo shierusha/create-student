@@ -140,6 +140,8 @@ async function checkPlayer() {
     localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
     localStorage.setItem('gacha_b_user', data.sub || '');
     localStorage.setItem('gacha_player_name', username);  // ★ 只靠這個顯示名字
+    localStorage.setItem('gacha_app_role', data.role || 'PLAYER');
+
 
     // 5) 進扭蛋頁
     location.href = 'https://shierusha.github.io/library/gacha';
