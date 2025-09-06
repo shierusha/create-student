@@ -50,22 +50,6 @@ function calcSkillCD(idx, skill) {
   }
   // 原創技能
   if (skill.custom_effect_enable) cd += 3;
-
-// ======= ★ 你的新條件 =======
-// 【特殊規則】只有「特殊移動」與「單體追擊」**同時且僅有這兩個**時，CD +1
-const targetIds = [
-  '80c6f054-b655-4ff7-8660-009a29a41f8a', // 移動特殊
-  'd29f8d8a-adcc-4042-8152-083348a1d9b9'  // 單體追擊
-];
-if (
-  Array.isArray(skill.effect_ids) &&
-  skill.effect_ids.length === 2 &&
-  targetIds.every(id => skill.effect_ids.includes(id))
-) {
-  cd += 1;
-}
-
-  // ============================
   // 補師 all_zone +1（只有純補師、且沒移動例外不加）
   const occ = Array.isArray(formData.occupation_type) ? formData.occupation_type : [];
   const isPureHealer = occ.length === 1 && occ[0] === 'healer';
@@ -859,7 +843,6 @@ function renderSkillEffectBlock(idx, block, targetSelect, maxTargetSelect, range
       ['3d93b6e2-efcb-4c9d-bc1c-d0c3b6557aa5', 'f41d22f5-5c8f-4ae1-92e7-268739adccac'],
       ['5148fdd5-b62c-47b9-9c83-a579f8696005', 'dfa810db-d56d-4908-be12-4204240b8b43'],
       ['7e66d6be-962b-404d-9d45-261706489fc1', 'd93898e5-e9cd-46e3-a13d-f227c72ca83c'],
-      ['27004404-af5a-43b0-bcd4-b8396616e4d8', '80c6f054-b655-4ff7-8660-009a29a41f8a'],//CD0 移動
     ].forEach(group => {
       let checked = group.find(id => effect_ids.includes(id));
       if (checked) group.forEach(id => { if (id !== checked) disabledMap[id] = true; });
