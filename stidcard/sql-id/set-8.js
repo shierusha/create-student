@@ -1601,31 +1601,30 @@ if (formStep8) {
 
 
 
+// --- 檢查「自身移動」與 CD 規則 ---
+const MOVE_SELF_ID = '80c6f054-b655-4ff7-8660-009a29a41f8a'; // 移動自身：這是 move_id
+const CD_ZERO_ID   = '27004404-af5a-43b0-bcd4-b8396616e4d8';  // CD=0 的 effect_id
 
-       // --- 檢查有無移動自身、CD == 1 ---
-  const MOVE_SELF_ID = '80c6f054-b655-4ff7-8660-009a29a41f8a';
-  const CD_ZERO_ID  = '27004404-af5a-43b0-bcd4-b8396616e4d8';
-  const skillCD = getSkillFinalCD(skill, idx);
+const finalCDRaw = getSkillFinalCD(skill, idx);
+const finalCD = Number(finalCDRaw); // 被動會是 'X' → NaN
+const hasMoveSelf = !!skill.use_movement && skill.move_ids === MOVE_SELF_ID;
+const hasCd0Effect = Array.isArray(skill.effect_ids) && skill.effect_ids.includes(CD_ZERO_ID);
 
-  // 需求一：有自身移動 + CD = 1
-  if (
-    Array.isArray(skill.effect_ids) &&
-    skill.effect_ids.includes(MOVE_SELF_ID) &&
-    Number(skillCD) === 1
-  ) {
-    allGood = false;
-    errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」「自身移動」效果之際能不得 CD=1，請修改技能效果\n`;
-  }
+// 規則一：含「自身移動」時，不可 CD=1
+if (hasMoveSelf && finalCD === 1) {
+  allGood = false;
+  errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」含「自身移動」，不可為 CD=1，請調整。\n`;
+}
 
-  // 需求二：同時選到 CD0 效果 + 自身移動
-  if (
-    Array.isArray(skill.effect_ids) &&
-    skill.effect_ids.includes(MOVE_SELF_ID) &&
-    skill.effect_ids.includes(CD_ZERO_ID)
-  ) {
-    allGood = false;
-    errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」不能同時選擇「CD0」與「自身移動」的技能效果，請重新選擇\n`;
-  }
+// 規則二：不可同時擁有「CD0 效果」與「自身移動」
+if (hasMoveSelf && hasCd0Effect) {
+  allGood = false;
+  errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」不可同時擁有「CD0」與「自身移動」，請重新選擇。\n`;
+}
+
+// (選用) 若也想禁「自身移動且最終CD=0」：
+if (hasMoveSelf && finalCD === 0) { allGood=false; errMsg += `...`; }
+
 
 
 
