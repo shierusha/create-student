@@ -843,6 +843,7 @@ function renderSkillEffectBlock(idx, block, targetSelect, maxTargetSelect, range
       ['3d93b6e2-efcb-4c9d-bc1c-d0c3b6557aa5', 'f41d22f5-5c8f-4ae1-92e7-268739adccac'],
       ['5148fdd5-b62c-47b9-9c83-a579f8696005', 'dfa810db-d56d-4908-be12-4204240b8b43'],
       ['7e66d6be-962b-404d-9d45-261706489fc1', 'd93898e5-e9cd-46e3-a13d-f227c72ca83c'],
+      ['27004404-af5a-43b0-bcd4-b8396616e4d8', '80c6f054-b655-4ff7-8660-009a29a41f8a'],//CD0 移動
     ].forEach(group => {
       let checked = group.find(id => effect_ids.includes(id));
       if (checked) group.forEach(id => { if (id !== checked) disabledMap[id] = true; });
