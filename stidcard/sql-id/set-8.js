@@ -114,7 +114,7 @@ function updateCurrentSkillStarTotal() {
     }
   }
 
-// 控管送出if (submitBtn) {
+/* 控管送出if (submitBtn) {
   if ((typeof userRole !== 'undefined' && userRole === 'admin') || (!isProblem && totalStar === targetStar)) {
     submitBtn.disabled = false;
     submitBtn.style.opacity = '';
@@ -124,7 +124,7 @@ function updateCurrentSkillStarTotal() {
     submitBtn.style.opacity = 0.6;
     submitBtn.title = '技能星數需剛好才可送出';
   }
-}
+}*/
 
 
 // ========== 技能星級＋平衡星級提示（每個技能專用，技能區塊用） ==========
