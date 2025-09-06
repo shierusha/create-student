@@ -50,6 +50,22 @@ function calcSkillCD(idx, skill) {
   }
   // 原創技能
   if (skill.custom_effect_enable) cd += 3;
+
+// ======= ★ 你的新條件 =======
+  // 這兩個ID
+  const targetIds = [
+    '80c6f054-b655-4ff7-8660-009a29a41f8a', // 移動特殊
+    'd29f8d8a-adcc-4042-8152-083348a1d9b9'  // 單體追擊
+  ];
+  if (
+    Array.isArray(skill.effect_ids) &&
+    skill.effect_ids.length > 0 &&
+    skill.effect_ids.every(eid => targetIds.includes(eid)) && // 只有這兩個
+    skill.effect_ids.length === 2 // 不超過兩個
+  ) {
+    cd += 1;
+  }
+  // ============================
   // 補師 all_zone +1（只有純補師、且沒移動例外不加）
   const occ = Array.isArray(formData.occupation_type) ? formData.occupation_type : [];
   const isPureHealer = occ.length === 1 && occ[0] === 'healer';
