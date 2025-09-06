@@ -114,8 +114,8 @@ function updateCurrentSkillStarTotal() {
     }
   }
 
-// 控管送出
-if (submitBtn) {
+// 控管送出if (submitBtn) {
+
   if ((typeof userRole !== 'undefined' && userRole === 'admin') || (!isProblem && totalStar === targetStar)) {
     submitBtn.disabled = false;
     submitBtn.style.opacity = '';
