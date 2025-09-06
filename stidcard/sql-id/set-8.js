@@ -1598,23 +1598,6 @@ if (formStep8) {
     let allGood = true, errMsg = "";
 
     formData.skills.forEach((skill, idx) => {
-      // 技能名稱必填
-      if (!skill.skill_name || !skill.skill_name.trim()) {
-        allGood = false;
-        errMsg += `請填寫技能${idx + 1}名稱\n`;
-      }
-      // 技能敘述必填
-      if (!skill.description || !skill.description.trim()) {
-        allGood = false;
-        errMsg += `請填寫技能${idx + 1}敘述\n`;
-      }
-      // 技能施放對象必選
-      if (!skill.target_faction || skill.target_faction === '') {
-        allGood = false;
-        errMsg += `請選擇技能${idx + 1}的施放對象\n`;
-      }
-
-
 
 
 
@@ -1643,6 +1626,30 @@ if (formStep8) {
     allGood = false;
     errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」不能同時選擇「CD0」與「自身移動」的技能效果，請重新選擇\n`;
   }
+
+
+
+
+
+      
+      // 技能名稱必填
+      if (!skill.skill_name || !skill.skill_name.trim()) {
+        allGood = false;
+        errMsg += `請填寫技能${idx + 1}名稱\n`;
+      }
+      // 技能敘述必填
+      if (!skill.description || !skill.description.trim()) {
+        allGood = false;
+        errMsg += `請填寫技能${idx + 1}敘述\n`;
+      }
+      // 技能施放對象必選
+      if (!skill.target_faction || skill.target_faction === '') {
+        allGood = false;
+        errMsg += `請選擇技能${idx + 1}的施放對象\n`;
+      }
+
+
+
 
 
 
