@@ -1613,6 +1613,44 @@ if (formStep8) {
         allGood = false;
         errMsg += `請選擇技能${idx + 1}的施放對象\n`;
       }
+
+
+
+
+
+
+       // --- 檢查有無移動自身、CD == 1 ---
+  const MOVE_SELF_ID = '80c6f054-b655-4ff7-8660-009a29a41f8a';
+  const CD_ZERO_ID  = '27004404-af5a-43b0-bcd4-b8396616e4d8';
+  const skillCD = getSkillFinalCD(skill, idx);
+
+  // 需求一：有自身移動 + CD = 1
+  if (
+    Array.isArray(skill.effect_ids) &&
+    skill.effect_ids.includes(MOVE_SELF_ID) &&
+    Number(skillCD) === 1
+  ) {
+    allGood = false;
+    errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」「自身移動」效果之際能不得 CD=1，請修改技能效果\n`;
+  }
+
+  // 需求二：同時選到 CD0 效果 + 自身移動
+  if (
+    Array.isArray(skill.effect_ids) &&
+    skill.effect_ids.includes(MOVE_SELF_ID) &&
+    skill.effect_ids.includes(CD_ZERO_ID)
+  ) {
+    allGood = false;
+    errMsg += `技能${idx+1}「${skill.skill_name||'未命名'}」不能同時選擇「CD0」與「自身移動」的技能效果，請重新選擇\n`;
+  }
+
+
+
+
+
+
+
+      
       // 技能效果、移動技能、原創技能三選一
       if (
         (!Array.isArray(skill.effect_ids) || skill.effect_ids.length === 0)
