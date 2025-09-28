@@ -1,166 +1,234 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>謝爾夏｜玩家中心</title>
-  <link rel="stylesheet" href="player.css">
+  <link rel="stylesheet" href="player.css" />
+
+  <!-- 分頁與按鈕群組的輕量樣式 -->
+  <style>
+    :root { --accent: #cd4747; }
+    .center { max-width: 720px; margin: 0 auto; padding: 24px; }
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid #e5e5e5; }
+    .tab-btn {
+      appearance: none; border: 0; background: transparent;
+      padding: 10px 14px; font-size: 16px; cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-btn[aria-selected="true"] { border-color: var(--accent); font-weight: 700; }
+    .tab-panel { display: none; padding: 16px 0; }
+    .tab-panel.active { display: block; }
+
+    .btn-grid {
+      display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px;
+    }
+    @media (min-width: 520px) { .btn-grid { grid-template-columns: 1fr 1fr; } }
+
+    .ui-btn {
+      width: 100%; padding: 12px 14px; font-size: 16px;
+      border: 1px solid #ddd; background: #fafafa; cursor: pointer; border-radius: 8px;
+    }
+    .ui-btn:hover { background: #f2f2f2; }
+    .ui-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .ui-btn[disabled] { background: #bbb !important; color: #fff; cursor: not-allowed; border-color: #bbb; }
+    .muted { color: #777; font-size: 14px; }
+  </style>
 </head>
 <body>
   <div class="center">
     <h2 id="player-welcome">歡迎玩家！</h2>
-    <div style="display: flex; flex-direction: column; gap: 1.2em; margin: 2em 0;">
-            <button onclick="location.href='https://shierusha.github.io/library/story/story'">前往休息室</button>
 
-      <button onclick="location.href='player_manage'">角色管理</button>
-    
-<button id="go-gacha-btn" style="background: #cd4747;" onclick="goGacha()">前往扭蛋</button>
-
-      <button id="create-btn" onclick="location.href='https://shierusha.github.io/create-student/stidcard/shierusha-stu'">創角</button>
-  <button onclick="window.open('https://shierusha.github.io/school-battle/students/AllStu', '_blank')">學生名冊</button>
-
-  <button onclick="window.open('https://shierusha.github.io/create-student/thanks/thanks', '_blank')">感謝名冊</button>
-      <button style="background: #999;" onclick="logout()">登出</button>
+    <!-- TAB 導覽 -->
+    <div class="tabs" role="tablist" aria-label="功能分類">
+      <button id="tab-roles-btn" class="tab-btn" role="tab" aria-selected="true" aria-controls="tab-roles">角色相關</button>
+      <button id="tab-others-btn" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-others">其他系統</button>
     </div>
+
+    <!-- TAB：角色相關 -->
+    <section id="tab-roles" class="tab-panel active" role="tabpanel" tabindex="0" aria-labelledby="tab-roles-btn">
+      <div class="btn-grid">
+        <button class="ui-btn" onclick="location.href='player_manage'">管理角色</button>
+
+        <button id="create-btn" class="ui-btn" onclick="location.href='https://shierusha.github.io/create-student/stidcard/shierusha-stu'">創角</button>
+
+        <button class="ui-btn" onclick="window.open('https://shierusha.github.io/library/lib/allskill','_blank')">
+          技能一覽 <span class="muted">（另開）</span>
+        </button>
+
+        <button class="ui-btn" onclick="window.open('https://shierusha.github.io/school-battle/students/AllStu','_blank')">
+          學生名冊 <span class="muted">（另開）</span>
+        </button>
+
+        <button class="ui-btn" onclick="window.open('https://shierusha.github.io/library/lib/allicd?idc='+encodeURIComponent('教師證'),'_blank')">
+          教師名冊 <span class="muted">（另開）</span>
+        </button>
+
+        <button class="ui-btn" style="background:#999; color:#fff; border-color:#999;" onclick="logout()">登出</button>
+      </div>
+    </section>
+
+    <!-- TAB：其他系統 -->
+    <section id="tab-others" class="tab-panel" role="tabpanel" tabindex="0" aria-labelledby="tab-others-btn">
+      <div class="btn-grid">
+        <button id="go-gacha-btn" class="ui-btn primary" onclick="goGacha()">前往扭蛋</button>
+
+        <button class="ui-btn" onclick="window.open('https://shierusha.github.io/library/story/story','_blank')">
+          前往休息室 <span class="muted">（另開）</span>
+        </button>
+
+        <button class="ui-btn" style="background:#999; color:#fff; border-color:#999;" onclick="logout()">登出</button>
+      </div>
+    </section>
   </div>
+
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // Supabase 初始化
+    // === Supabase 初始化 ===
     const client = window.supabase.createClient(
       'https://wfhwhvodgikpducrhgda.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
     );
-//----------------------
 
-  // 設定特例可多創角的 player_id
-const EXEMPT_PLAYER_IDS = [
-  '47c190ba-ac90-42b0-a2a5-402ae7975223', // 梨兒
-  '94cea572-5f6c-42b2-9c7b-b7015c0b8e6a', // 碎兒
-  'aa03ee8f-9150-41d7-a196-c6e177469c3b', // 101101010兒
-  'e8cf92ac-69f4-4d36-bc74-821c9fec2ab8', // 精靈兒
-  'd57d87ac-3892-4794-b3e4-243088672b5c', // 夢兒
-  '7a4ce2d2-9329-4192-a886-7b15111d21e8'  // 咕兒
-];
+    // 可多創角的特例白名單
+    const EXEMPT_PLAYER_IDS = [
+      '47c190ba-ac90-42b0-a2a5-402ae7975223', // 梨兒
+      '94cea572-5f6c-42b2-9c7b-b7015c0b8e6a', // 碎兒
+      'aa03ee8f-9150-41d7-a196-c6e177469c3b', // 101101010兒
+      'e8cf92ac-69f4-4d36-bc74-821c9fec2ab8', // 精靈兒
+      'd57d87ac-3892-4794-b3e4-243088672b5c', // 夢兒
+      '7a4ce2d2-9329-4192-a886-7b15111d21e8'  // 咕兒
+    ];
 
-// 檢查玩家登入＋角色上限
-async function checkPlayer() {
-  let { data: { user } } = await client.auth.getUser();
-  if (!user) {
-    location.href = 'https://shierusha.github.io/login/login'; return;
-  }
-  // 查玩家名字＋身分＋player_id
-  let { data, error } = await client
-    .from('players')
-    .select('username, role, player_id')
-    .eq('email', user.email)
-    .single();
-  if (error || !data) {
-    location.href = 'https://shierusha.github.io/login/login'; return;
-  }
-  // 如果是 admin，直接跳到 admin 頁
-  if (data.role === 'admin') {
-    location.href = 'https://shierusha.github.io/login/admin';
-    return;
-  }
-  // 正常玩家才會顯示歡迎詞
-  document.getElementById('player-welcome').textContent = `歡迎 ${data.username} 玩家`;
+    // TAB 切換
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const panels = document.querySelectorAll('.tab-panel');
 
-  // 查角色數量
-  let { count } = await client
-    .from('students')
-    .select('*', { count: 'exact', head: true })
-    .eq('player_id', data.player_id);
+      function activate(id) {
+        tabs.forEach(btn => {
+          const selected = btn.getAttribute('aria-controls') === id;
+          btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+        panels.forEach(p => {
+          p.classList.toggle('active', p.id === id);
+        });
+        // 將焦點移到新面板，提升可及性
+        const activePanel = document.getElementById(id);
+        if (activePanel) activePanel.focus();
+      }
 
-  // 決定角色上限
-  let limit = EXEMPT_PLAYER_IDS.includes(data.player_id) ? 5 : 4;
-  let createBtn = document.querySelector('button[onclick*="create-student"]') || document.querySelector('button[onclick*="創角"]');
-  if (count >= limit) {
-    createBtn.disabled = true;
-    createBtn.style.background = '#bbb';
-    createBtn.style.cursor = 'not-allowed';
-    createBtn.textContent = `創角（已達上限）`;
-  } else {
-    createBtn.disabled = false;
-    createBtn.style.background = '';
-    createBtn.style.cursor = '';
-    createBtn.textContent = `創角`;
-  }
-}
-
-//----------------------
- 
-    // 登出
-    async function logout() {
-      await client.auth.signOut();
-      location.href = 'https://shierusha.github.io/login/login';
+      tabs.forEach(btn => {
+        btn.addEventListener('click', () => activate(btn.getAttribute('aria-controls')));
+        // 鍵盤左右切換
+        btn.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          const list = Array.from(tabs);
+          const idx = list.indexOf(document.activeElement);
+          const next = e.key === 'ArrowRight' ? (idx + 1) % list.length : (idx - 1 + list.length) % list.length;
+          list[next].focus();
+        });
+      });
     }
-    checkPlayer();
-  </script>
 
+    // 檢查玩家登入 + 角色上限
+    async function checkPlayer() {
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) { location.href = 'https://shierusha.github.io/login/login'; return; }
 
-
-
-
-<script>
-  const EXCHANGE_URL = 'https://ogzpfrkwnqqaitytncla.supabase.co/functions/v1/exchange-token';
-
-  async function goGacha() {
-    // 1) A 專案 Session
-    const { data: { session } } = await client.auth.getSession();
-    if (!session?.access_token) { alert('請先登入'); return; }
-
-    // 2) 準備顯示用名稱（只存在 localStorage）
-    //   優先 players.username，否則 email 前綴，再不行用「玩家」
-    let username = '玩家';
-    try {
-      const { data: me } = await client
+      const { data, error } = await client
         .from('players')
-        .select('username, email')
-        .eq('email', session.user.email)
+        .select('username, role, player_id, email')
+        .eq('email', user.email)
         .single();
 
-      if (me?.username && me.username.trim()) {
-        username = me.username.trim();
-      } else if (me?.email) {
-        username = String(me.email).split('@')[0] || '玩家';
-      }
-    } catch (_) {}
+      if (error || !data) { location.href = 'https://shierusha.github.io/login/login'; return; }
 
-    // 3) 用 A 的 access_token 向 B 的 exchange-token 換短期 JWT
-    const resp = await fetch(EXCHANGE_URL, {
-      method: 'POST',
-      headers: { 'content-type':'application/json' },
-      body: JSON.stringify({ token: session.access_token })
-    });
-    const data = await resp.json();
-    if (!resp.ok || !data?.token) {
-      console.error('exchange-token failed:', data);
-      alert('交換 Token 失敗'); return;
+      // Admin 直接轉去 admin 頁
+      if (data.role === 'admin') { location.href = 'https://shierusha.github.io/login/admin'; return; }
+
+      // 歡迎詞
+      document.getElementById('player-welcome').textContent = `歡迎 ${data.username} 玩家`;
+
+      // 角色數量
+      const { count } = await client
+        .from('students')
+        .select('*', { count: 'exact', head: true })
+        .eq('player_id', data.player_id);
+
+      const limit = EXEMPT_PLAYER_IDS.includes(data.player_id) ? 5 : 4;
+      const createBtn = document.getElementById('create-btn');
+      if (createBtn) {
+        if ((count ?? 0) >= limit) {
+          createBtn.disabled = true;
+          createBtn.textContent = '創角（已達上限）';
+        } else {
+          createBtn.disabled = false;
+          createBtn.textContent = '創角';
+        }
+      }
     }
 
-    // 4) 只存前端資料（名字存在 localStorage，不寫入 B 資料庫）
-    localStorage.setItem('gacha_b_jwt', data.token);
-    localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
-    localStorage.setItem('gacha_b_user', data.sub || '');
-    localStorage.setItem('gacha_player_name', username);  // ★ 只靠這個顯示名字
-    localStorage.setItem('gacha_app_role', data.role || 'PLAYER');
+    // 扭蛋的 Token 交換
+    const EXCHANGE_URL = 'https://ogzpfrkwnqqaitytncla.supabase.co/functions/v1/exchange-token';
 
+    async function goGacha() {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) { alert('請先登入'); return; }
 
-    // 5) 進扭蛋頁
-    location.href = 'https://shierusha.github.io/library/gacha';
-  }
+      // 顯示用暱稱（只存在 localStorage）
+      let username = '玩家';
+      try {
+        const { data: me } = await client
+          .from('players')
+          .select('username, email')
+          .eq('email', session.user.email)
+          .single();
 
-  // 登出時也把扭蛋用的暱稱清掉，避免換帳殘留
-  async function logout() {
-    await client.auth.signOut();
-    localStorage.removeItem('gacha_b_jwt');
-    localStorage.removeItem('gacha_b_jwt_exp');
-    localStorage.removeItem('gacha_b_user');
-    localStorage.removeItem('gacha_player_name');
-    location.href = 'https://shierusha.github.io/login/login';
-  }
-</script>
+        if (me?.username?.trim()) username = me.username.trim();
+        else if (me?.email) username = String(me.email).split('@')[0] || '玩家';
+      } catch (_) {}
 
+      // 用 A 的 access_token 向 B 的 exchange-token 換短期 JWT
+      const resp = await fetch(EXCHANGE_URL, {
+        method: 'POST',
+        headers: { 'content-type':'application/json' },
+        body: JSON.stringify({ token: session.access_token })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data?.token) {
+        console.error('exchange-token failed:', data);
+        alert('交換 Token 失敗'); return;
+      }
 
+      // 存前端資料
+      localStorage.setItem('gacha_b_jwt', data.token);
+      localStorage.setItem('gacha_b_jwt_exp', String(data.exp || 0));
+      localStorage.setItem('gacha_b_user', data.sub || '');
+      localStorage.setItem('gacha_player_name', username);
+      localStorage.setItem('gacha_app_role', data.role || 'PLAYER');
 
+      // 進扭蛋頁
+      location.href = 'https://shierusha.github.io/library/gacha';
+    }
+
+    // 登出（含扭蛋暱稱清理）
+    async function logout() {
+      try { await client.auth.signOut(); } catch (_) {}
+      localStorage.removeItem('gacha_b_jwt');
+      localStorage.removeItem('gacha_b_jwt_exp');
+      localStorage.removeItem('gacha_b_user');
+      localStorage.removeItem('gacha_player_name');
+      localStorage.removeItem('gacha_app_role');
+      location.href = 'https://shierusha.github.io/login/login';
+    }
+
+    // 啟動
+    document.addEventListener('DOMContentLoaded', () => {
+      setupTabs();
+      checkPlayer();
+    });
+  </script>
 </body>
 </html>
