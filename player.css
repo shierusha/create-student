@@ -127,3 +127,26 @@ button:hover, button:active, button:focus {
   h2 { font-size: 1.07em; }
   input, button { font-size: 1em; }
 }
+
+/* ====== 分頁（TAB）樣式（新增） ====== */
+.tabs { margin-top: 1.2rem; }
+.tablist { display: flex; gap: .5rem; justify-content: center; margin-bottom: .9rem; }
+.tab-btn[role="tab"] {
+  background: #eef3fb; color: var(--soft-blue);
+  border: 1px solid #cfe0ff; border-radius: 999px;
+  padding: .55rem 1rem; font-weight: 700; cursor: pointer;
+}
+.tab-btn[aria-selected="true"] {
+  background: var(--main-blue); color: var(--white); border-color: var(--main-blue);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.btn-col { display: flex; flex-direction: column; gap: 1.2em; margin: 1.2em 0 0 0; }
+#go-gacha-btn { background: #cd4747; }
+
+@media (max-width: 480px) {
+  .tablist { overflow-x: auto; padding-bottom: .2rem; }
+  .tablist::-webkit-scrollbar { height: 6px; }
+}
+
