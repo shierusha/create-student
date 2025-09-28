@@ -93,7 +93,7 @@ button {
   margin-bottom: 2px;
 }
 button:hover, button:active, button:focus {
-  background: #36b6ff;
+  background: #2f568b;
   outline: none;
 }
 .msg {
