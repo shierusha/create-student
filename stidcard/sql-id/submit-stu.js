@@ -293,6 +293,6 @@ if (!formData.student_id) {
   }
 } 
 
-  alert("啊! 有一隻貓把申請單叼走了!!");
+  alert("啊! 有一隻看起來很厭世的戴貓帽子的公務貓把申請單叼走了!!");
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
 }
