@@ -14,13 +14,13 @@ body {
   margin: 0;
   padding: 2rem;
 }
-    h2 {
-    color: #143158;
-    text-align: center;
-    margin-bottom: 1.2rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    }
+h2 {
+  color: #143158;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
 .container {
   max-width: 950px;
   margin: auto;
@@ -43,14 +43,14 @@ body {
 .student-card {
   border-radius: 1.1em;
   padding: 1.5em 1.3em 1.2em 1.3em;
-    box-shadow: 0 2px 10px #0002, 0 0 0 2.5px rgba(33, 41, 55, 0.5);
+  box-shadow: 0 2px 10px #0002, 0 0 0 2.5px rgba(33, 41, 55, 0.5);
   transition: box-shadow .18s;
   background: #eef4f5;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
-.card-b { background: #212937;box-shadow: 0 2px 10px #0002; }
+.card-b { background: #212937; box-shadow: 0 2px 10px #0002; }
 .card-b .student-name { color: #fff; }
 
 /* 切一半橫排 */
@@ -222,14 +222,12 @@ body {
 .close-btn:hover { color:#e2583e; }
 .hint { font-size: 0.95em; color: #888; margin-top: 0.7em; }
 
-    .avatar-frame {
-  position: relative;
-}
+.avatar-frame { position: relative; }
 .status-icon {
   position: absolute;
   left: 0; top: 0;
   width: 110px; height: 110px;
-  pointer-events: none; /* 點擊不擋住下面 */
+  pointer-events: none;
   z-index: 10;
 }
   </style>
@@ -238,13 +236,13 @@ body {
   <div class="container">
     <h2>謝爾夏｜角色管理</h2>
     <div class="hr-blue" style="
-    width: 80%;
-    height: 4px;
-    background: #1767a0;
-    margin: 0 auto 2em auto;
-    border-radius: 2px;
-    opacity: 0.88;  
-      "></div>
+      width: 80%;
+      height: 4px;
+      background: #1767a0;
+      margin: 0 auto 2em auto;
+      border-radius: 2px;
+      opacity: 0.88;
+    "></div>
     <span class="msg" id="msg"></span>
     <div id="unpassed-list" class="student-list"></div>
     <div id="passed-list" class="student-list"></div>
@@ -252,6 +250,7 @@ body {
       <button class="btn" id="back-btn" onclick="goBack()">返回</button>
     </div>
   </div>
+
   <!-- 上傳正面照 Modal -->
   <div class="modal-bg" id="upload-modal-bg" style="display:none;">
     <div class="modal">
@@ -259,8 +258,7 @@ body {
       <h3 style="text-align:center;">上傳照片</h3>
       <div id="canvas-wrap">
         <canvas id="edit-canvas" width="400" height="450"></canvas>
-        <img src="https://shierusha.github.io/create-student/imgs/export-0.png" 
-             id="redbox-frame" alt="紅框定位圖">
+        <img src="https://shierusha.github.io/create-student/imgs/export-0.png" id="redbox-frame" alt="紅框定位圖">
       </div>
       <input type="file" id="upload-file" accept="image/*"><br>
       <div class="modal-actions">
@@ -271,31 +269,30 @@ body {
       <div class="hint">電腦可用 AD旋轉 滑鼠滾輪拖移放大縮小<br>手機可用手指縮放、旋轉、移動照片對好臉再上傳</div>
     </div>
   </div>
+
   <script>
-// ========== Supabase 設定 ==========
+/* ========== Supabase 設定 ========== */
 const client = window.supabase.createClient(
   'https://wfhwhvodgikpducrhgda.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaHdodm9kZ2lrcGR1Y3JoZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTAwNjEsImV4cCI6MjA2MzU4NjA2MX0.P6P-x4SxjiR4VdWH6VFgY_ktgMac_OzuI4Bl7HWskz8'
 );
-//白名單角色卡ID
+// 白名單角色卡ID
 const TEST_STUDENT_IDS = [
   '434cbc99-9a4f-4334-bc71-7236b8daf51c', // 偉大的主
   '6ceb01f3-d296-438f-be5a-eebfa6e30e41', // 夢荔枝
-  '845dd04d-ff39-43a8-ad84-e8f714a8b454', //工具寵
-  'fe4e4c3e-66ae-4ded-afe6-417f73979131', //美味可口梨
-  '7712a95b-7884-4e34-8dba-65ff01084b16', //咕咕
-  '7edd83a7-3d44-4876-a480-a8bc795f48b3', //碎影
-  '094427cf-55dc-45a0-b596-1d4e10a9275d', //01101101010100101
-  'd4818226-3fef-4800-8177-95abfe9b1eea', //小精靈
-  'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'//現荔枝
-
+  '845dd04d-ff39-43a8-ad84-e8f714a8b454', // 工具寵
+  'fe4e4c3e-66ae-4ded-afe6-417f73979131', // 美味可口梨
+  '7712a95b-7884-4e34-8dba-65ff01084b16', // 咕咕
+  '7edd83a7-3d44-4876-a480-a8bc795f48b3', // 碎影
+  '094427cf-55dc-45a0-b596-1d4e10a9275d', // 01101101010100101
+  'd4818226-3fef-4800-8177-95abfe9b1eea', // 小精靈
+  'ee8ea0cd-d664-4b5f-8d0e-0240bf9debdb'  // 現荔枝
 ];
-const SPECIAL_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098'; //其實是AI
-
+const SPECIAL_PLAYER_ID = '8aea3076-294c-41f6-bb38-0a99da77c098'; // 其實是AI
 
 let user = null, player = null, myStudents = [], reviewMap = {}, imgMap = {}, userRole = "player";
 
-// ========== Canvas 與 Modal 相關 ==========
+/* ========== Canvas 與 Modal 相關 ========== */
 let uploadStuId = null;
 let img = null;
 let imgX = 200, imgY = 225, scale = 1, rotation = 0;
@@ -305,12 +302,8 @@ let mirrored = false; // 預設不鏡射
 const canvas = document.getElementById('edit-canvas');
 const ctx = canvas.getContext('2d');
 
-function setMsg(msg) {
-  document.getElementById('msg').textContent = msg || '';
-}
-function setUploadMsg(msg) {
-  document.getElementById('upload-msg').textContent = msg || '';
-}
+function setMsg(msg) { document.getElementById('msg').textContent = msg || ''; }
+function setUploadMsg(msg) { document.getElementById('upload-msg').textContent = msg || ''; }
 
 // 取得最新學生照片map
 async function reloadImages() {
@@ -325,21 +318,19 @@ async function reloadImages() {
 function getAvatarFromUrl(url, callback) {
   let avatarCanvas = document.createElement('canvas');
   avatarCanvas.width = avatarCanvas.height = 300;
-  let ctx = avatarCanvas.getContext('2d');
-  let img = new Image();
-  img.crossOrigin = "anonymous";
-  img.onload = function() {
-    ctx.clearRect(0,0,300,300);
-    ctx.drawImage(img, 0, 0, 300, 300, 0, 0, 300, 300);
+  let ctx2 = avatarCanvas.getContext('2d');
+  let tmp = new Image();
+  tmp.crossOrigin = "anonymous";
+  tmp.onload = function() {
+    ctx2.clearRect(0,0,300,300);
+    ctx2.drawImage(tmp, 0, 0, 300, 300, 0, 0, 300, 300);
     callback(avatarCanvas.toDataURL('image/png'));
   };
-  img.onerror = function() {
-    callback(""); // fallback 頭像
-  }
-  img.src = url;
+  tmp.onerror = function() { callback(""); }
+  tmp.src = url;
 }
 
-// ========== drawCanvas ==========
+/* ========== drawCanvas ========== */
 function drawCanvas() {
   ctx.clearRect(0,0,400,450);
   if (!img) return;
@@ -350,13 +341,10 @@ function drawCanvas() {
   ctx.drawImage(img, -img.width/2, -img.height/2);
   ctx.restore();
 }
-function toggleMirror() {
-  mirrored = !mirrored;
-  drawCanvas();
-}
+function toggleMirror() { mirrored = !mirrored; drawCanvas(); }
 window.toggleMirror = toggleMirror;
 
-// ========== Canvas事件 ==========
+/* ========== Canvas事件 ========== */
 document.getElementById('upload-file').onchange = function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -374,8 +362,7 @@ document.getElementById('upload-file').onchange = function(e) {
 canvas.onmousedown = function(e){
   if(!img) return;
   dragging = true;
-  lastX = e.offsetX;
-  lastY = e.offsetY;
+  lastX = e.offsetX; lastY = e.offsetY;
 };
 canvas.onmouseup = canvas.onmouseleave = ()=>dragging=false;
 canvas.onmousemove = function(e){
@@ -413,7 +400,7 @@ canvas.addEventListener('touchstart', function(e){
     pinchInit = {scale, rotation, imgX, imgY};
   }
 }, {passive:false});
-canvas.addEventListener('touchend', function(e){
+canvas.addEventListener('touchend', function(){
   dragging = false; pinchStart=null;
 }, {passive:false});
 canvas.addEventListener('touchmove', function(e){
@@ -433,28 +420,14 @@ canvas.addEventListener('touchmove', function(e){
       {x:e.touches[0].clientX, y:e.touches[0].clientY},
       {x:e.touches[1].clientX, y:e.touches[1].clientY}
     ];
-    let dist0 = Math.hypot(
-      pinchStart[0].x-pinchStart[1].x,
-      pinchStart[0].y-pinchStart[1].y);
-    let distN = Math.hypot(
-      now[0].x-now[1].x,
-      now[0].y-now[1].y);
+    let dist0 = Math.hypot(pinchStart[0].x-pinchStart[1].x, pinchStart[0].y-pinchStart[1].y);
+    let distN = Math.hypot(now[0].x-now[1].x, now[0].y-now[1].y);
     scale = pinchInit.scale * (distN/dist0);
-    let angle0 = Math.atan2(
-      pinchStart[1].y-pinchStart[0].y,
-      pinchStart[1].x-pinchStart[0].x);
-    let angleN = Math.atan2(
-      now[1].y-now[0].y,
-      now[1].x-now[0].x);
+    let angle0 = Math.atan2(pinchStart[1].y-pinchStart[0].y, pinchStart[1].x-pinchStart[0].x);
+    let angleN = Math.atan2(now[1].y-now[0].y, now[1].x-now[0].x);
     rotation = pinchInit.rotation + (angleN-angle0);
-    let center0 = {
-      x: (pinchStart[0].x+pinchStart[1].x)/2,
-      y: (pinchStart[0].y+pinchStart[1].y)/2
-    };
-    let centerN = {
-      x: (now[0].x+now[1].x)/2,
-      y: (now[0].y+now[1].y)/2
-    };
+    let center0 = { x: (pinchStart[0].x+pinchStart[1].x)/2, y: (pinchStart[0].y+pinchStart[1].y)/2 };
+    let centerN = { x: (now[0].x+now[1].x)/2, y: (now[0].y+now[1].y)/2 };
     imgX = pinchInit.imgX + (centerN.x-center0.x);
     imgY = pinchInit.imgY + (centerN.y-center0.y);
     drawCanvas();
@@ -485,18 +458,11 @@ async function submitCanvasImage(){
     const filePath = `student-images/${uploadStuId}/front.${ext}`;
     await client.storage.from('student-img').remove([filePath]);
     const { error: uploadErr } = await client.storage.from('student-img').upload(filePath, blob, { upsert: true });
-    if (uploadErr) { 
-      setUploadMsg('圖片上傳失敗');
-      return; }
+    if (uploadErr) { setUploadMsg('圖片上傳失敗'); return; }
     const { data: { publicUrl } } = client.storage.from('student-img').getPublicUrl(filePath);
     await client.from('student_images').delete().eq('student_id', uploadStuId).eq('image_type', 'front');
     const { error: insertErr } = await client.from('student_images').insert([
-      {
-        student_id: uploadStuId,
-        image_type: 'front',
-        image_url: publicUrl,
-        uploaded_by: player.player_id
-      }
+      { student_id: uploadStuId, image_type: 'front', image_url: publicUrl, uploaded_by: player.player_id }
     ]);
     if (insertErr) { setUploadMsg('資料寫入失敗'); return; }
     setUploadMsg('上傳完成！');
@@ -511,25 +477,32 @@ window.openUploadModal = openUploadModal;
 window.closeUploadModal = closeUploadModal;
 window.submitCanvasImage = submitCanvasImage;
 
-// ========== 主邏輯 ==========
+/* ========== 主邏輯 ========== */
 async function init() {
   setMsg('載入中...');
   let { data: userData } = await client.auth.getUser();
   if (!userData.user) { location.href = 'https://shierusha.github.io/login/login'; return; }
   user = userData.user;
-  let { data: players, error: pErr } = await client.from('players').select('player_id,username,role').eq('email', user.email).single();
+
+  let { data: players, error: pErr } = await client
+    .from('players')
+    .select('player_id,username,role')
+    .eq('email', user.email)
+    .single();
   if (pErr || !players) { location.href = 'https://shierusha.github.io/login/login'; return; }
   player = players;
   userRole = players.role || "player";
 
-let { data: students, error: sErr } = await client.from('students')
-  .select('student_id,name,nickname,student_code,alignment,player_id')
-  .eq('player_id', player.player_id);
+  let { data: students, error: sErr } = await client
+    .from('students')
+    .select('student_id,name,nickname,student_code,alignment,player_id')
+    .eq('player_id', player.player_id);
 
   if (sErr) { setMsg('角色載入失敗'); return; }
   myStudents = students || [];
 
-  let { data: reviews } = await client.from('student_reviews')
+  let { data: reviews } = await client
+    .from('student_reviews')
     .select('student_id,status');
   reviewMap = {};
   (reviews||[]).forEach(r=>{ reviewMap[r.student_id]=r.status; });
@@ -538,11 +511,12 @@ let { data: students, error: sErr } = await client.from('students')
   renderStudentList();
   setMsg('');
 }
-// ========== 卡片渲染 ==========
+
+/* ========== 卡片渲染 ========== */
 function renderStudentList() {
   // 1. 未過審(非PASS) + 已過審(PASS) 分組
   let unpassed = myStudents.filter(s => (reviewMap[s.student_id] || "") !== "PASS");
-  let passed = myStudents.filter(s => (reviewMap[s.student_id] || "") === "PASS");
+  let passed   = myStudents.filter(s => (reviewMap[s.student_id] || "") === "PASS");
 
   function sortByCode(a, b) {
     if (!a.student_code && !b.student_code) return 0;
@@ -553,15 +527,13 @@ function renderStudentList() {
   unpassed.sort(sortByCode);
   passed.sort(sortByCode);
 
-  // 分別渲染到不同div
   renderGroup(unpassed, document.getElementById('unpassed-list'));
   renderGroup(passed, document.getElementById('passed-list'));
 }
 
-// group 渲染函數（已切一半橫排！加狀態圖示）
+// group 渲染函數（橫切一半＋狀態圖示）
 function renderGroup(arr, wrap) {
   wrap.innerHTML = '';
-  // 狀態圖示對應網址
   const statusIconUrl = {
     "WAIT": "https://shierusha.github.io/create-student/imgs/SEE.png",
     "BAD": "https://shierusha.github.io/create-student/imgs/NO.png",
@@ -571,6 +543,8 @@ function renderGroup(arr, wrap) {
   arr.forEach(stu => {
     let status = reviewMap[stu.student_id] || "";
     let align = stu.alignment === "white" ? "w" : (stu.alignment === "black" ? "b" : "");
+    const isWhitelist = TEST_STUDENT_IDS.includes(stu.student_id) || stu.player_id === SPECIAL_PLAYER_ID;
+
     let card = document.createElement('div');
     card.className = "student-card" + (align ? ` card-${align}` : "");
 
@@ -604,33 +578,34 @@ function renderGroup(arr, wrap) {
 
     let btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
-    
-if (
-  TEST_STUDENT_IDS.includes(stu.student_id) ||
-  stu.player_id === SPECIAL_PLAYER_ID
-) {
-  let btnTest = document.createElement('button');
-  btnTest.className = 'btn btn-link';
-  btnTest.innerText = '角色卡';
-  btnTest.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
-  btnGroup.appendChild(btnTest);
-}
 
-
-    if (status === "PASS" && stu.student_code) {
-      let btnCert = document.createElement('button');
+    // ---- 白名單優先顯示「角色卡」(用 student_id)；非白名單且 PASS+有學號才顯示「學生證」 ----
+    if (isWhitelist) {
+      const btnTest = document.createElement('button');
+      btnTest.className = 'btn btn-link';
+      btnTest.innerText = '角色卡';
+      btnTest.onclick = () =>
+        window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
+      btnGroup.appendChild(btnTest);
+    } else if (status === "PASS" && stu.student_code) {
+      const btnCert = document.createElement('button');
       btnCert.className = 'btn btn-link';
       btnCert.innerText = '學生證';
-      btnCert.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
+      btnCert.onclick = () =>
+        window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
       btnGroup.appendChild(btnCert);
     }
-    if (status === "PASS") {
+
+    // ---- PASS 才顯示「申請補充設定」，但白名單不顯示 ----
+    if (status === "PASS" && !isWhitelist) {
       let btnExtra = document.createElement('button');
       btnExtra.className = 'btn btn-link';
       btnExtra.innerText = '申請補充設定';
       btnExtra.onclick = () => window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
       btnGroup.appendChild(btnExtra);
     }
+
+    // ---- BAD 或無狀態可「修改」「上傳照片」 ----
     if (status === "BAD" || !status) {
       let btnEdit = document.createElement('button');
       btnEdit.className = 'btn btn-edit';
@@ -644,17 +619,16 @@ if (
       btnPhoto.onclick = () => openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
     }
-// 攜帶物按鈕（不是白名單才顯示）
-if (
-  !TEST_STUDENT_IDS.includes(stu.student_id) &&      // 不是白名單
-  stu.player_id !== SPECIAL_PLAYER_ID                // 也不是特殊玩家的卡
-) {
-  let devBtn = document.createElement('button');
-  devBtn.className = 'btn btn-link';
-  devBtn.innerText = '攜帶物(開發中)';
-  devBtn.disabled = true;
-  btnGroup.appendChild(devBtn);
-}
+
+    // 攜帶物按鈕（不是白名單才顯示）
+    if (!isWhitelist) {
+      let devBtn = document.createElement('button');
+      devBtn.className = 'btn btn-link';
+      devBtn.innerText = '攜帶物(開發中)';
+      devBtn.disabled = true;
+      btnGroup.appendChild(devBtn);
+    }
+
     // ==== 橫切一半 ====
     let cardRow = document.createElement('div');
     cardRow.className = 'card-row';
@@ -677,7 +651,7 @@ if (
   });
 }
 
-// 其他共用
+/* 其他共用 */
 function openStudentCard(student_id) {
   window.open(`https://shierusha.github.io/create-student/stidcard/shierusha-stu?stu=${student_id}`, "_blank");
 }
@@ -692,7 +666,6 @@ window.openStudentCard = openStudentCard;
 window.goBack = goBack;
 
 init();
-
   </script>
 </body>
 </html>
