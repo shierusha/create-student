@@ -62,7 +62,7 @@ async function submitAllStudentData() {
       }
     }
   }
-
+if (!Array.isArray(formData.skills)) formData.skills = [];
 
   // 防呆：被動不可搭配移動
   for (let i = 0; i < (formData.skills || []).length; i++) {
