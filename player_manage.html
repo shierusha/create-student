@@ -573,7 +573,6 @@ function renderStudentList() {
 /* group 渲染函數（已切一半橫排！加狀態圖示） */
 function renderGroup(arr, wrap) {
   wrap.innerHTML = '';
-  // 狀態圖示對應網址
   const statusIconUrl = {
     "WAIT":  "https://shierusha.github.io/create-student/imgs/SEE.png",
     "BAD":   "https://shierusha.github.io/create-student/imgs/NO.png",
@@ -581,115 +580,125 @@ function renderGroup(arr, wrap) {
   };
 
   arr.forEach(stu => {
-    let status = reviewMap[stu.student_id] || "";
-    let align = stu.alignment === "white" ? "w" : (stu.alignment === "black" ? "b" : "");
-    let card = document.createElement('div');
+    const status = reviewMap[stu.student_id] || "";
+    const align  = stu.alignment === "white" ? "w" : (stu.alignment === "black" ? "b" : "");
+    const card   = document.createElement('div');
     card.className = "student-card" + (align ? ` card-${align}` : "");
 
-    const isWL   = isWhitelist(stu);
+    const isWL    = isWhitelist(stu);
     const hasCode = !!stu.student_code && !isWL; // 白名單即使有學號也視為沒有
 
-    let avatarUrl = imgMap[stu.student_id]
+    // avatar
+    const avatarUrl = imgMap[stu.student_id]
       ? (imgMap[stu.student_id] + "?v=" + Date.now())
       : "https://fakeimg.pl/300x300?text=No+Photo";
-    let avatarDiv = document.createElement('div');
+    const avatarDiv = document.createElement('div');
     avatarDiv.className = 'avatar-frame';
 
-    // 狀態圖示 疊在頭像上
     if (statusIconUrl[status]) {
-      let iconImg = document.createElement('img');
+      const iconImg = document.createElement('img');
       iconImg.className = 'status-icon';
       iconImg.src = statusIconUrl[status];
       iconImg.alt = '狀態';
       avatarDiv.appendChild(iconImg);
     }
 
-    let avatarImg = document.createElement('img');
+    const avatarImg = document.createElement('img');
     avatarImg.className = 'avatar-img';
     getAvatarFromUrl(avatarUrl, src => {
       avatarImg.src = src || "https://fakeimg.pl/300x300?text=No+Photo";
     });
     avatarDiv.appendChild(avatarImg);
 
-    let infoDiv = document.createElement('div');
+    // name
+    const infoDiv = document.createElement('div');
     infoDiv.className = 'student-info';
     infoDiv.innerHTML = `
       <div class="student-name">${hasCode ? `NO.${stu.student_code} ` : ""}${stu.nickname || stu.name}</div>
     `;
 
-    let btnGroup = document.createElement('div');
+    // buttons
+    const btnGroup = document.createElement('div');
     btnGroup.className = 'card-btn-group';
 
-    // 白名單：角色卡（用 student_id 開）
+    // 白名單：一定只有「角色卡、修改、上傳照片」
     if (isWL) {
-      let btnTest = document.createElement('button');
-      btnTest.className = 'btn btn-link';
-      btnTest.innerText = '角色卡';
-      btnTest.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
-      btnGroup.appendChild(btnTest);
-    }
+      const btnCard = document.createElement('button');
+      btnCard.className = 'btn btn-link';
+      btnCard.innerText = '角色卡';
+      btnCard.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
+      btnGroup.appendChild(btnCard);
 
-    // 學生證：僅非白名單且有學號、且審核 PASS
-    if (status === "PASS" && hasCode) {
-      let btnCert = document.createElement('button');
-      btnCert.className = 'btn btn-link';
-      btnCert.innerText = '學生證';
-      btnCert.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
-      btnGroup.appendChild(btnCert);
-    }
-
-    if (status === "PASS") {
-      let btnExtra = document.createElement('button');
-      btnExtra.className = 'btn btn-link';
-      btnExtra.innerText = '申請補充設定';
-      btnExtra.onclick = () => window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
-      btnGroup.appendChild(btnExtra);
-    }
-
-    if (status === "BAD" || !status) {
-      let btnEdit = document.createElement('button');
+      const btnEdit = document.createElement('button');
       btnEdit.className = 'btn btn-edit';
       btnEdit.innerText = '修改';
       btnEdit.onclick = () => openStudentCard(stu.student_id);
       btnGroup.appendChild(btnEdit);
 
-      let btnPhoto = document.createElement('button');
+      const btnPhoto = document.createElement('button');
       btnPhoto.className = 'btn';
       btnPhoto.innerText = '上傳照片';
       btnPhoto.onclick = () => openUploadModal(stu.student_id);
       btnGroup.appendChild(btnPhoto);
-    }
+    } else {
+      // 非白名單：照原規則
+      if (status === "PASS" && hasCode) {
+        const btnCert = document.createElement('button');
+        btnCert.className = 'btn btn-link';
+        btnCert.innerText = '學生證';
+        btnCert.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
+        btnGroup.appendChild(btnCert);
+      }
 
-    // 攜帶物按鈕（非白名單才顯示）
-    if (!isWL) {
-      let devBtn = document.createElement('button');
+      if (status === "PASS") {
+        const btnExtra = document.createElement('button');
+        btnExtra.className = 'btn btn-link';
+        btnExtra.innerText = '申請補充設定';
+        btnExtra.onclick = () => window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
+        btnGroup.appendChild(btnExtra);
+      }
+
+      // 只有 BAD or 無狀態 時能修改/上傳（保留你的原規則）
+      if (status === "BAD" || !status) {
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn btn-edit';
+        btnEdit.innerText = '修改';
+        btnEdit.onclick = () => openStudentCard(stu.student_id);
+        btnGroup.appendChild(btnEdit);
+
+        const btnPhoto = document.createElement('button');
+        btnPhoto.className = 'btn';
+        btnPhoto.innerText = '上傳照片';
+        btnPhoto.onclick = () => openUploadModal(stu.student_id);
+        btnGroup.appendChild(btnPhoto);
+      }
+
+      // 非白名單才顯示「攜帶物(開發中)」
+      const devBtn = document.createElement('button');
       devBtn.className = 'btn btn-link';
       devBtn.innerText = '攜帶物(開發中)';
       devBtn.disabled = true;
       btnGroup.appendChild(devBtn);
     }
 
-    // ==== 橫切一半 ====
-    let cardRow = document.createElement('div');
+    // layout
+    const cardRow  = document.createElement('div');
     cardRow.className = 'card-row';
-
-    let cardLeft = document.createElement('div');
+    const cardLeft = document.createElement('div');
     cardLeft.className = 'card-left';
     cardLeft.appendChild(avatarDiv);
     cardLeft.appendChild(infoDiv);
-
-    let cardRight = document.createElement('div');
+    const cardRight = document.createElement('div');
     cardRight.className = 'card-right';
     cardRight.appendChild(btnGroup);
-
     cardRow.appendChild(cardLeft);
     cardRow.appendChild(cardRight);
     card.appendChild(cardRow);
-    // ================
 
     wrap.appendChild(card);
   });
 }
+
 
 /* 其他共用 */
 function openStudentCard(student_id) {
