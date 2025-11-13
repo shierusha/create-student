@@ -1,3 +1,5 @@
+const OVERRIDE_STUDENT_IDS = ['434cbc99-9a4f-4334-bc71-7236b8daf51c'];
+
 let lastSubmitTime = 0;
 const submitCooldown = 60 * 1000; // 60秒
 
@@ -12,50 +14,54 @@ async function checkStudentNameDuplicate(name, student_id = null) {
 // 主送出
 async function submitAllStudentData() {
   const now = Date.now();
-if (now - lastSubmitTime < submitCooldown) return;
-lastSubmitTime = now;
+  if (now - lastSubmitTime < submitCooldown) return;
+  lastSubmitTime = now;
 
   const player_id = window.currentPlayerId || localStorage.getItem('player_id');
   if (!player_id) { alert('請先登入！'); return; }
 
+  // －－－ 新增：越權旗標 －－－
+  let overrideUsed = false;
 
-// 0. 非法請求檢查（WAIT / PASS 都視為越權，直接改 ERROR 並中止）
-if (formData && formData.student_id) {
-  const { data: reviewRow, error: reviewErr } = await client
-    .from('student_reviews')
-    .select('status')
-    .eq('student_id', formData.student_id)
-    .maybeSingle();
-
-  if (reviewErr) {
-    alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
-    lastSubmitTime = 0;
-    return;
-  }
-
-  // ★ 這裡把 WAIT / PASS / ERROR 都視為越權（ERROR 再寫一次也是冪等）
-  if (reviewRow && ['WAIT', 'PASS', 'ERROR'].includes(reviewRow.status)) {
-    try {
-      await client
+  // 0. 非法請求檢查（WAIT / PASS / ERROR 視為越權）— 但允許白名單 student_id 直接越過
+  if (formData && formData.student_id) {
+    // 若是允許越權的學生，直接跳過檢查
+    if (OVERRIDE_STUDENT_IDS.includes(formData.student_id)) {
+      overrideUsed = true; // 記錄有啟用越權
+    } else {
+      const { data: reviewRow, error: reviewErr } = await client
         .from('student_reviews')
-        .update({ status: 'ERROR' })
-        .eq('student_id', formData.student_id);
+        .select('status')
+        .eq('student_id', formData.student_id)
+        .maybeSingle();
 
-      await client
-        .from('students')
-        .update({ student_code: null })
-        .eq('student_id', formData.student_id);
-    } catch (e) {
-    }
+      if (reviewErr) {
+        alert('檢查審核狀態失敗，請稍後再試：' + reviewErr.message);
+        lastSubmitTime = 0;
+        return;
+      }
 
-    lastSubmitTime = 0;
-    const go = confirm('非法入侵!非法入侵!非法入侵! 資料已銷毀！');
-    if (go) {
-      window.location.href = 'https://shierusha.github.io/login/login';
+      // 非白名單的話：WAIT / PASS / ERROR 都視為越權入侵 → 銷毀 + 跳走
+      if (reviewRow && ['WAIT', 'PASS', 'ERROR'].includes(reviewRow.status)) {
+        try {
+          await client.from('student_reviews')
+            .update({ status: 'ERROR' })
+            .eq('student_id', formData.student_id);
+
+          await client.from('students')
+            .update({ student_code: null })
+            .eq('student_id', formData.student_id);
+        } catch (e) { /* 忽略 */ }
+
+        lastSubmitTime = 0;
+        const go = confirm('非法入侵!非法入侵!非法入侵! 資料已銷毀！');
+        if (go) {
+          window.location.href = 'https://shierusha.github.io/login/login';
+        }
+        return;
+      }
     }
-    return;
   }
-}
 
 
   // 防呆：被動不可搭配移動
@@ -292,7 +298,9 @@ if (!formData.student_id) {
     }]);
   }
 } 
-
-  alert("啊! 有一隻看起來很厭世的戴貓帽子的公務貓把申請單叼走了!!");
+  alert(overrideUsed
+    ? '班班長的工具寵尋著班班長的味道來了 喵'
+    : '啊! 有一隻看起來很厭世的戴貓帽子的公務貓把申請單叼走了!!'
+  );
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
 }
