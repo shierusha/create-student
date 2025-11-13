@@ -62,8 +62,13 @@ async function submitAllStudentData() {
       }
     }
   }
-if (!Array.isArray(formData.skills)) formData.skills = [];
-
+// 保險：先確認 formData 存在，再確保 skills 一定是陣列
+  if (!formData) {
+    alert('表單資料遺失，請重新整理頁面');
+    lastSubmitTime = 0;
+    return;
+  }
+  if (!Array.isArray(formData.skills)) formData.skills = [];
   // 防呆：被動不可搭配移動
   for (let i = 0; i < (formData.skills || []).length; i++) {
     const s = formData.skills[i];
@@ -299,7 +304,7 @@ if (!formData.student_id) {
   }
 } 
   alert(overrideUsed
-    ? '班班長的工具寵尋著班班長的味道來了 喵'
+    ? '班班長的工具寵尋著班班長的味道來了_ 喵'
     : '啊! 有一隻看起來很厭世的戴貓帽子的公務貓把申請單叼走了!!'
   );
   window.location.href = 'https://shierusha.github.io/create-student/player_manage';
