@@ -883,6 +883,7 @@ async function loadStudentDataToForm(stuId) {
   Object.assign(formData, {
     name: student.name || '',
     nickname: student.nickname || '',
+    hide_name: !!student.hide_name,   
     alignment: student.alignment || '',
     gender: student.gender || '',
     age: student.age || '',
