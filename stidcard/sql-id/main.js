@@ -170,10 +170,15 @@ async function showStep(step) {
   document.getElementById(`form-step-${step}`).classList.add('active');
   currentStep = step;
 
-  if (step === 1) {
-    document.getElementById('name').value = formData.name || '';
-    document.getElementById('nickname').value = formData.nickname || '';
+ if (step === 1) {
+  document.getElementById('name').value = formData.name || '';
+  document.getElementById('nickname').value = formData.nickname || '';
+
+  const hideCheckbox = document.getElementById('hide_name');
+  if (hideCheckbox) {
+    hideCheckbox.checked = !!formData.hide_name;
   }
+}
   if (step === 2) {
     document.getElementById('alignment').value = formData.alignment || '';
     document.getElementById('gender').value = formData.gender || '';
