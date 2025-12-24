@@ -237,10 +237,15 @@
 <!-- 第1頁 角色名稱/暱稱 -->
 <form id="form-step-1" class="form-page active">
   <label for="name">角色本名 <span style="color:#e33">*</span></label>
-  <input type="text" id="name" maxlength="10"  required placeholder="請輸入角色本名">
+  <input type="text" id="name" maxlength="10"  required placeholder="請輸入角色【本名】、此名稱入學後【無法更改】">
+
+<label class="checkbox-row" style="margin-top:0.6em;">
+  <input type="checkbox" id="hide_name">
+  是否隱藏角色本名（譯名後本名將不會在學生證上【對所有戲中角色】公開）
+</label>
   
   <label for="nickname">角色稱呼</label>
-  <input type="text" id="nickname" maxlength="7" placeholder="對戲中顯示的角色暱稱，若無則顯示本名">
+  <input type="text" id="nickname" maxlength="7" placeholder="對戲中顯示的角色暱稱，可隨時隨意更改，若無則顯示本名">
 
   <div class="nav-btns">
       <button class="pl" onclick="location.href='https://shierusha.github.io/create-student/player'">返回</button>
