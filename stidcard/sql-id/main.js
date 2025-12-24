@@ -1,4 +1,3 @@
-//codepen測試中主程式js
 // =======================
 // 登入身分自動查詢
 // =======================
@@ -556,11 +555,8 @@ document.getElementById('add-note-btn').onclick = addNote;
 // ==========================
 function updateStudentCard() {
 document.querySelectorAll('[data-key="students.name"]').forEach(el => {
-  el.textContent = formData.hide_name && formData.nickname
-    ? formData.nickname
-    : formData.name;
-
-  el.classList.toggle('bigname-no', !!formData.hide_name);
+  el.textContent = formData.name; // 永遠顯示本名
+  el.classList.toggle('bigname-no', !!formData.hide_name); // 只控制透明
 });
 
   
