@@ -104,6 +104,7 @@ async function submitAllStudentData() {
     player_id,
     name: formData.name,
     nickname: formData.nickname,
+    hide_name: !!formData.hide_name,   // 👈 就是這一行
     alignment: formData.alignment,
     gender: formData.gender,
     age: formData.age,
