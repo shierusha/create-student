@@ -52,6 +52,7 @@
 let formData = {
   name: '',
   nickname: '',
+  hide_name: false,
   alignment: '',
   gender: '',
   age: '',
@@ -375,15 +376,26 @@ document.getElementById('back-6').onclick = function () {
 document.getElementById('btn-step-1').onclick = function () {
   const nameVal = document.getElementById('name').value.trim();
   const nickVal = document.getElementById('nickname').value.trim();
+  const hide = document.getElementById('hide_name')?.checked;
+
   if (!nameVal) {
     alert('請輸入角色本名');
     return;
   }
+
+  if (hide && !nickVal) {
+    alert('勾選「隱藏本名」時，必須填寫角色稱呼');
+    return;
+  }
+
   formData.name = nameVal;
   formData.nickname = nickVal;
+  formData.hide_name = !!hide;
+
   updateStudentCard();
   showStep(2);
 };
+
 document.getElementById('back-2').onclick = function () { showStep(1); };
 
 document.getElementById('btn-step-2').onclick = function () {
@@ -543,7 +555,16 @@ document.getElementById('add-note-btn').onclick = addNote;
 // (11) 學生證卡片資料同步
 // ==========================
 function updateStudentCard() {
-  document.querySelectorAll('[data-key="students.name"]').forEach(el => el.textContent = formData.name);
+document.querySelectorAll('[data-key="students.name"]').forEach(el => {
+  el.textContent = formData.hide_name && formData.nickname
+    ? formData.nickname
+    : formData.name;
+
+  el.classList.toggle('bigname-no', !!formData.hide_name);
+});
+
+  
+  
   document.querySelectorAll('.littlename-box').forEach(box => {
     if (formData.nickname && formData.nickname.trim()) {
       box.style.display = '';
