@@ -51,7 +51,7 @@ h2 {
   align-items: stretch;
 }
 .card-b { background: #212937; box-shadow: 0 2px 10px #0002; }
-.card-b .student-name { color: #fff; }
+.card-b .student-name { color: F#fff; }
 
 /* 切一半橫排 */
 .card-row {
@@ -641,7 +641,6 @@ if (isWL) {
   btnPhoto.onclick = () => openUploadModal(stu.student_id);
   btnGroup.appendChild(btnPhoto);
 } else {
-  // 非白名單：照原規則
   if (status === "PASS" && hasCode) {
     const btnCert = document.createElement('button');
     btnCert.className = 'btn btn-link';
@@ -658,7 +657,6 @@ if (isWL) {
     btnGroup.appendChild(btnExtra);
   }
 
-  // 只有 BAD or 無狀態 時能修改
   if (status === "BAD" || !status) {
     const btnEdit = document.createElement('button');
     btnEdit.className = 'btn btn-edit';
@@ -667,7 +665,6 @@ if (isWL) {
     btnGroup.appendChild(btnEdit);
   }
 
-  // BAD、WAIT、無狀態 時能上傳照片
   if (status === "BAD" || status === "WAIT" || !status) {
     const btnPhoto = document.createElement('button');
     btnPhoto.className = 'btn';
@@ -675,15 +672,13 @@ if (isWL) {
     btnPhoto.onclick = () => openUploadModal(stu.student_id);
     btnGroup.appendChild(btnPhoto);
   }
-}
 
-      // 非白名單才顯示「攜帶物(開發中)」
-      const devBtn = document.createElement('button');
-      devBtn.className = 'btn btn-link';
-      devBtn.innerText = '攜帶物(開發中)';
-      devBtn.disabled = true;
-      btnGroup.appendChild(devBtn);
-    }
+  const devBtn = document.createElement('button');
+  devBtn.className = 'btn btn-link';
+  devBtn.innerText = '攜帶物(開發中)';
+  devBtn.disabled = true;
+  btnGroup.appendChild(devBtn);
+}
 
     // layout
     const cardRow  = document.createElement('div');
