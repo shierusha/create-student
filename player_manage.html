@@ -622,56 +622,60 @@ function renderGroup(arr, wrap) {
     btnGroup.className = 'card-btn-group';
 
     // 白名單：一定只有「角色卡、修改、上傳照片」
-    if (isWL) {
-      const btnCard = document.createElement('button');
-      btnCard.className = 'btn btn-link';
-      btnCard.innerText = '角色卡';
-      btnCard.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
-      btnGroup.appendChild(btnCard);
+if (isWL) {
+  const btnCard = document.createElement('button');
+  btnCard.className = 'btn btn-link';
+  btnCard.innerText = '角色卡';
+  btnCard.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_id}`, '_blank');
+  btnGroup.appendChild(btnCard);
 
-      const btnEdit = document.createElement('button');
-      btnEdit.className = 'btn btn-edit';
-      btnEdit.innerText = '修改';
-      btnEdit.onclick = () => openStudentCard(stu.student_id);
-      btnGroup.appendChild(btnEdit);
+  const btnEdit = document.createElement('button');
+  btnEdit.className = 'btn btn-edit';
+  btnEdit.innerText = '修改';
+  btnEdit.onclick = () => openStudentCard(stu.student_id);
+  btnGroup.appendChild(btnEdit);
 
-      const btnPhoto = document.createElement('button');
-      btnPhoto.className = 'btn';
-      btnPhoto.innerText = '上傳照片';
-      btnPhoto.onclick = () => openUploadModal(stu.student_id);
-      btnGroup.appendChild(btnPhoto);
-    } else {
-      // 非白名單：照原規則
-      if (status === "PASS" && hasCode) {
-        const btnCert = document.createElement('button');
-        btnCert.className = 'btn btn-link';
-        btnCert.innerText = '學生證';
-        btnCert.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
-        btnGroup.appendChild(btnCert);
-      }
+  const btnPhoto = document.createElement('button');
+  btnPhoto.className = 'btn';
+  btnPhoto.innerText = '上傳照片';
+  btnPhoto.onclick = () => openUploadModal(stu.student_id);
+  btnGroup.appendChild(btnPhoto);
+} else {
+  // 非白名單：照原規則
+  if (status === "PASS" && hasCode) {
+    const btnCert = document.createElement('button');
+    btnCert.className = 'btn btn-link';
+    btnCert.innerText = '學生證';
+    btnCert.onclick = () => window.open(`https://shierusha.github.io/school-battle/students/st-idcard?stu=${stu.student_code}`, '_blank');
+    btnGroup.appendChild(btnCert);
+  }
 
-      if (status === "PASS") {
-        const btnExtra = document.createElement('button');
-        btnExtra.className = 'btn btn-link';
-        btnExtra.innerText = '申請補充設定';
-        btnExtra.onclick = () => window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
-        btnGroup.appendChild(btnExtra);
-      }
+  if (status === "PASS") {
+    const btnExtra = document.createElement('button');
+    btnExtra.className = 'btn btn-link';
+    btnExtra.innerText = '申請補充設定';
+    btnExtra.onclick = () => window.open('https://forms.gle/uE5L8PdJkEWBGhCW6', '_blank');
+    btnGroup.appendChild(btnExtra);
+  }
 
-      // 只有 BAD or 無狀態 時能修改/上傳（保留你的原規則）
-      if (status === "BAD" || !status) {
-        const btnEdit = document.createElement('button');
-        btnEdit.className = 'btn btn-edit';
-        btnEdit.innerText = '修改';
-        btnEdit.onclick = () => openStudentCard(stu.student_id);
-        btnGroup.appendChild(btnEdit);
+  // 只有 BAD or 無狀態 時能修改
+  if (status === "BAD" || !status) {
+    const btnEdit = document.createElement('button');
+    btnEdit.className = 'btn btn-edit';
+    btnEdit.innerText = '修改';
+    btnEdit.onclick = () => openStudentCard(stu.student_id);
+    btnGroup.appendChild(btnEdit);
+  }
 
-        const btnPhoto = document.createElement('button');
-        btnPhoto.className = 'btn';
-        btnPhoto.innerText = '上傳照片';
-        btnPhoto.onclick = () => openUploadModal(stu.student_id);
-        btnGroup.appendChild(btnPhoto);
-      }
+  // BAD、WAIT、無狀態 時能上傳照片
+  if (status === "BAD" || status === "WAIT" || !status) {
+    const btnPhoto = document.createElement('button');
+    btnPhoto.className = 'btn';
+    btnPhoto.innerText = '上傳照片';
+    btnPhoto.onclick = () => openUploadModal(stu.student_id);
+    btnGroup.appendChild(btnPhoto);
+  }
+}
 
       // 非白名單才顯示「攜帶物(開發中)」
       const devBtn = document.createElement('button');
