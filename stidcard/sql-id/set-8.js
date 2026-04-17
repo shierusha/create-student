@@ -1757,8 +1757,9 @@ if(domSkill1Cd) {
     (s1.max_targets == 1 ? '單體' : `範圍 (${s1.max_targets})`) : '';
 
   const domSkill1Range = document.querySelector('[data-key="student_skills.1.range"]');
-  if(domSkill1Range) domSkill1Range.innerText = s1.range ?
-    ({ same_zone: '近距離', cross_zone: '遠距離', all_zone: '無限制距離' }[s1.range] || s1.range) : '';
+  if(domSkill1Range) domSkill1Range.innerText =
+  s1.range === '' ? '全域攻擊' :
+  ({ same_zone: '近距離', cross_zone: '遠距離', all_zone: '遠近皆可' }[s1.range] || '');
 
   const domSkill1Desc = document.querySelector('[data-key="student_skills.1.description"]');
   if(domSkill1Desc) domSkill1Desc.innerText = s1.description || '';
@@ -1781,8 +1782,9 @@ if(domSkill2Cd) {
     (s2.max_targets == 1 ? '單體' : `範圍 (${s2.max_targets})`) : '';
 
   const domSkill2Range = document.querySelector('[data-key="student_skills.2.range"]');
-  if(domSkill2Range) domSkill2Range.innerText = s2.range ?
-    ({ same_zone: '近距離', cross_zone: '遠距離', all_zone: '無限制距離' }[s2.range] || s2.range) : '';
+ if(domSkill2Range) domSkill2Range.innerText =
+  s2.range === '' ? '全域攻擊' :
+  ({ same_zone: '近距離', cross_zone: '遠距離', all_zone: '遠近皆可' }[s2.range] || '');
 
   // 技能2的描述需要被動條件
   const domSkill2Desc = document.querySelector('[data-key="student_skills.2.description"]');
