@@ -979,7 +979,19 @@ async function loadStudentDataToForm(stuId) {
 
       // 其餘預設/補值
       skill.max_targets = skill.max_targets || 1;
-      skill.range = skill.range || 'same_zone';
+
+      if (typeof userRole !== 'undefined' && userRole === 'admin') {
+  skill.range = (skill.range === null || skill.range === undefined) ? '' : skill.range;
+} else {
+  if (skill.range === null || skill.range === undefined || skill.range === '') {
+    if (formData.preferred_role === 'ranger') {
+      skill.range = 'cross_zone';
+    } else {
+      skill.range = 'same_zone';
+    }
+  }
+}
+      
       skill.is_passive = !!skill.is_passive;
       skill.cd_val = typeof skill.cd_val === 'number' ? skill.cd_val : undefined;
 
