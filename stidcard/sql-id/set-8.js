@@ -374,10 +374,28 @@ targetSelect.value = skill.target_faction || '';
 
     // --- 技能有效距離 ---
     const rangeOptionsMap = {
-        melee: [{ val: 'same_zone', label: '近距離（同區）' }],
-        ranger: [{ val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }],
-        balance: [{ val: 'same_zone', label: '近距離（同區）' }, { val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }]
-    };
+    melee: [{ val: 'same_zone', label: '近距離（同區）' }],
+    ranger: [{ val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }],
+    balance: [{ val: 'same_zone', label: '近距離（同區）' }, { val: 'cross_zone', label: '遠距離（跨區）' }, { val: 'all_zone', label: '遠近皆可（無限制距離）' }]
+};
+
+if (typeof userRole !== 'undefined' && userRole === 'admin') {
+    rangeOptionsMap.melee = [
+        { val: 'same_zone', label: '近距離（同區）' },
+        { val: '', label: '全域攻擊' }
+    ];
+    rangeOptionsMap.ranger = [
+        { val: 'cross_zone', label: '遠距離（跨區）' },
+        { val: 'all_zone', label: '遠近皆可（無限制距離）' },
+        { val: '', label: '全域攻擊' }
+    ];
+    rangeOptionsMap.balance = [
+        { val: 'same_zone', label: '近距離（同區）' },
+        { val: 'cross_zone', label: '遠距離（跨區）' },
+        { val: 'all_zone', label: '遠近皆可（無限制距離）' },
+        { val: '', label: '全域攻擊' }
+    ];
+}
     const preferredRole = formData.preferred_role || 'balance';
     const rangeOptions = rangeOptionsMap[preferredRole] || rangeOptionsMap['balance'];
     const rangeLabel = document.createElement('label');
