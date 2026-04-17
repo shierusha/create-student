@@ -968,7 +968,7 @@ async function loadStudentDataToForm(stuId) {
       }
 
       // 拉 debuffs
-      const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id').eq('skill_id', skill.id);
+const { data: debLinks } = await client.from('student_skill_debuff_links').select('debuff_id, applied_to').eq('skill_id', skill.id);
       skill.debuffs = debLinks
         ? debLinks.map(d => {
           // 自動補細節
