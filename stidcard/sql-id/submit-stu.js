@@ -242,7 +242,7 @@ let { data: pData, error: pErr } = await client
       passive_trigger_limit: skill.passive_trigger_limit || null,
       linked_movement_id: skill.use_movement ? skill.move_ids : null,
       max_targets: skill.max_targets,
-      target_faction: (skill.target_faction === '自身+敵人') ? null : skill.target_faction,
+      target_faction: skill.target_faction || null,
       require_cc: Array.isArray(skill.effect_ids) && skill.effect_ids.some(eid => {
         let eff = window.skillEffectsList.find(e => e.effect_id === eid);
         return eff && (eff.effect_type === 'attack' || eff.effect_type === 'attack_only');
