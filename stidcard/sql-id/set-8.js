@@ -1,6 +1,3 @@
-//BATA 測試用JS
-
-
 function resetSkillEffectsAndMovement(skill) {
   skill.effect_ids = [];
   skill.effect_scores = [];
@@ -408,7 +405,11 @@ if (typeof userRole !== 'undefined' && userRole === 'admin') {
         option.innerText = opt.label;
         rangeSelect.appendChild(option);
     });
+if (typeof userRole !== 'undefined' && userRole === 'admin') {
+    rangeSelect.value = (skill.range === undefined) ? rangeOptions[0].val : skill.range;
+} else {
     rangeSelect.value = skill.range || rangeOptions[0].val;
+}
     formData.skills[idx].range = rangeSelect.value;   // <-- 關鍵：同步到 formData
     block.appendChild(rangeSelect);
 
