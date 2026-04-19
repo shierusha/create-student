@@ -413,6 +413,44 @@ if (typeof userRole !== 'undefined' && userRole === 'admin') {
     formData.skills[idx].range = rangeSelect.value;   // <-- 關鍵：同步到 formData
     block.appendChild(rangeSelect);
 
+    let injectedSameZoneOption = null;
+
+function syncRangeWithTarget() {
+    if (!targetSelect || !rangeSelect) return;
+
+    const isSelfTarget = targetSelect.value === 'self';
+
+    if (isSelfTarget) {
+        const hasSameZoneOption = Array.from(rangeSelect.options).some(option => option.value === 'same_zone');
+
+        if (!hasSameZoneOption) {
+            injectedSameZoneOption = document.createElement('option');
+            injectedSameZoneOption.value = 'same_zone';
+            injectedSameZoneOption.innerText = '近距離（同區）';
+            rangeSelect.insertBefore(injectedSameZoneOption, rangeSelect.firstChild);
+        }
+
+        rangeSelect.value = 'same_zone';
+        rangeSelect.disabled = true;
+        formData.skills[idx].range = 'same_zone';
+        return;
+    }
+
+    rangeSelect.disabled = false;
+
+    if (injectedSameZoneOption && injectedSameZoneOption.parentNode === rangeSelect) {
+        if (rangeSelect.value === 'same_zone') {
+            rangeSelect.value = rangeOptions[0].val;
+            formData.skills[idx].range = rangeSelect.value;
+        }
+
+        rangeSelect.removeChild(injectedSameZoneOption);
+        injectedSameZoneOption = null;
+    }
+}
+
+syncRangeWithTarget();
+
 
 
     // ====== 四大主要功能區塊，各自包一個 div ======
@@ -442,19 +480,20 @@ if (typeof userRole !== 'undefined' && userRole === 'admin') {
 
     // ============ 三大 select 監聽 ============
     if (targetSelect) {
-      targetSelect.addEventListener('change', () => {
-        formData.skills[idx].target_faction = targetSelect.value;
-        syncMaxTargetWithTarget();
-        resetSkillEffectsAndMovement(formData.skills[idx]);
-        renderSkillEffectBlock(idx, skillEffectDiv, targetSelect, maxTargetSelect, rangeSelect);
-        renderMovementSkillsBlock(idx, movementSkillDiv, targetSelect, maxTargetSelect, rangeSelect, occ);
-        renderCustomSkillEffectBlock(idx, customSkillDiv, targetSelect, maxTargetSelect);
-        renderSkillDebuffBlock(idx, debuffDiv, occ, targetSelect, maxTargetSelect);
-        renderSkillPassiveAndCdBlock(idx, block.querySelector('.cd-block'), formData.skills[idx]);
-        renderSkillAccumStarBlock(idx, extraStarDiv, formData.skills[idx]);
-        updateSkillPreview();
-      });
-    }
+  targetSelect.addEventListener('change', () => {
+    formData.skills[idx].target_faction = targetSelect.value;
+    syncMaxTargetWithTarget();
+    syncRangeWithTarget();
+    resetSkillEffectsAndMovement(formData.skills[idx]);
+    renderSkillEffectBlock(idx, skillEffectDiv, targetSelect, maxTargetSelect, rangeSelect);
+    renderMovementSkillsBlock(idx, movementSkillDiv, targetSelect, maxTargetSelect, rangeSelect, occ);
+    renderCustomSkillEffectBlock(idx, customSkillDiv, targetSelect, maxTargetSelect);
+    renderSkillDebuffBlock(idx, debuffDiv, occ, targetSelect, maxTargetSelect);
+    renderSkillPassiveAndCdBlock(idx, block.querySelector('.cd-block'), formData.skills[idx]);
+    renderSkillAccumStarBlock(idx, extraStarDiv, formData.skills[idx]);
+    updateSkillPreview();
+  });
+}
     maxTargetSelect.addEventListener('change', (e) => {
       formData.skills[idx].max_targets = parseInt(e.target.value, 10);
       resetSkillEffectsAndMovement(formData.skills[idx]);
